@@ -31,7 +31,7 @@ export default function HomeHero() {
           <div className="max-w-2xl">
             <div className="inline-flex items-center gap-2 rounded-md border bg-muted/50 px-2 py-1 text-xs font-medium mb-4">
               <span className="flex h-2 w-2 rounded-full bg-primary" />
-              v0.1.0.0 Alpha
+              1.0.0-rc.1{" "}
             </div>
 
             <h1 className="text-4xl font-black uppercase tracking-tighter sm:text-6xl">
@@ -45,8 +45,9 @@ export default function HomeHero() {
               you name it!.
             </p>
             <p className="mt-4 text-muted-foreground text-sm">
-              #Rule 1 : We encourage to keep your posts Ai free, don't be lazy
-              get your hands dirty
+              <span className=" font-bold ">#Rule 1 </span>: We encourage you
+              guys not to use ai, don't be lazy get your hands dirty you can use
+              it but don't rely on it fully.
             </p>
           </div>
 

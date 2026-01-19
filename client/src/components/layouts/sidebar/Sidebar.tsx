@@ -117,13 +117,13 @@ const NavLink = ({
             className={cn(
               "group relative flex items-center gap-3 rounded-lg px-3 py-2.5 text-muted-foreground transition-all duration-200 ease-in-out hover:bg-accent hover:text-foreground",
               isCollapsed && "justify-center rounded-full w-12 h-12",
-              isActive && "bg-accent font-semibold text-foreground"
+              isActive && "bg-accent font-semibold text-foreground",
             )}
           >
             <div
               className={cn(
                 "absolute left-0 h-0 w-1 bg-primary transition-all duration-300 rounded-r-full",
-                isActive ? "h-6" : "group-hover:h-4"
+                isActive ? "h-6" : "group-hover:h-4",
               )}
             />
             <Icon className="h-5 w-5" />
@@ -165,7 +165,7 @@ const CollapsibleNav = ({
     <Collapsible defaultOpen>
       <CollapsibleTrigger
         className={cn(
-          "group flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+          "group flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground",
         )}
       >
         <section.icon className="h-5 w-5" />
@@ -194,9 +194,9 @@ export default function Sidebar() {
     <div className="sticky top-0">
       <aside
         className={cn(
-          "hidden lg:flex flex-col border-r bg-background h-screen overflow-y-auto",
+          "hidden lg:flex flex-col border-r bg-background h-screen overflow-y-auto ",
           "transition-all duration-300 ease-in-out",
-          isCollapsed ? "w-20" : "w-64"
+          isCollapsed ? "w-20" : "w-64",
         )}
       >
         <div className="flex h-16 shrink-0 items-center justify-center border-b px-4">
@@ -215,7 +215,7 @@ export default function Sidebar() {
                     variant="default"
                     className={cn(
                       "w-full",
-                      isCollapsed && "w-12 h-12 rounded-full"
+                      isCollapsed && "w-12 h-12 rounded-full",
                     )}
                   >
                     <Link href="/create">
@@ -270,7 +270,8 @@ export default function Sidebar() {
               </div>
               <h3 className="font-semibold text-foreground">Go Pro</h3>
               <p className="mt-1 text-sm text-muted-foreground">
-                This feature is not available yet{" "}
+                This feature is not available yet but don't worry ain't that
+                much lil bro
               </p>
             </div>
           </div>
@@ -285,7 +286,7 @@ export default function Sidebar() {
               size="icon"
               className={cn(
                 "absolute top-8 h-10 w-10 rounded-full bg-background hover:bg-muted z-50 transition-all duration-300 ease-in-out",
-                isCollapsed ? "left-14" : "left-56"
+                isCollapsed ? "left-14" : "left-56",
               )}
               onClick={() => setIsCollapsed(!isCollapsed)}
             >

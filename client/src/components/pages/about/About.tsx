@@ -60,7 +60,7 @@ export default function About() {
                 sizes="160px"
                 className={cn(
                   "relative object-cover rounded-2xl border-2 border-primary grayscale hover:grayscale-0 transition-all duration-500",
-                  imageLoading ? "opacity-0" : "opacity-100"
+                  imageLoading ? "opacity-0" : "opacity-100",
                 )}
                 onLoadingComplete={() => setImageLoading(false)}
                 onError={() => {
@@ -75,13 +75,17 @@ export default function About() {
             <h3 className="text-sm font-bold   text-muted-foreground mb-1">
               Created By
             </h3>
-            <h2 className="text-4xl font-black  mb-4">Protocols Farmer</h2>
-            <p className="text-muted-foreground text-lg mb-6 leading-relaxed">
-              I am a software developer and I love farming. I built this
-              platform for people to share their work openly with the world and
-              grow together as a community.
-            </p>
-
+            <div className="flex flex-col gap-3">
+              <h2 className="text-4xl font-black  mb-4">Protocols Farmer</h2>
+              <h3 className=" text-xs">
+                Real names : Hwapyong Maniragaba edouard
+              </h3>
+              <p className="text-muted-foreground text-lg mb-6 leading-relaxed">
+                I am a software developer and I love farming. I built this
+                platform for people to share their work openly with the world
+                and grow together as a community.
+              </p>
+            </div>
             <div className="flex flex-wrap justify-center md:justify-start gap-4">
               <Button variant="outline" size="sm" asChild>
                 <Link
