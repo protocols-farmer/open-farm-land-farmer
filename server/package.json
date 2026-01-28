@@ -9,6 +9,7 @@
     "start": "node -r dotenv/config --enable-source-maps dist/server.js",
     "dev": "tsx --watch -r dotenv/config src/server.ts",
     "studio": "prisma studio",
+    "generate": "prisma generate",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
