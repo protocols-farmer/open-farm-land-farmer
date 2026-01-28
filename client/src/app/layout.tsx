@@ -21,7 +21,7 @@ const siteConfig = {
   name: "Open Farmlands",
   description:
     "Open farm lands is a platform to share your ideas, project journeys, blogs, and resources. No we don't recommend using AI-generated fluff. We believe in human creativity and documentation.",
-  url: "https://openfarmlands.vercel.app", // Update this when you have a custom domain
+  url: "https://open-farm-land-farmer.vercel.app", // Update this when you have a custom domain
   ogImage:
     "https://res.cloudinary.com/djtww0vax/image/upload/v1766912208/open_zrhcas.png", // Ensure you create this file in /public
   author: "Biooids",
@@ -87,9 +87,9 @@ export const metadata: Metadata = {
 
   // Icons (Place these in /public)
   icons: {
-    icon: "/favicon.ico",
-    shortcut: "/favicon-16x16.png",
-    apple: "/apple-touch-icon.png",
+    icon: "/favicon/favicon.ico",
+    shortcut: "/favicon/favicon-16x16.png",
+    apple: "/favicon/apple-touch-icon.png",
   },
 
   // Robots & Crawlers
