@@ -10,7 +10,7 @@ export default function Logo({ isCollapsed }: { isCollapsed?: boolean }) {
       {/* Change the 'src' prop to a string path */}
       <Image
         src="/open.png" // This path points to public/logo.png
-        alt="Open Farmlands Logo"
+        alt="Open Farmland Logo"
         width={24}
         height={24}
       />
@@ -18,10 +18,10 @@ export default function Logo({ isCollapsed }: { isCollapsed?: boolean }) {
       <span
         className={cn(
           "text-lg font-bold tracking-tighter",
-          isCollapsed && "hidden"
+          isCollapsed && "hidden",
         )}
       >
-        Open Farmlands
+        Open Farmland
       </span>
     </div>
   );

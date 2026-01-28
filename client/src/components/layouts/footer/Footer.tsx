@@ -76,7 +76,7 @@ export default function Footer() {
           {/* Logo & tagline */}
           <div>
             <p className="mt-4 max-w-sm text-muted-foreground">
-              <strong>Open Farmlands</strong> is your creative hub to showcase
+              <strong>Open Farmland</strong> is your creative hub to showcase
               builds, craft guides, and connect with others. Start creating now.
             </p>
           </div>
@@ -146,7 +146,7 @@ export default function Footer() {
             ))}
           </div>
           <p className="mt-4 text-sm text-muted-foreground sm:mt-0">
-            &copy; {currentYear} Open Farmlands. Crafted by developers, for
+            &copy; {currentYear} Open Farmland. Crafted by developers, for
             developers.
           </p>
         </div>

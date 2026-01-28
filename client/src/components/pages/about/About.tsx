@@ -18,14 +18,14 @@ export default function About() {
         <div className="flex justify-center mb-8 h-20 relative">
           <Image
             src="https://res.cloudinary.com/djtww0vax/image/upload/v1766912208/open_zrhcas.png"
-            alt="Open Farmlands Logo"
+            alt="Open Farmland Logo"
             width={200}
             height={200}
             className="object-contain dark:invert-0 invert"
             priority
           />
         </div>
-        <h1 className="text-6xl font-black   mb-6">Open Farmlands</h1>
+        <h1 className="text-6xl font-black   mb-6">Open Farmland</h1>
         <p className="text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
           This is a platform for sharing your ideas, project journey, blogs,
           resources, articles and more,stuff!

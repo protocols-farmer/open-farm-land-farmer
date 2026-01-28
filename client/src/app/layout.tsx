@@ -18,7 +18,7 @@ const geistMono = Geist_Mono({
 
 // --- SEO CONSTANTS ---
 const siteConfig = {
-  name: "Open Farmlands",
+  name: "Open Farmland",
   description:
     "Open farm lands is a platform to share your ideas, project journeys, blogs, and resources. No we don't recommend using AI-generated fluff. We believe in human creativity and documentation.",
   url: "https://open-farm-land-farmer.vercel.app", // Update this when you have a custom domain
@@ -43,11 +43,11 @@ export const metadata: Metadata = {
   metadataBase: new URL(siteConfig.url),
   title: {
     default: siteConfig.name,
-    template: `%s | ${siteConfig.name}`, // Allows sub-pages to be "My Project | Open Farmlands"
+    template: `%s | ${siteConfig.name}`, // Allows sub-pages to be "My Project | Open Farmland"
   },
   description: siteConfig.description,
   keywords: [
-    "Open Farmlands",
+    "Open Farmland",
     "Project Journey",
     "Developer Blog",
     "Open Source Community",
@@ -71,7 +71,7 @@ export const metadata: Metadata = {
         url: siteConfig.ogImage,
         width: 1200,
         height: 630,
-        alt: "Open Farmlands - Share your project journeys and ideas with the world.",
+        alt: "Open Farmland - Share your project journeys and ideas with the world.",
       },
     ],
   },
