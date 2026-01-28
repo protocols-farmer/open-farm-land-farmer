@@ -80,5 +80,5 @@ uploads/
 coverage/
 .nyc_output/
 lcov.info
-
-/generated/prisma
+# Ignore generated Prisma client
+/src/generated/prisma
