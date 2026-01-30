@@ -70,7 +70,7 @@ export const commentApiSlice = createApi({
         // This is a critical check. If postId is missing, we know why it fails.
         if (!postId) {
           console.error(
-            "CRITICAL: postId is missing in onQueryStarted. Cannot refetch post."
+            "CRITICAL: postId is missing in onQueryStarted. Cannot refetch post.",
           );
           return;
         }
@@ -78,14 +78,14 @@ export const commentApiSlice = createApi({
         try {
           await queryFulfilled;
           console.log(
-            "Comment mutation successful. Now attempting to refetch post..."
+            "Comment mutation successful. Now attempting to refetch post...",
           );
 
           // We are adding { forceRefetch: true } to be absolutely sure it runs.
           dispatch(
             postApiSlice.endpoints.getPostById.initiate(postId, {
               forceRefetch: true,
-            })
+            }),
           );
 
           console.log("Dispatched action to refetch post.");
