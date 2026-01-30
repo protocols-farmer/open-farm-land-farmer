@@ -35,7 +35,7 @@ export default function HomeHero() {
             </div>
 
             <h1 className="text-4xl font-black uppercase tracking-tighter sm:text-6xl">
-              Open Farmland
+              Open Farm Land
             </h1>
 
             <p className="mt-4 text-lg text-muted-foreground leading-relaxed">
