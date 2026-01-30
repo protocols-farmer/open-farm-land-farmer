@@ -1,3 +1,5 @@
+//section client/src/components/pages/posts/CommentSection.tsx
+
 "use client";
 
 import React from "react";
@@ -111,9 +113,9 @@ const CommentSection: React.FC<CommentSectionProps> = ({
       )}
 
       <div className="mt-8 space-y-6 relative">
-        {isFetching && (
+        {/* {isFetching && (
           <div className="absolute inset-0 bg-background/50 z-10 rounded-lg" />
-        )}
+        )} */}
         {comments.length > 0 ? (
           comments.map((comment) => (
             // --- THIS IS THE FIX ---

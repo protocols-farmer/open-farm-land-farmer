@@ -65,7 +65,7 @@ export default function CommentForm({
         <div
           className={cn(
             "absolute bottom-2.5 right-3 text-xs font-mono select-none",
-            remainingChars < 20 ? "text-destructive" : "text-muted-foreground"
+            remainingChars < 20 ? "text-destructive" : "text-muted-foreground",
           )}
         >
           {remainingChars}

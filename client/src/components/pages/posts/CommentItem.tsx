@@ -54,24 +54,29 @@ import { MAX_REPLY_LEVEL } from "@/lib/features/comment/comment.config";
 
 interface CommentItemProps {
   comment: ProcessedCommentAPI;
-  // We no longer need to pass getCommentsParams down with the invalidatesTags approach
 }
 
 export default function CommentItem({ comment }: CommentItemProps) {
   const dispatch = useAppDispatch();
   const currentUser = useAppSelector(selectCurrentUser);
   const showReplies = useAppSelector((state) =>
-    selectIsRepliesExpanded(state, comment.id)
+    selectIsRepliesExpanded(state, comment.id),
   );
 
   const [isReplying, setIsReplying] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
 
-  const [toggleReaction] = useToggleCommentReactionMutation();
+  // FIX: Track which specific button initiated the reaction
+  const [pendingReaction, setPendingReaction] = useState<
+    "LIKED" | "DISLIKED" | null
+  >(null);
+
   const [updateComment, { isLoading: isUpdating }] = useUpdateCommentMutation();
   const [deleteComment, { isLoading: isDeleting }] = useDeleteCommentMutation();
   const [replyToComment, { isLoading: isReplyingLoading }] =
     useReplyToCommentMutation();
+  const [toggleReaction, { isLoading: isReacting }] =
+    useToggleCommentReactionMutation();
 
   const isOwner = currentUser?.id === comment.author?.id;
   const timeAgo = formatDistanceToNow(parseISO(comment.createdAt), {
@@ -79,14 +84,22 @@ export default function CommentItem({ comment }: CommentItemProps) {
   });
   const canReply = currentUser && comment.level < MAX_REPLY_LEVEL;
 
-  const handleToggleReaction = (reaction: "LIKED" | "DISLIKED") => {
+  const handleToggleReaction = async (reaction: "LIKED" | "DISLIKED") => {
     if (!currentUser) return;
-    toggleReaction({
-      commentId: comment.id,
-      reaction,
-      postId: comment.postId,
-      parentId: comment.parentId,
-    });
+
+    setPendingReaction(reaction);
+    try {
+      await toggleReaction({
+        commentId: comment.id,
+        reaction,
+        postId: comment.postId,
+        parentId: comment.parentId,
+      }).unwrap();
+    } catch (err) {
+      console.error("Reaction failed:", err);
+    } finally {
+      setPendingReaction(null);
+    }
   };
 
   const handleUpdate = async (text: string) => {
@@ -136,7 +149,7 @@ export default function CommentItem({ comment }: CommentItemProps) {
         </strong>
       ) : (
         part
-      )
+      ),
     );
   }, [comment.text]);
 
@@ -220,36 +233,51 @@ export default function CommentItem({ comment }: CommentItemProps) {
         </div>
 
         <div className="flex items-center gap-1 text-xs text-muted-foreground mt-1">
+          {/* --- LIKE BUTTON --- */}
           <Button
             variant="ghost"
             size="sm"
+            disabled={isReacting}
             onClick={() => handleToggleReaction("LIKED")}
             className={cn(
               "px-2",
-              comment.isLikedByCurrentUser && "text-primary"
+              comment.isLikedByCurrentUser && "text-primary",
             )}
           >
-            <ThumbsUp
-              className="h-4 w-4 mr-1.5"
-              // --- THIS IS THE FIX ---
-              // Conditionally fill the icon with the current text color
-              fill={comment.isLikedByCurrentUser ? "currentColor" : "none"}
-            />
-
+            {isReacting && pendingReaction === "LIKED" ? (
+              <Loader2 className="h-4 w-4 animate-spin mr-1.5" />
+            ) : (
+              <ThumbsUp
+                className={cn(
+                  "h-4 w-4 mr-1.5",
+                  comment.isLikedByCurrentUser && "fill-current",
+                )}
+              />
+            )}
             {comment.likes}
           </Button>
+
+          {/* --- DISLIKE BUTTON --- */}
           <Button
             variant="ghost"
             size="sm"
+            disabled={isReacting}
             onClick={() => handleToggleReaction("DISLIKED")}
             className="px-2"
           >
-            <ThumbsDown
-              className="h-4 w-4 mr-1.5"
-              fill={comment.isDislikedByCurrentUser ? "currentColor" : "none"}
-            />
+            {isReacting && pendingReaction === "DISLIKED" ? (
+              <Loader2 className="h-4 w-4 animate-spin mr-1.5" />
+            ) : (
+              <ThumbsDown
+                className={cn(
+                  "h-4 w-4 mr-1.5",
+                  comment.isDislikedByCurrentUser && "fill-current",
+                )}
+              />
+            )}
             {comment.dislikes}
           </Button>
+
           {canReply && (
             <Button
               variant="ghost"
@@ -285,7 +313,7 @@ export default function CommentItem({ comment }: CommentItemProps) {
             <ChevronDown
               className={cn(
                 "h-4 w-4 mr-1 transition-transform",
-                showReplies && "rotate-180"
+                showReplies && "rotate-180",
               )}
             />
             {showReplies
