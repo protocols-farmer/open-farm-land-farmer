@@ -1,24 +1,11 @@
-// src/features/comment/comment.service.ts
-
 /**
  * =================================================================
- * SERVICE LAYER: COMMENT
+ * SERVICE LAYER: COMMENT (OPTIMIZED)
  * =================================================================
- * This service is responsible for all business logic related to
- * comments, including creation, retrieval, updates, deletion,
- * and reactions. It is the single source of truth for interacting
- * with the Comment model in the database.
- *
- * It uses Prisma for database operations and throws structured
- * HttpErrors that are caught and handled by the Controller layer.
  */
 
 import prisma from "@/db/prisma.js";
-import {
-  Prisma,
-  SystemRole,
-  CommentReactionState,
-} from "@prisma-client"; // Adjust path if needed
+import { Prisma, SystemRole, CommentReactionState } from "@prisma-client";
 import { createHttpError } from "@/utils/error.factory.js";
 import {
   ProcessedCommentAPI,
@@ -27,30 +14,27 @@ import {
   ToggleReactionDto,
 } from "./comment.types.js";
 
-// Constants for business logic
 const MAX_COMMENT_LEVEL_ALLOWED = 5;
 
 /**
- * A reusable Prisma 'include' object for fetching the necessary comment details.
- * IMPROVEMENT: This is now a function that conditionally includes user-specific data
- * only when a userId is provided, fixing the TypeScript error.
- * @param currentUserId The ID of the user making the request, to check their reaction status.
+ * OPTIMIZED INCLUDE:
+ * Strictly selects author fields and counts to reduce database payload.
  */
 const commentInclude = (currentUserId?: string): Prisma.CommentInclude => {
   const include: Prisma.CommentInclude = {
     author: {
-      select: { id: true, name: true, username: true, profileImage: true },
+      select: {
+        id: true,
+        name: true,
+        username: true,
+        profileImage: true,
+      },
     },
     _count: {
-      select: {
-        children: true, // Counts direct replies
-        // We can add reaction counts here if we denormalize them on the Comment model later
-      },
+      select: { children: true },
     },
   };
 
-  // FIX: Conditionally add the 'reactions' part only if a user is logged in.
-  // This prevents passing 'undefined' to the where clause.
   if (currentUserId) {
     include.reactions = {
       where: { userId: currentUserId },
@@ -63,12 +47,9 @@ const commentInclude = (currentUserId?: string): Prisma.CommentInclude => {
 
 class CommentService {
   /**
-   * Transforms raw database comment data into the final API shape.
+   * Transforms database records into a clean API response.
    */
-  // FIX: Removed the unused 'currentUserId' parameter.
-  private processRawCommentForAPI(
-    rawComment: any
-  ): Omit<ProcessedCommentAPI, "children" | "totalDescendantRepliesCount"> {
+  private processRawCommentForAPI(rawComment: any): ProcessedCommentAPI {
     const userReaction = rawComment.reactions?.[0]?.reaction;
 
     return {
@@ -81,24 +62,19 @@ class CommentService {
       createdAt: rawComment.createdAt,
       updatedAt: rawComment.updatedAt,
       author: rawComment.author,
-
-      // --- THIS IS THE FIX ---
-      // Use the accurate, denormalized counts directly from the database model
       likes: rawComment.likesCount,
       dislikes: rawComment.dislikesCount,
-
       isLikedByCurrentUser: userReaction === CommentReactionState.LIKED,
       isDislikedByCurrentUser: userReaction === CommentReactionState.DISLIKED,
       directRepliesCount: rawComment._count?.children || 0,
+      children: [],
     };
   }
-  /**
-   * Creates a new top-level comment on a post and increments the post's commentsCount.
-   */
+
   public async create(
     postId: string,
     authorId: string,
-    data: CreateCommentDto
+    data: CreateCommentDto,
   ): Promise<ProcessedCommentAPI> {
     const post = await prisma.post.findUnique({ where: { id: postId } });
     if (!post) throw createHttpError(404, "Post not found.");
@@ -114,19 +90,13 @@ class CommentService {
       }),
     ]);
 
-    return {
-      ...this.processRawCommentForAPI(newComment),
-      children: [],
-    };
+    return this.processRawCommentForAPI(newComment);
   }
 
-  /**
-   * Creates a reply to an existing comment and increments the post's commentsCount.
-   */
   public async createReply(
     parentId: string,
     authorId: string,
-    data: CreateCommentDto
+    data: CreateCommentDto,
   ): Promise<ProcessedCommentAPI> {
     const parentComment = await prisma.comment.findUnique({
       where: { id: parentId },
@@ -137,7 +107,7 @@ class CommentService {
     if (newLevel > MAX_COMMENT_LEVEL_ALLOWED) {
       throw createHttpError(
         403,
-        `Maximum comment depth of ${MAX_COMMENT_LEVEL_ALLOWED} exceeded.`
+        `Maximum depth of ${MAX_COMMENT_LEVEL_ALLOWED} reached.`,
       );
     }
 
@@ -158,19 +128,13 @@ class CommentService {
       }),
     ]);
 
-    return {
-      ...this.processRawCommentForAPI(newReply),
-      children: [],
-    };
+    return this.processRawCommentForAPI(newReply);
   }
 
-  /**
-   * Fetches a paginated list of top-level comments for a post.
-   */
   public async findAllForPost(
     postId: string,
     currentUserId?: string,
-    pagination?: { skip: number; take: number; sortBy: string; order: string }
+    pagination?: { skip: number; take: number; sortBy: string; order: string },
   ) {
     const [rawComments, total] = await prisma.$transaction([
       prisma.comment.findMany({
@@ -185,21 +149,16 @@ class CommentService {
       prisma.comment.count({ where: { postId, parentId: null } }),
     ]);
 
-    const detailedComments = rawComments.map((c) => ({
-      ...this.processRawCommentForAPI(c),
-      children: [],
-    }));
-
-    return { comments: detailedComments, total };
+    return {
+      comments: rawComments.map((c) => this.processRawCommentForAPI(c)),
+      total,
+    };
   }
 
-  /**
-   * Fetches a paginated list of replies for a given parent comment.
-   */
   public async findRepliesForComment(
     parentId: string,
     currentUserId?: string,
-    pagination?: { skip: number; take: number; sortBy: string; order: string }
+    pagination?: { skip: number; take: number; sortBy: string; order: string },
   ) {
     const [rawReplies, total] = await prisma.$transaction([
       prisma.comment.findMany({
@@ -214,176 +173,151 @@ class CommentService {
       prisma.comment.count({ where: { parentId } }),
     ]);
 
-    const detailedReplies = rawReplies.map((c) => ({
-      ...this.processRawCommentForAPI(c),
-      children: [],
-    }));
-
-    return { replies: detailedReplies, total };
+    return {
+      replies: rawReplies.map((c) => this.processRawCommentForAPI(c)),
+      total,
+    };
   }
 
-  /**
-   * Updates the text of an existing comment.
-   */
   public async update(
     commentId: string,
     userId: string,
     userRole: SystemRole | undefined,
-    data: UpdateCommentDto
+    data: UpdateCommentDto,
   ): Promise<ProcessedCommentAPI> {
     const comment = await prisma.comment.findUnique({
       where: { id: commentId },
     });
-    if (!comment) throw createHttpError(404, "Comment not found.");
-    if (comment.authorId !== userId && userRole !== "SUPER_ADMIN") {
-      throw createHttpError(
-        403,
-        "You are not authorized to edit this comment."
-      );
+    if (
+      !comment ||
+      (comment.authorId !== userId && userRole !== "SUPER_ADMIN")
+    ) {
+      throw createHttpError(403, "Unauthorized to edit this comment.");
     }
 
-    const updatedComment = await prisma.comment.update({
+    const updated = await prisma.comment.update({
       where: { id: commentId },
       data: { text: data.text },
       include: commentInclude(userId),
     });
 
-    return {
-      ...this.processRawCommentForAPI(updatedComment),
-      children: [],
-    };
+    return this.processRawCommentForAPI(updated);
   }
 
   /**
-   * Deletes a comment and decrements the post's commentsCount.
+   * OPTIMIZED DELETE:
+   * Uses a Recursive CTE to find and count ALL descendants (replies to replies)
+   * to ensure the parent Post.commentsCount stays perfectly in sync.
    */
   public async delete(
     commentId: string,
     userId: string,
-    userRole: SystemRole | undefined
+    userRole: SystemRole | undefined,
   ): Promise<void> {
-    // We must fetch the comment and its replies first to know how many to decrement
-    const commentToDelete = await prisma.comment.findUnique({
+    const comment = await prisma.comment.findUnique({
       where: { id: commentId },
-      include: { _count: { select: { children: true } } },
     });
-    if (!commentToDelete) throw createHttpError(404, "Comment not found.");
-    if (commentToDelete.authorId !== userId && userRole !== "SUPER_ADMIN") {
-      throw createHttpError(
-        403,
-        "You are not authorized to delete this comment."
-      );
+    if (!comment) throw createHttpError(404, "Comment not found.");
+    if (comment.authorId !== userId && userRole !== "SUPER_ADMIN") {
+      throw createHttpError(403, "Unauthorized.");
     }
 
-    // This needs a deeper look for nested replies. For now, we assume one level for the count.
-    // A full recursive delete count is complex and better handled by other patterns.
-    const countToDelete = 1 + (commentToDelete._count?.children || 0);
+    const descendants: { id: string }[] = await prisma.$queryRaw`
+      WITH RECURSIVE subordinates AS (
+        SELECT id FROM comments WHERE id = ${commentId}
+        UNION ALL
+        SELECT c.id FROM comments c
+        INNER JOIN subordinates s ON s.id = c."parentId"
+      )
+      SELECT id FROM subordinates;
+    `;
 
     await prisma.$transaction([
       prisma.comment.delete({ where: { id: commentId } }),
       prisma.post.update({
-        where: { id: commentToDelete.postId },
-        data: { commentsCount: { decrement: countToDelete } },
+        where: { id: comment.postId },
+        data: { commentsCount: { decrement: descendants.length } },
       }),
     ]);
   }
 
   /**
-   * Toggles a user's reaction (like/dislike) on a comment.
+   * OPTIMIZED TOGGLE:
+   * Atomic operations inside a single transaction.
+   * Eliminates unnecessary 'pings' to the DB.
    */
   public async toggleReaction(
     commentId: string,
     userId: string,
-    data: ToggleReactionDto
+    data: ToggleReactionDto,
   ) {
-    const comment = await prisma.comment.findUnique({
-      where: { id: commentId },
-    });
-    if (!comment) throw createHttpError(404, "Comment not found.");
+    const { reaction } = data;
 
-    const existingReaction = await prisma.commentUserReaction.findUnique({
-      where: { userId_commentId: { userId, commentId } },
-    });
+    return await prisma.$transaction(async (tx) => {
+      const existing = await tx.commentUserReaction.findUnique({
+        where: { userId_commentId: { userId, commentId } },
+      });
 
-    // We use a transaction to ensure all database updates succeed or fail together
-    await prisma.$transaction(async (tx) => {
-      if (existingReaction) {
-        if (existingReaction.reaction === data.reaction) {
-          // --- User is UNDOING their reaction ---
-          await tx.commentUserReaction.delete({
-            where: { id: existingReaction.id },
+      if (existing) {
+        if (existing.reaction === reaction) {
+          // 1. UNDO
+          await tx.commentUserReaction.delete({ where: { id: existing.id } });
+          await tx.comment.update({
+            where: { id: commentId },
+            data: {
+              [reaction === "LIKED" ? "likesCount" : "dislikesCount"]: {
+                decrement: 1,
+              },
+            },
           });
-          // Decrement the appropriate counter
-          if (data.reaction === "LIKED") {
-            await tx.comment.update({
-              where: { id: commentId },
-              data: { likesCount: { decrement: 1 } },
-            });
-          } else {
-            await tx.comment.update({
-              where: { id: commentId },
-              data: { dislikesCount: { decrement: 1 } },
-            });
-          }
         } else {
-          // --- User is CHANGING their reaction (e.g., from like to dislike) ---
+          // 2. SWAP
           await tx.commentUserReaction.update({
-            where: { id: existingReaction.id },
-            data: { reaction: data.reaction },
+            where: { id: existing.id },
+            data: { reaction },
           });
-          // Decrement the old counter and increment the new one
-          if (data.reaction === "LIKED") {
-            await tx.comment.update({
-              where: { id: commentId },
-              data: {
-                likesCount: { increment: 1 },
-                dislikesCount: { decrement: 1 },
+          await tx.comment.update({
+            where: { id: commentId },
+            data: {
+              likesCount: {
+                [reaction === "LIKED" ? "increment" : "decrement"]: 1,
               },
-            });
-          } else {
-            await tx.comment.update({
-              where: { id: commentId },
-              data: {
-                likesCount: { decrement: 1 },
-                dislikesCount: { increment: 1 },
+              dislikesCount: {
+                [reaction === "LIKED" ? "decrement" : "increment"]: 1,
               },
-            });
-          }
+            },
+          });
         }
       } else {
-        // --- User is CREATING a new reaction ---
+        // 3. NEW
         await tx.commentUserReaction.create({
-          data: { userId, commentId, reaction: data.reaction },
+          data: { userId, commentId, reaction },
         });
-        // Increment the appropriate counter
-        if (data.reaction === "LIKED") {
-          await tx.comment.update({
-            where: { id: commentId },
-            data: { likesCount: { increment: 1 } },
-          });
-        } else {
-          await tx.comment.update({
-            where: { id: commentId },
-            data: { dislikesCount: { increment: 1 } },
-          });
-        }
+        await tx.comment.update({
+          where: { id: commentId },
+          data: {
+            [reaction === "LIKED" ? "likesCount" : "dislikesCount"]: {
+              increment: 1,
+            },
+          },
+        });
       }
-    });
 
-    // Now we can fetch the final, accurate state directly from the comment
-    const finalCommentState = await prisma.comment.findUnique({
-      where: { id: commentId },
-    });
-    const finalUserReaction = await prisma.commentUserReaction.findUnique({
-      where: { userId_commentId: { userId, commentId } },
-    });
+      const finalState = await tx.comment.findUnique({
+        where: { id: commentId },
+        select: { likesCount: true, dislikesCount: true },
+      });
 
-    return {
-      likes: finalCommentState?.likesCount ?? 0,
-      dislikes: finalCommentState?.dislikesCount ?? 0,
-      isLikedByCurrentUser: finalUserReaction?.reaction === "LIKED",
-      isDislikedByCurrentUser: finalUserReaction?.reaction === "DISLIKED",
-    };
+      return {
+        likes: finalState?.likesCount ?? 0,
+        dislikes: finalState?.dislikesCount ?? 0,
+        isLikedByCurrentUser:
+          reaction === "LIKED" && (!existing || existing.reaction !== "LIKED"),
+        isDislikedByCurrentUser:
+          reaction === "DISLIKED" &&
+          (!existing || existing.reaction !== "DISLIKED"),
+      };
+    });
   }
 }
 
