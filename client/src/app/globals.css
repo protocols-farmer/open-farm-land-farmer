@@ -120,8 +120,55 @@
   body {
     @apply bg-background text-foreground;
   }
-}
 
+  /* Target BOTH the Editor (.tiptap) and the Rendered Detail View (.prose) */
+  .tiptap pre,
+  .prose pre {
+    background: #1e1e1e !important; /* Forces dark background regardless of light/dark mode */
+    color: #d4d4d4 !important;
+    font-family: var(--font-mono);
+    padding: 1rem;
+    border-radius: 0.5rem;
+    margin: 1.5rem 0;
+    overflow-x: auto; /* Ensures wide code doesn't break layout */
+    border: 1px solid oklch(1 0 0 / 10%);
+  }
+
+  .tiptap code,
+  .prose code {
+    color: inherit;
+    padding: 0;
+    background: none;
+    font-size: 0.9rem;
+    border: none;
+  }
+
+  /* Inline code (code not inside a <pre>) */
+  .prose :not(pre) > code {
+    @apply bg-muted px-1.5 py-0.5 rounded text-primary text-sm font-semibold;
+  }
+
+  /* Task List Styles */
+  .tiptap ul[data-type="taskList"],
+  .prose ul[data-type="taskList"] {
+    list-style: none;
+    padding: 0;
+  }
+
+  .tiptap ul[data-type="taskList"] li,
+  .prose ul[data-type="taskList"] li {
+    @apply flex items-start gap-3 my-2;
+  }
+
+  /* Placeholder for empty lines in Editor */
+  .tiptap p.is-editor-empty:first-child::before {
+    content: attr(data-placeholder);
+    float: left;
+    color: var(--color-muted-foreground);
+    pointer-events: none;
+    height: 0;
+  }
+}
 @keyframes fade-in-up {
   from {
     opacity: 0;

@@ -104,17 +104,17 @@ export default function CreatePostPage() {
 
   const handleTagsChange = useCallback(
     (tags: string[]) => setValue("postTags", tags, { shouldValidate: true }),
-    [setValue]
+    [setValue],
   );
 
   const handleImagesChange = useCallback(
     (files: File[]) => setValue("postImages", files, { shouldValidate: true }),
-    [setValue]
+    [setValue],
   );
 
   const handleContentChange = useCallback(
     (content: string) => setValue("content", content, { shouldValidate: true }),
-    [setValue]
+    [setValue],
   );
 
   const stableEmptyArray = useMemo(() => [], []);
@@ -225,7 +225,7 @@ export default function CreatePostPage() {
               )}
             </div>
 
-            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+            <div className="flex flex-col gap-6">
               <div className="space-y-2">
                 <Label htmlFor="category">Category</Label>
                 <Controller
@@ -345,11 +345,14 @@ export default function CreatePostPage() {
             {isSuccess && (
               <Alert
                 variant="default"
-                className="border-green-500/50 text-green-700 bg-green-50"
+                className="border-green-500/20 bg-green-500/10 text-green-600 dark:text-green-400"
               >
                 <CheckCircle className="h-4 w-4" />
+                <AlertTitle className="font-bold">
+                  Post Creation Successful!
+                </AlertTitle>
                 <AlertDescription>
-                  Post created! Redirecting to your harvest...
+                  Your project has been created. Redirecting to your post...
                 </AlertDescription>
               </Alert>
             )}

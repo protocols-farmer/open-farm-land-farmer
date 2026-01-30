@@ -104,7 +104,7 @@ export default function OpportunityDetailsPage({
               )}
             </div>
             <div>
-              <h1 className="text-3xl md:text-4xl font-bold tracking-tight">
+              <h1 className="text-3xl md:text-4xl font-bold tracking-tight break-all">
                 {opportunity.title}
               </h1>
               <p className="text-xl text-muted-foreground">

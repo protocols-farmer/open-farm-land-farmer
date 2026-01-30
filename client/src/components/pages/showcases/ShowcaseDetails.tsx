@@ -1,21 +1,27 @@
+//src/components/pages/resources/ResourceDetails.tsx
+
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react"; // Added useMemo
 import Image from "next/image";
 import Link from "next/link";
 import { formatDistanceToNow } from "date-fns";
+import DOMPurify from "dompurify";
+import "highlight.js/styles/github-dark.css"; // Added for syntax highlighting
+
+// --- HOOKS & STATE MANAGEMENT ---
 import {
   useGetPostByIdQuery,
   useRecordPostViewMutation,
 } from "@/lib/features/post/postApiSlice";
 import { useAppSelector } from "@/lib/hooks/hooks";
 import { selectCurrentUser } from "@/lib/features/user/userSlice";
-import DOMPurify from "dompurify";
 
-// --- Import the modular components ---
+// --- MODULAR COMPONENTS ---
 import PostInteractionHub from "../../shared/PostInteractionHub";
+import CommentSection from "../posts/CommentSection";
 
-// --- UI Components ---
+// --- UI COMPONENTS ---
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
@@ -23,21 +29,17 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { ExternalLink, Github, Edit } from "lucide-react";
-import CommentSection from "../posts/CommentSection";
+import { ExternalLink, Github, Edit, Terminal } from "lucide-react";
 
-// --- Skeleton Loader matching the new layout ---
 const PageSkeleton = () => (
   <section className="mx-auto max-w-7xl py-8 space-y-12 animate-pulse">
     <div className="grid grid-cols-1 gap-8 lg:grid-cols-2 lg:gap-12">
       <div className="h-fit flex flex-col gap-4">
         <Skeleton className="aspect-[16/10] w-full rounded-2xl" />
         <div className="grid grid-cols-5 gap-2">
-          <Skeleton className="aspect-square w-full rounded-lg" />
-          <Skeleton className="aspect-square w-full rounded-lg" />
-          <Skeleton className="aspect-square w-full rounded-lg" />
-          <Skeleton className="aspect-square w-full rounded-lg" />
-          <Skeleton className="aspect-square w-full rounded-lg" />
+          {[...Array(5)].map((_, i) => (
+            <Skeleton key={i} className="aspect-square w-full rounded-lg" />
+          ))}
         </div>
       </div>
       <div className="lg:col-span-1 flex flex-col space-y-6">
@@ -62,13 +64,28 @@ const PageSkeleton = () => (
 );
 
 export default function ShowcaseDetails({ postId }: { postId: string }) {
-  // --- All data logic and hooks are untouched ---
   const { data: post, isLoading, isError } = useGetPostByIdQuery(postId);
   const currentUser = useAppSelector(selectCurrentUser);
   const [recordPostView] = useRecordPostViewMutation();
 
-  const [mainImage, setMainImage] = useState<string | undefined>();
-  const [sanitizedContent, setSanitizedContent] = useState("");
+  /**
+   * FIX 1: DERIVED IMAGE STATE
+   * mainImage calculates instantly from render. No useEffect sync needed.
+   */
+  const [selectedImage, setSelectedImage] = useState<string | undefined>();
+  const mainImage = selectedImage || post?.images?.[0]?.url;
+
+  /**
+   * FIX 2: MEMOIZED SANITIZATION
+   * Removes cascading renders and whitelists 'class' for code colors.
+   */
+  const sanitizedContent = useMemo(() => {
+    const content = post?.content;
+    if (!content) return "";
+    return DOMPurify.sanitize(content, {
+      ADD_ATTR: ["class"],
+    });
+  }, [post?.content]);
 
   useEffect(() => {
     if (postId && currentUser) {
@@ -76,28 +93,16 @@ export default function ShowcaseDetails({ postId }: { postId: string }) {
     }
   }, [postId, currentUser, recordPostView]);
 
-  useEffect(() => {
-    if (post?.images && post.images.length > 0) {
-      setMainImage(post.images[0].url);
-    }
-    if (post?.content) {
-      setSanitizedContent(DOMPurify.sanitize(post.content));
-    }
-  }, [post]);
-  // --- End of untouched logic ---
-
-  if (isLoading) {
-    return <PageSkeleton />;
-  }
+  if (isLoading) return <PageSkeleton />;
 
   if (isError || !post) {
     return (
       <div className="container mx-auto py-10">
         <Alert variant="destructive" className="max-w-xl mx-auto">
+          <Terminal className="h-4 w-4" />
           <AlertTitle>Showcase Not Found</AlertTitle>
           <AlertDescription>
-            The showcase you are looking for does not exist or an error
-            occurred.
+            This showcase has returned to the soil or an error occurred.
           </AlertDescription>
         </Alert>
       </div>
@@ -105,12 +110,12 @@ export default function ShowcaseDetails({ postId }: { postId: string }) {
   }
 
   return (
-    <section className="mx-auto max-w-7xl py-8 space-y-12">
-      {/* === Main 50/50 Grid (Layout from BlogDetails) === */}
+    <section className="mx-auto max-w-7xl py-8 space-y-12 animate-in fade-in duration-500">
+      {/* === Main 50/50 Grid === */}
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-2 lg:gap-12">
         {/* === Left Column: Sticky Image Gallery === */}
         <div className="lg:sticky lg:top-24 h-fit flex flex-col gap-4">
-          <div className="relative aspect-[16/10] w-full overflow-hidden rounded-2xl border">
+          <div className="relative aspect-[16/10] w-full overflow-hidden rounded-2xl border bg-muted shadow-sm">
             {mainImage ? (
               <Image
                 src={mainImage}
@@ -120,7 +125,7 @@ export default function ShowcaseDetails({ postId }: { postId: string }) {
                 priority
               />
             ) : (
-              <div className="bg-muted h-full w-full flex items-center justify-center text-muted-foreground">
+              <div className="h-full w-full flex items-center justify-center text-muted-foreground uppercase text-xs font-bold">
                 No images provided
               </div>
             )}
@@ -130,16 +135,16 @@ export default function ShowcaseDetails({ postId }: { postId: string }) {
               {post.images.map((img) => (
                 <button
                   key={img.id}
-                  onClick={() => setMainImage(img.url)}
+                  onClick={() => setSelectedImage(img.url)}
                   className={`relative aspect-square w-full overflow-hidden rounded-lg border-2 transition-all ${
                     mainImage === img.url
-                      ? "border-primary"
+                      ? "border-primary shadow-md"
                       : "border-transparent hover:border-primary/50"
                   }`}
                 >
                   <Image
                     src={img.url}
-                    alt={`${post.title} thumbnail`}
+                    alt="thumbnail"
                     fill
                     className="object-cover"
                   />
@@ -152,38 +157,38 @@ export default function ShowcaseDetails({ postId }: { postId: string }) {
         {/* === Right Column: Post Details & Actions === */}
         <div className="lg:col-span-1 flex flex-col space-y-6">
           <header className="space-y-4">
-            <Badge variant="secondary" className="w-fit capitalize">
+            <Badge variant="secondary" className="w-fit capitalize font-bold">
               {post.category.toLowerCase()}
             </Badge>
-            <h1 className="text-4xl font-bold tracking-tighter md:text-5xl break-all">
+            <h1 className="text-4xl font-black uppercase tracking-tighter md:text-5xl leading-none break-all">
               {post.title}
             </h1>
-            <p className="text-lg text-muted-foreground break-all">
+            <p className="text-xl text-muted-foreground leading-relaxed">
               {post.description}
             </p>
             {currentUser?.id === post.author.id && (
-              <Button asChild variant="outline" className="w-full">
+              <Button asChild variant="outline" className="w-full font-bold">
                 <Link href={`/posts/${post.id}/update`}>
-                  <Edit className="mr-2 h-4 w-4" /> Edit
+                  <Edit className="mr-2 h-4 w-4" /> Edit Showcase
                 </Link>
               </Button>
             )}
-            <div className="flex items-center gap-4 pt-4 border-t">
+            <div className="flex items-center gap-4 pt-6 border-t">
               <Link
-                href={`/user/${post.author.username}`}
-                className="flex items-center gap-3"
+                href={`/profile/${post.author.username}`}
+                className="flex items-center gap-3 group"
               >
-                <Avatar className="h-11 w-11">
+                <Avatar className="h-12 w-12 border shadow-sm">
                   <AvatarImage src={post.author.profileImage ?? undefined} />
-                  <AvatarFallback>
+                  <AvatarFallback className="font-bold">
                     {post.author.name.slice(0, 2).toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
                 <div>
-                  <p className="font-semibold text-foreground hover:underline">
+                  <p className="font-bold text-foreground group-hover:underline decoration-primary">
                     {post.author.name}
                   </p>
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-xs text-muted-foreground uppercase tracking-widest">
                     Posted{" "}
                     {formatDistanceToNow(new Date(post.createdAt), {
                       addSuffix: true,
@@ -196,38 +201,54 @@ export default function ShowcaseDetails({ postId }: { postId: string }) {
 
           <PostInteractionHub post={post} />
 
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Tags</CardTitle>
+          <Card className="bg-muted/30">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm font-black uppercase tracking-widest text-muted-foreground">
+                Tags
+              </CardTitle>
             </CardHeader>
             <CardContent className="flex flex-wrap gap-2">
               {post.tags.map((postTag) => (
-                <Badge key={postTag.tag.id}># {postTag.tag.name}</Badge>
+                <Badge
+                  key={postTag.tag.id}
+                  variant="outline"
+                  className="bg-background"
+                >
+                  # {postTag.tag.name}
+                </Badge>
               ))}
             </CardContent>
           </Card>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="grid grid-cols-2 gap-4">
             {post.githubLink ? (
-              <Button asChild className="w-full">
-                <Link href={post.githubLink} target="_blank">
-                  <Github className="mr-2 h-4 w-4" /> GitHub
-                </Link>
+              <Button asChild className="font-bold">
+                <a
+                  href={post.githubLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <Github className="mr-2 h-4 w-4" /> Repo
+                </a>
               </Button>
             ) : (
-              <div className="text-sm text-center text-muted-foreground p-3 rounded-md border border-dashed flex items-center justify-center">
-                No GitHub link
+              <div className="text-xs text-center text-muted-foreground p-3 rounded-md border border-dashed font-bold uppercase tracking-tighter">
+                No Repo
               </div>
             )}
             {post.externalLink ? (
-              <Button variant="outline" asChild className="w-full">
-                <Link href={post.externalLink} target="_blank">
+              <Button variant="outline" asChild className="font-bold">
+                <a
+                  href={post.externalLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
                   <ExternalLink className="mr-2 h-4 w-4" /> Live Demo
-                </Link>
+                </a>
               </Button>
             ) : (
-              <div className="text-sm text-center text-muted-foreground p-3 rounded-md border border-dashed flex items-center justify-center">
-                No external link provided
+              <div className="text-xs text-center text-muted-foreground p-3 rounded-md border border-dashed font-bold uppercase tracking-tighter">
+                No Demo
               </div>
             )}
           </div>
@@ -236,26 +257,29 @@ export default function ShowcaseDetails({ postId }: { postId: string }) {
 
       <Separator />
 
-      {/* === Main Content Area Below The Grid === */}
-      <div className="mx-auto max-w-4xl">
+      {/* === Main Content Area === */}
+      <div className="mx-auto max-w-4xl px-4">
         <div
-          className="prose prose-lg dark:prose-invert max-w-none break-all"
+          className="prose prose-lg prose-neutral prose-quoteless dark:prose-invert max-w-none break-words"
           dangerouslySetInnerHTML={{ __html: sanitizedContent }}
         />
       </div>
 
       <Separator />
 
-      <div id="comments">
-        <Card>
-          <CardHeader>
-            <CardTitle>Comments ({post.commentsCount})</CardTitle>
+      {/* --- Comments Section --- */}
+      <div id="comments" className="max-w-4xl mx-auto w-full">
+        <Card className="border-none shadow-none bg-transparent">
+          <CardHeader className="px-0">
+            <CardTitle className="text-2xl font-black uppercase tracking-tighter">
+              Discussions ({post.commentsCount})
+            </CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="px-0">
             <CommentSection
               postId={post.id}
               totalComments={post.commentsCount}
-            />{" "}
+            />
           </CardContent>
         </Card>
       </div>

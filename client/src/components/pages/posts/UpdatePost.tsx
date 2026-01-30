@@ -167,7 +167,7 @@ function UpdatePostForm({ postData }: UpdatePostFormProps) {
 
   // Tracks which images already exist on Cloudinary that the user wants to keep
   const [retainedImages, setRetainedImages] = useState<PostImageDto[]>(
-    postData.images
+    postData.images,
   );
 
   const {
@@ -196,12 +196,12 @@ function UpdatePostForm({ postData }: UpdatePostFormProps) {
       setValue("postImages", files, { shouldValidate: true });
       setRetainedImages(retained);
     },
-    [setValue]
+    [setValue],
   );
 
   const handleContentChange = useCallback(
     (content: string) => setValue("content", content, { shouldValidate: true }),
-    [setValue]
+    [setValue],
   );
 
   const onSubmit: SubmitHandler<UpdatePostFormValues> = async (data) => {
@@ -290,7 +290,7 @@ function UpdatePostForm({ postData }: UpdatePostFormProps) {
               )}
             </div>
 
-            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+            <div className="flex flex-col gap-6 ">
               <div className="space-y-2">
                 <Label htmlFor="category">Category</Label>
                 <Controller
@@ -338,7 +338,7 @@ function UpdatePostForm({ postData }: UpdatePostFormProps) {
                     existingImages={retainedImages}
                     // Filter to only pass binary Files to the cropper component
                     value={(field.value || []).filter(
-                      (i): i is File => i instanceof File
+                      (i): i is File => i instanceof File,
                     )}
                     onChange={handleImagesChange}
                     maxFiles={5}
@@ -387,11 +387,14 @@ function UpdatePostForm({ postData }: UpdatePostFormProps) {
             {isSuccess && (
               <Alert
                 variant="default"
-                className="border-green-500/50 text-green-700 bg-green-50"
+                className="border-green-500/20 bg-green-500/10 text-green-600 dark:text-green-400"
               >
                 <CheckCircle className="h-4 w-4" />
+                <AlertTitle className="font-bold">
+                  Post Update Successful!
+                </AlertTitle>
                 <AlertDescription>
-                  Harvest updated successfully!
+                  Your project has been updated. Redirecting to your post...
                 </AlertDescription>
               </Alert>
             )}

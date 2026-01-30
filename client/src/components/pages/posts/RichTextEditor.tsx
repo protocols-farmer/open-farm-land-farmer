@@ -21,6 +21,7 @@ import TableRow from "@tiptap/extension-table-row";
 import CodeBlockLowlight from "@tiptap/extension-code-block-lowlight";
 import Underline from "@tiptap/extension-underline";
 // import { ColumnExtension } from "@gocapsule/column-extension"; // Uncomment if you use this
+import Placeholder from "@tiptap/extension-placeholder";
 
 import { createLowlight } from "lowlight";
 import xml from "highlight.js/lib/languages/xml";
@@ -58,6 +59,10 @@ function RichTextEditor({
         },
         // bulletList, orderedList, listItem will use their defaults from StarterKit
       }),
+      Placeholder.configure({
+        placeholder: "Sow the details of your project journey here...",
+        emptyEditorClass: "is-editor-empty", // This matches the class in your CSS!
+      }),
       TextAlign.configure({ types: ["heading", "paragraph"] }),
       Highlight,
       Image, // Ensure you have a way to upload/manage images if you use this
@@ -84,7 +89,8 @@ function RichTextEditor({
     content: initialContent,
     editorProps: {
       attributes: {
-        class: "focus:outline-none min-h-[50vh] p-5",
+        class:
+          "prose dark:prose-invert max-w-none focus:outline-none min-h-[50vh] p-5",
       },
     },
     onUpdate: ({ editor: currentEditor }: { editor: Editor }) => {

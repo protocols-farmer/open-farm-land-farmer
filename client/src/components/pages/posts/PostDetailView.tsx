@@ -1,3 +1,4 @@
+// FILE: src/components/pages/posts/PostDetailView.tsx
 "use client";
 
 import {
@@ -8,6 +9,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { format } from "date-fns";
 import DOMPurify from "dompurify";
+import "highlight.js/styles/github-dark.css";
 
 // UI Components
 import { Skeleton } from "@/components/ui/skeleton";
@@ -90,14 +92,16 @@ export default function PostDetailView({ postId }: { postId: string }) {
 
   // --- 3. Security: Sanitize the user-generated HTML content ---
   // This is CRUCIAL to prevent XSS attacks.
-  const sanitizedContent = DOMPurify.sanitize(post.content);
-
+  const sanitizedContent = DOMPurify.sanitize(post.content, {
+    ADD_ATTR: ["class"],
+  });
   return (
     <article className="container mx-auto max-w-4xl py-8">
       {/* --- Post Header --- */}
+
       <div className="space-y-4 text-center">
         <Badge className="capitalize">{post.category.toLowerCase()}</Badge>
-        <h1 className="text-4xl font-bold tracking-tight lg:text-5xl">
+        <h1 className="text-4xl font-bold tracking-tight lg:text-5xl break-all">
           {post.title}
         </h1>
         <p className="text-xl text-muted-foreground">{post.description}</p>
@@ -153,19 +157,12 @@ export default function PostDetailView({ postId }: { postId: string }) {
           </Carousel>
         </div>
       )}
-
       <Separator className="my-8" />
 
-      {/* --- Main Post Content --- */}
-      {/* This is where the magic happens:
-        1. `prose` classes from @tailwindcss/typography style the raw HTML.
-        2. `dangerouslySetInnerHTML` renders the sanitized HTML string.
-      */}
       <div
-        className="prose prose-quoteless prose-neutral dark:prose-invert max-w-none"
+        className="prose prose-neutral prose-quoteless dark:prose-invert max-w-none break-words"
         dangerouslySetInnerHTML={{ __html: sanitizedContent }}
       />
-
       {/* --- Tags Footer --- */}
       {post.tags && post.tags.length > 0 && (
         <div className="mt-12">
@@ -187,7 +184,6 @@ export default function PostDetailView({ postId }: { postId: string }) {
           </div>
         </div>
       )}
-
       <CommentSection postId={post.id} totalComments={post.commentsCount} />
     </article>
   );

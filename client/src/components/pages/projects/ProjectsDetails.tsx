@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { formatDistanceToNow } from "date-fns";
 import DOMPurify from "dompurify";
+import "highlight.js/styles/github-dark.css"; // ADD THIS LINE AT THE TOP
 
 // --- HOOKS & API ---
 import {
@@ -78,13 +79,18 @@ function ProjectDetailView({ post, currentUser }: ProjectDetailViewProps) {
   // FIX: Instead of useEffect, we initialize state directly from props
   // If the user clicks a thumbnail, this local state updates normally.
   const [selectedImage, setSelectedImage] = useState<string | undefined>(
-    post.images?.[0]?.url
+    post.images?.[0]?.url,
   );
 
   // FIX: Use useMemo for heavy sanitization instead of useEffect + setState
   const sanitizedContent = useMemo(
-    () => (post.content ? DOMPurify.sanitize(post.content) : ""),
-    [post.content]
+    () =>
+      post.content
+        ? DOMPurify.sanitize(post.content, {
+            ADD_ATTR: ["class"], // This ensures hljs classes aren't stripped
+          })
+        : "",
+    [post.content],
   );
 
   const isAuthor = currentUser?.id === post.authorId;
@@ -235,7 +241,7 @@ function ProjectDetailView({ post, currentUser }: ProjectDetailViewProps) {
               <CardTitle>About the Project</CardTitle>
             </CardHeader>
             <CardContent
-              className="prose prose-neutral dark:prose-invert max-w-none"
+              className="prose prose-neutral prose-quoteless dark:prose-invert max-w-none break-words"
               dangerouslySetInnerHTML={{ __html: sanitizedContent }}
             />
           </Card>

@@ -49,7 +49,9 @@ export default function GuideStepItem({
       <div className="flex justify-between items-start gap-4">
         <div>
           <p className="text-sm font-semibold text-primary">Step {index + 1}</p>
-          <h2 className="text-3xl font-bold tracking-tight">{step.title}</h2>
+          <h2 className="text-3xl font-bold tracking-tight break-all">
+            {step.title}
+          </h2>
           {/* Render the sanitized rich text description */}
           {sanitizedDescription && (
             <div

@@ -70,10 +70,10 @@ const contentSection: CollapsibleNavSection = {
   items: [
     { href: "/all", label: "All Posts", icon: FolderKanban },
     { href: "/projects", label: "Projects", icon: FileCode2 },
+    { href: "/guides", label: "Guides", icon: BookOpen },
     { href: "/blogs", label: "Blogs", icon: Pen },
     { href: "/resources", label: "Resources", icon: Globe },
     { href: "/articles", label: "Articles", icon: Newspaper },
-    { href: "/guides", label: "Guides", icon: BookOpen },
   ],
 };
 

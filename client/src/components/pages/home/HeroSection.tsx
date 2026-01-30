@@ -34,7 +34,7 @@ export default function HomeHero() {
               1.0.0-rc.1{" "}
             </div>
 
-            <h1 className="text-4xl font-black uppercase tracking-tighter sm:text-6xl">
+            <h1 className="text-4xl font-black uppercase  sm:text-6xl">
               Open Farm Land
             </h1>
 

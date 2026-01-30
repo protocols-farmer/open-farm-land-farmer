@@ -178,7 +178,7 @@ export default function GitHubPulseCard({ githubUrl }: { githubUrl: string }) {
 
         <div className="mt-4 flex items-center justify-center gap-2 text-[11px] text-muted-foreground">
           <User className="h-3 w-3" />
-          <span>Profile active on Wanderguild</span>
+          <span>Profile active on GitHub</span>
         </div>
       </CardContent>
     </Card>

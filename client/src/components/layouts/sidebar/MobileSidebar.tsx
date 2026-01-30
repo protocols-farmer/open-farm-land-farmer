@@ -70,10 +70,10 @@ const contentSection: CollapsibleNavSection = {
   items: [
     { href: "/all", label: "All Posts", icon: FolderKanban },
     { href: "/projects", label: "Projects", icon: FileCode2 },
+    { href: "/guides", label: "Guides", icon: BookOpen },
     { href: "/blogs", label: "Blogs", icon: Pen },
     { href: "/resources", label: "Resources", icon: Globe },
     { href: "/articles", label: "Articles", icon: Newspaper },
-    { href: "/guides", label: "Guides", icon: BookOpen },
   ],
 };
 
@@ -113,7 +113,7 @@ const MobileNavLink = ({
         href={href}
         className={cn(
           "flex items-center gap-4 rounded-lg px-3 py-2.5 text-muted-foreground transition-all hover:text-primary",
-          isActive && "bg-muted font-semibold text-primary"
+          isActive && "bg-muted font-semibold text-primary",
         )}
       >
         <Icon className="h-5 w-5" />

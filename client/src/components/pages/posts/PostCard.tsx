@@ -18,13 +18,7 @@ import {
 import { PostDto, PostCategory } from "@/lib/features/post/postTypes";
 
 // --- UI COMPONENTS & ICONS ---
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardFooter, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -53,7 +47,6 @@ import {
   Loader2,
   Copy,
   Check,
-  Lock,
   ArrowRight,
 } from "lucide-react";
 
@@ -70,20 +63,26 @@ interface PostCardProps {
 
 const TagsDisplay = ({ tags }: { tags: PostDto["tags"] }) => {
   if (!tags || tags.length === 0) return null;
-  const maxTagsToShow = 3;
-  const remainingTags = tags.length - (maxTagsToShow - 1);
-  const tagsToShow =
-    tags.length > maxTagsToShow ? tags.slice(0, maxTagsToShow - 1) : tags;
+  const maxTagsToShow = 2; // Reduced to save space
+  const remainingTags = tags.length - maxTagsToShow;
+  const tagsToShow = tags.slice(0, maxTagsToShow);
 
   return (
-    <div className="flex flex-wrap items-center gap-1.5">
+    <div className="flex flex-wrap items-center gap-1">
       {tagsToShow.map((postTag) => (
-        <Badge key={postTag.tag.id} variant="secondary" className="font-normal">
+        <Badge
+          key={postTag.tag.id}
+          variant="secondary"
+          className="font-normal text-[10px] px-1.5 py-0 h-4"
+        >
           {postTag.tag.name}
         </Badge>
       ))}
       {tags.length > maxTagsToShow && (
-        <Badge variant="outline" className="font-normal">
+        <Badge
+          variant="outline"
+          className="font-normal text-[10px] px-1.5 py-0 h-4"
+        >
           +{remainingTags}
         </Badge>
       )}
@@ -126,14 +125,14 @@ export default function PostCard({ post }: PostCardProps) {
   const [showShareDialog, setShowShareDialog] = useState(false);
   const [linkCopied, setLinkCopied] = useState(false);
 
-  // RTK Query Mutations
   const [savePost, { isLoading: isSaving }] = useSavePostMutation();
   const [unsavePost, { isLoading: isUnsaving }] = useUnsavePostMutation();
   const [likePost, { isLoading: isLiking }] = useLikePostMutation();
   const [unlikePost, { isLoading: isUnliking }] = useUnlikePostMutation();
   const [sharePost, { isLoading: isSharing }] = useSharePostMutation();
 
-  const handleToggleSave = () =>
+  const handleToggleSave = (e: React.MouseEvent) => {
+    e.stopPropagation();
     handleAuthAction(async () => {
       if (isSaving || isUnsaving) return;
       try {
@@ -143,8 +142,10 @@ export default function PostCard({ post }: PostCardProps) {
         toast.error("Failed to update save status.");
       }
     }, "save");
+  };
 
-  const handleToggleLike = () =>
+  const handleToggleLike = (e: React.MouseEvent) => {
+    e.stopPropagation();
     handleAuthAction(async () => {
       if (isLiking || isUnliking) return;
       try {
@@ -154,12 +155,15 @@ export default function PostCard({ post }: PostCardProps) {
         toast.error("Failed to update like status.");
       }
     }, "like");
+  };
 
-  const handleOpenShareDialog = () =>
+  const handleOpenShareDialog = (e: React.MouseEvent) => {
+    e.stopPropagation();
     handleAuthAction(() => {
       setLinkCopied(false);
       setShowShareDialog(true);
     }, "share");
+  };
 
   const handleShareAndCopy = async () => {
     const postUrl = `${window.location.origin}${getPostAction(post).href}`;
@@ -182,203 +186,150 @@ export default function PostCard({ post }: PostCardProps) {
 
   return (
     <TooltipProvider delayDuration={200}>
-      <Card className="relative flex flex-col h-full group overflow-hidden border-border/60 hover:border-border hover:shadow-xl transition-all duration-300">
+      <Card className="relative flex flex-col h-full group overflow-hidden border-border/60 hover:border-border hover:shadow-lg transition-all duration-300">
         <Link
           href={href}
-          onClick={(e) => {
-            e.preventDefault();
-            handleAuthAction(() => router.push(href), "view");
-          }}
+          className="relative block aspect-video w-full overflow-hidden bg-muted/40"
         >
-          <div className="aspect-video w-full overflow-hidden bg-muted/40 relative">
-            <Image
-              src={post.images?.[0]?.url || FALLBACK_POST_IMAGE}
-              alt={post.title}
-              fill
-              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-              className="object-cover transition-transform duration-300 ease-in-out group-hover:scale-105"
-            />
-            <Badge
-              variant="secondary"
-              className="absolute top-3 right-3 capitalize text-xs"
-            >
-              {post.category.toLowerCase()}
-            </Badge>
-          </div>
+          <Image
+            src={post.images?.[0]?.url || FALLBACK_POST_IMAGE}
+            alt={post.title}
+            fill
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+            className="object-cover transition-transform duration-500 ease-out group-hover:scale-105"
+          />
+          <Badge
+            variant="secondary"
+            className="absolute top-2 right-2 capitalize text-[10px] bg-background/80 backdrop-blur-md h-5"
+          >
+            {post.category.toLowerCase()}
+          </Badge>
         </Link>
 
-        <div className="flex items-center justify-around w-full p-2 border-b">
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant="ghost"
-                size="sm"
-                className={cn(
-                  "gap-1.5",
-                  post.isLikedByCurrentUser && "text-red-500"
-                )}
-                onClick={handleToggleLike}
-                disabled={isLiking || isUnliking}
-              >
-                {isLiking || isUnliking ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  <Heart
-                    className={cn(
-                      "h-4 w-4",
-                      post.isLikedByCurrentUser && "fill-current"
-                    )}
-                  />
-                )}
-                <span className="text-xs font-semibold">
-                  {formatCompactNumber(post.likesCount)}
-                </span>
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>
-              {post.isLikedByCurrentUser ? "Unlike" : "Like"}
-            </TooltipContent>
-          </Tooltip>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant="ghost"
-                size="sm"
-                className={cn(
-                  "gap-1.5",
-                  post.isSavedByCurrentUser && "text-primary"
-                )}
-                onClick={handleToggleSave}
-                disabled={isSaving || isUnsaving}
-              >
-                {isSaving || isUnsaving ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  <Bookmark
-                    className={cn(
-                      "h-4 w-4",
-                      post.isSavedByCurrentUser && "fill-current"
-                    )}
-                  />
-                )}
-                <span className="text-xs font-semibold">
-                  {formatCompactNumber(post.savedCount)}
-                </span>
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>
-              {post.isSavedByCurrentUser ? "Unsave" : "Save"}
-            </TooltipContent>
-          </Tooltip>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="gap-1.5"
-                onClick={handleOpenShareDialog}
-                disabled={isSharing}
-              >
-                {isSharing ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  <Share2 className="h-4 w-4" />
-                )}
-                <span className="text-xs font-semibold">
-                  {formatCompactNumber(post.sharesCount)}
-                </span>
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>Share</TooltipContent>
-          </Tooltip>
+        {/* COMPACT ACTION ROW */}
+        <div className="flex items-center justify-between px-2 py-1 border-b bg-muted/5">
+          <div className="flex items-center gap-0.5">
+            <Button
+              variant="ghost"
+              size="sm"
+              className={cn(
+                "h-8 px-2 gap-1.5",
+                post.isLikedByCurrentUser && "text-red-500",
+              )}
+              onClick={handleToggleLike}
+            >
+              {isLiking || isUnliking ? (
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+              ) : (
+                <Heart
+                  className={cn(
+                    "h-3.5 w-3.5",
+                    post.isLikedByCurrentUser && "fill-current",
+                  )}
+                />
+              )}
+              <span className="text-[11px] font-bold">
+                {formatCompactNumber(post.likesCount)}
+              </span>
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              className={cn(
+                "h-8 px-2 gap-1.5",
+                post.isSavedByCurrentUser && "text-primary",
+              )}
+              onClick={handleToggleSave}
+            >
+              {isSaving || isUnsaving ? (
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+              ) : (
+                <Bookmark
+                  className={cn(
+                    "h-3.5 w-3.5",
+                    post.isSavedByCurrentUser && "fill-current",
+                  )}
+                />
+              )}
+              <span className="text-[11px] font-bold">
+                {formatCompactNumber(post.savedCount)}
+              </span>
+            </Button>
+          </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-8 px-2"
+            onClick={handleOpenShareDialog}
+          >
+            <Share2 className="h-3.5 w-3.5" />
+          </Button>
         </div>
 
-        {/* === REFACTORED: Title, Description, and Tags are now all in CardContent to fix the gap === */}
-        <CardContent className="p-4 flex flex-col flex-grow">
-          <CardTitle className="text-lg leading-snug font-bold line-clamp-2 mb-2">
-            <Link
-              href={href}
-              onClick={(e) => {
-                e.preventDefault();
-                handleAuthAction(() => router.push(href), "view");
-              }}
-              className="hover:text-primary transition-colors"
-            >
+        <CardContent className="p-3 flex flex-col flex-grow space-y-2">
+          <CardTitle className="text-base leading-snug font-bold line-clamp-2">
+            <Link href={href} className="hover:text-primary transition-colors">
               {post.title}
             </Link>
           </CardTitle>
 
-          <p className="text-sm text-muted-foreground line-clamp-2 mb-3">
+          <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">
             {post.description}
           </p>
 
-          <div className="mb-4">
-            <TagsDisplay tags={post.tags} />
-          </div>
+          <TagsDisplay tags={post.tags} />
 
-          {/* This div now uses mt-auto to push itself to the bottom of the flex container */}
-          <div className="flex items-center justify-between mt-auto">
+          <div className="flex items-center justify-between mt-auto pt-2">
             <Link
               href={`/profile/${post.author.username}`}
-              className="flex items-center gap-2 group/author min-w-0 mr-2"
+              className="flex items-center gap-2 group/author min-w-0"
             >
-              <Avatar className="w-8 h-8 flex-shrink-0 group-hover/author:ring-2 group-hover/author:ring-primary ring-offset-2 ring-offset-background transition-all">
-                <AvatarImage
-                  src={post.author.profileImage ?? undefined}
-                  alt={post.author.name}
-                />
-                <AvatarFallback className="text-xs bg-muted">
+              <Avatar className="w-6 h-6 flex-shrink-0 group-hover/author:ring-1 group-hover/author:ring-primary ring-offset-1 transition-all">
+                <AvatarImage src={post.author.profileImage ?? undefined} />
+                <AvatarFallback className="text-[10px] bg-muted">
                   {post.author.name?.slice(0, 2).toUpperCase()}
                 </AvatarFallback>
               </Avatar>
-              <div>
-                <span className="text-sm font-medium text-foreground truncate group-hover/author:text-primary transition-colors">
+              <div className="min-w-0">
+                <span className="text-xs font-semibold block truncate group-hover/author:text-primary transition-colors">
                   {post.author.name}
                 </span>
-                {timeAgo && (
-                  <span className="text-xs text-muted-foreground block">
-                    {timeAgo}
-                  </span>
-                )}
+                <span className="text-[10px] text-muted-foreground block">
+                  {timeAgo}
+                </span>
               </div>
             </Link>
-            <div className="flex items-center text-muted-foreground text-xs gap-3">
-              <Tooltip>
-                <TooltipTrigger className="flex items-center gap-1">
-                  <Eye className="h-4 w-4" />
-                  {formatCompactNumber(post.viewsCount)}
-                </TooltipTrigger>
-                <TooltipContent>Views</TooltipContent>
-              </Tooltip>
-              <Tooltip>
-                <TooltipTrigger className="flex items-center gap-1">
-                  <MessageSquare className="h-4 w-4" />
-                  {formatCompactNumber(post.commentsCount)}
-                </TooltipTrigger>
-                <TooltipContent>Comments</TooltipContent>
-              </Tooltip>
+            <div className="flex items-center text-muted-foreground text-[10px] gap-2.5 shrink-0">
+              <span className="flex items-center gap-1">
+                <Eye className="h-3 w-3" />
+                {formatCompactNumber(post.viewsCount)}
+              </span>
+              <span className="flex items-center gap-1">
+                <MessageSquare className="h-3 w-3" />
+                {formatCompactNumber(post.commentsCount)}
+              </span>
             </div>
           </div>
         </CardContent>
 
-        <CardFooter className="p-3 mt-auto border-t">
+        <CardFooter className="p-2 pt-0">
           <Button
             size="sm"
-            className="w-full"
-            onClick={() => handleAuthAction(() => router.push(href), "view")}
+            variant="outline"
+            className="w-full h-8 text-xs hover:bg-accent hover:text-accent-foreground group/btn"
+            onClick={() => router.push(href)}
           >
             {smartActionText}
-            <ArrowRight className="ml-2 h-4 w-4" />
+            <ArrowRight className="ml-2 h-3 w-3 transition-transform group-hover/btn:translate-x-1" />
           </Button>
         </CardFooter>
       </Card>
 
-      {/* Dialogs remain unchanged */}
       <Dialog open={showShareDialog} onOpenChange={setShowShareDialog}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <Share2 /> Share Post
+              <Share2 className="h-5 w-5" /> Share Post
             </DialogTitle>
             <DialogDescription>
               Copy the link to share this post with others.
@@ -386,36 +337,21 @@ export default function PostCard({ post }: PostCardProps) {
           </DialogHeader>
           <div className="flex items-center space-x-2 mt-2">
             <Input
-              id="link"
-              defaultValue={`${
-                typeof window !== "undefined" ? window.location.origin : ""
-              }${href}`}
+              defaultValue={`${typeof window !== "undefined" ? window.location.origin : ""}${href}`}
               readOnly
-              className="flex-1"
+              className="flex-1 h-9 text-sm"
             />
-            <Button
-              type="button"
-              size="sm"
-              className="px-3"
-              onClick={handleShareAndCopy}
-              disabled={isSharing}
-            >
+            <Button size="sm" className="px-3" onClick={handleShareAndCopy}>
               {linkCopied ? (
                 <Check className="h-4 w-4" />
               ) : (
                 <Copy className="h-4 w-4" />
               )}
-              <span className="sr-only">{linkCopied ? "Copied" : "Copy"}</span>
             </Button>
           </div>
-          {linkCopied && (
-            <p className="text-sm text-green-600 mt-2 text-center">
-              Link copied to clipboard!
-            </p>
-          )}
-          <DialogFooter className="sm:justify-start mt-4">
+          <DialogFooter className="sm:justify-start">
             <DialogClose asChild>
-              <Button type="button" variant="secondary">
+              <Button type="button" variant="secondary" size="sm">
                 Close
               </Button>
             </DialogClose>

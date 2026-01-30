@@ -21,7 +21,7 @@ export default function Logo({ isCollapsed }: { isCollapsed?: boolean }) {
           isCollapsed && "hidden",
         )}
       >
-        Open Farmland
+        Open Farm Land
       </span>
     </div>
   );

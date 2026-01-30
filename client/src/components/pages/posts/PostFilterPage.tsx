@@ -1,13 +1,8 @@
-//src/components/pages/posts/PostFilterPage.tsx
 "use client";
 
 import React, { useState, useEffect } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import {
-  PostCategory,
-  GetPostsArgs,
-  PostDto,
-} from "@/lib/features/post/postTypes";
+import { PostCategory, GetPostsArgs } from "@/lib/features/post/postTypes";
 import {
   useGetPostsQuery,
   useGetTagsQuery,
@@ -37,7 +32,7 @@ import {
   FileText,
   Presentation,
   MessagesSquare,
-  Compass, // Import new icons
+  Compass,
 } from "lucide-react";
 import { useDebounce } from "@/lib/hooks/useDebounce";
 
@@ -54,10 +49,10 @@ interface PostFilterPageProps {
 
 const PostCardSkeleton = () => (
   <div className="flex flex-col space-y-3">
-    <Skeleton className="h-[225px] w-full rounded-xl" />
+    <Skeleton className="h-[180px] w-full rounded-xl" />
     <div className="space-y-2">
-      <Skeleton className="h-4 w-[250px]" />
-      <Skeleton className="h-4 w-[200px]" />
+      <Skeleton className="h-4 w-3/4" />
+      <Skeleton className="h-3 w-1/2" />
     </div>
   </div>
 );
@@ -80,7 +75,6 @@ const allCategories: ("All" | PostCategory)[] = [
   "GUIDE",
 ];
 
-// --- NEW: Helper function to map category to a specific icon ---
 const getCategoryIcon = (category: PostCategory | "All") => {
   const iconMap: Partial<Record<PostCategory, React.ElementType>> = {
     PROJECT: FolderGit2,
@@ -101,7 +95,7 @@ export default function PostFilterPage({
   savedByUserId,
   title,
   subtitle,
-  icon: DefaultPageIcon, // Renamed for clarity
+  icon: DefaultPageIcon,
   searchPlaceholder,
 }: PostFilterPageProps) {
   const router = useRouter();
@@ -113,35 +107,25 @@ export default function PostFilterPage({
   >(category || (searchParams.get("category") as PostCategory) || "All");
   const [searchTerm, setSearchTerm] = useState(searchParams.get("q") || "");
   const [selectedTags, setSelectedTags] = useState<Set<string>>(
-    () => new Set(searchParams.get("tags")?.split(",").filter(Boolean) || [])
+    () => new Set(searchParams.get("tags")?.split(",").filter(Boolean) || []),
   );
   const [sortOrder, setSortOrder] = useState(
-    searchParams.get("sort") || "newest"
+    searchParams.get("sort") || "newest",
   );
   const debouncedSearchTerm = useDebounce(searchTerm, 500);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    if (debouncedSearchTerm) {
-      params.set("q", debouncedSearchTerm);
-    } else {
-      params.delete("q");
-    }
-    if (selectedTags.size > 0) {
+    if (debouncedSearchTerm) params.set("q", debouncedSearchTerm);
+    else params.delete("q");
+    if (selectedTags.size > 0)
       params.set("tags", Array.from(selectedTags).join(","));
-    } else {
-      params.delete("tags");
-    }
-    if (sortOrder !== "newest") {
-      params.set("sort", sortOrder);
-    } else {
-      params.delete("sort");
-    }
-    if (!category && selectedCategory !== "All") {
+    else params.delete("tags");
+    if (sortOrder !== "newest") params.set("sort", sortOrder);
+    else params.delete("sort");
+    if (!category && selectedCategory !== "All")
       params.set("category", selectedCategory);
-    } else if (!category) {
-      params.delete("category");
-    }
+    else if (!category) params.delete("category");
 
     router.replace(`${pathname}?${params.toString()}`);
   }, [
@@ -173,7 +157,6 @@ export default function PostFilterPage({
     isFetching,
     isError,
   } = useGetPostsQuery(queryParams);
-
   const { data: tagsResponse } = useGetTagsQuery(queryParams);
 
   const posts = postsResponse?.data || [];
@@ -195,40 +178,35 @@ export default function PostFilterPage({
     if (!category) setSelectedCategory("All");
   };
 
-  const hasActiveFilters = !!(
+  const hasActiveFilters =
     searchTerm ||
     selectedTags.size > 0 ||
     sortOrder !== "newest" ||
-    (!category && selectedCategory !== "All")
-  );
-
-  // --- NEW: Determine the icon to show based on the selected category ---
-  const PageIcon = getCategoryIcon(selectedCategory) || DefaultPageIcon;
+    (!category && selectedCategory !== "All");
 
   return (
-    <section className="space-y-8">
-      <div className="mb-6 md:mb-8">
-        <h1 className="text-3xl md:text-4xl font-bold text-foreground flex items-center gap-3">
+    <section className="space-y-6">
+      <div className="mb-4">
+        <h1 className="text-2xl md:text-4xl font-extrabold text-foreground flex items-center gap-2.5">
           {React.createElement(
             getCategoryIcon(selectedCategory) || DefaultPageIcon,
-            {
-              className: "text-primary",
-            }
+            { className: "text-primary h-7 w-7 md:h-9 md:w-9" },
           )}
           {title}
         </h1>
-        <p className="text-base text-muted-foreground mt-1">{subtitle}</p>
+        <p className="text-sm md:text-base text-muted-foreground mt-1">
+          {subtitle}
+        </p>
       </div>
 
-      <Card className="sticky top-16 md:top-20 z-30 bg-background/90 p-4 backdrop-blur-sm sm:p-6">
-        <div className="space-y-4">
-          <div className="flex flex-col gap-4 md:flex-row">
-            <div className="relative w-full flex-grow">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+      <Card className="p-3 md:p-5 bg-background/60 backdrop-blur-md relative border-border/50 shadow-sm">
+        <div className="flex flex-col gap-3">
+          <div className="flex flex-col md:flex-row gap-3">
+            <div className="relative flex-grow">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
-                type="text"
                 placeholder={searchPlaceholder}
-                className="w-full pl-10 pr-10"
+                className="pl-9 h-10 text-sm"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
@@ -236,44 +214,23 @@ export default function PostFilterPage({
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8"
+                  className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7"
                   onClick={() => setSearchTerm("")}
                 >
-                  <X className="h-4 w-4" />
+                  <X className="h-3 w-3" />
                 </Button>
               )}
             </div>
-            <div className="flex w-full gap-4 md:w-auto">
-              {/* {!category && !authorId && !likedByUserId && !savedByUserId && (
-                <Select
-                  value={selectedCategory}
-                  onValueChange={(value) =>
-                    setSelectedCategory(value as "All" | PostCategory)
-                  }
-                >
-                  <SelectTrigger className="flex-1 md:w-[180px]">
-                    <Tags className="mr-2 h-4 w-4" />
-                    <SelectValue placeholder="Filter by category" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {allCategories.map((cat) => (
-                      <SelectItem key={cat} value={cat}>
-                        {cat}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              )} */}
+
+            <div className="grid grid-cols-2 md:flex gap-2">
               {!category && (
                 <Select
                   value={selectedCategory}
-                  onValueChange={(value) =>
-                    setSelectedCategory(value as "All" | PostCategory)
-                  }
+                  onValueChange={(val) => setSelectedCategory(val as any)}
                 >
-                  <SelectTrigger className="flex-1 md:w-[180px]">
-                    <Tags className="mr-2 h-4 w-4" />
-                    <SelectValue placeholder="Filter by category" />
+                  <SelectTrigger className="h-10 text-xs md:w-[150px]">
+                    <Tags className="mr-2 h-3.5 w-3.5" />
+                    <SelectValue placeholder="Category" />
                   </SelectTrigger>
                   <SelectContent>
                     {allCategories.map((cat) => (
@@ -285,33 +242,35 @@ export default function PostFilterPage({
                 </Select>
               )}
               <Select value={sortOrder} onValueChange={setSortOrder}>
-                <SelectTrigger className="flex-1 md:min-w-[180px]">
-                  <Calendar className="mr-2 h-4 w-4" />
-                  <SelectValue placeholder="Sort by" />
+                <SelectTrigger className="h-10 text-xs md:w-[150px]">
+                  <Calendar className="mr-2 h-3.5 w-3.5" />
+                  <SelectValue placeholder="Sort" />
                 </SelectTrigger>
                 <SelectContent>
-                  {sortOptions.map((option) => (
-                    <SelectItem key={option.value} value={option.value}>
-                      {option.label}
+                  {sortOptions.map((opt) => (
+                    <SelectItem key={opt.value} value={opt.value}>
+                      {opt.label}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
           </div>
+
+          {/* === TAGS SECTION: UI/UX FIX FOR MOBILE === */}
           {availableTags.length > 0 && (
-            <div className="flex flex-col gap-3 pt-4 border-t sm:flex-row sm:items-center">
-              <h3 className="text-sm font-semibold text-muted-foreground flex items-center gap-2 shrink-0">
-                <Tags className="h-4 w-4" /> Tags:
+            <div className="flex flex-col gap-2 pt-3 border-t sm:flex-row sm:items-start">
+              <h3 className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2 mt-1 shrink-0">
+                <Tags className="h-3 w-3" /> Tags
               </h3>
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-wrap gap-1.5">
                 {availableTags.map((tag) => (
                   <Button
                     key={tag}
                     variant={selectedTags.has(tag) ? "default" : "outline"}
                     size="sm"
                     onClick={() => handleTagClick(tag)}
-                    className="rounded-full"
+                    className="rounded-full h-7 px-3 text-[10px] transition-all hover:bg-accent hover:text-accent-foreground border-border/50"
                   >
                     {tag}
                   </Button>
@@ -323,57 +282,51 @@ export default function PostFilterPage({
       </Card>
 
       <div>
-        <div className="mb-6 flex items-center justify-between">
-          <p className="text-lg font-semibold text-muted-foreground">
+        <div className="mb-4 flex items-center justify-between">
+          <p className="text-sm font-medium text-muted-foreground">
             {isFetching
-              ? "Fetching..."
-              : `${postsResponse?.pagination.totalItems ?? 0} Item${
-                  (postsResponse?.pagination.totalItems ?? 0) !== 1 ? "s" : ""
-                } Found`}
+              ? "Syncing..."
+              : `${postsResponse?.pagination.totalItems ?? 0} found`}
           </p>
           {hasActiveFilters && (
-            <Button variant="ghost" onClick={clearFilters}>
-              Clear Filters
+            <Button
+              variant="link"
+              size="sm"
+              onClick={clearFilters}
+              className="h-auto p-0 text-xs text-primary"
+            >
+              Reset Filters
             </Button>
           )}
         </div>
+
         {isLoading ? (
-          <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {Array.from({ length: 6 }).map((_, i) => (
               <PostCardSkeleton key={i} />
             ))}
           </div>
         ) : isError ? (
-          <div className="flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-destructive/30 bg-card p-12 text-center min-h-[40vh]">
-            <ServerCrash className="h-16 w-16 text-destructive/50" />
-            <h3 className="mt-6 text-2xl font-semibold tracking-tight">
-              Could Not Load Items
-            </h3>
-            <p className="mt-2 max-w-sm text-muted-foreground">
-              An unexpected error occurred. Please try again later.
+          <div className="flex flex-col items-center justify-center p-12 border border-dashed rounded-xl bg-muted/20">
+            <ServerCrash className="h-10 w-10 text-destructive/50" />
+            <h3 className="mt-4 font-bold">Connection Error</h3>
+            <p className="text-xs text-muted-foreground mt-1">
+              Failed to fetch data.
             </p>
           </div>
         ) : posts.length > 0 ? (
-          <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {posts.map((post) => (
               <PostCard key={post.id} post={post} />
             ))}
           </div>
         ) : (
-          <div className="flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-muted-foreground/30 bg-card p-12 text-center min-h-[40vh]">
-            <Frown className="h-16 w-16 text-muted-foreground/50" />
-            <h3 className="mt-6 text-2xl font-semibold tracking-tight">
-              No Results Found
-            </h3>
-            <p className="mt-2 max-w-sm text-muted-foreground">
-              We couldn't find any items matching your criteria. Try adjusting
-              your filters.
+          <div className="flex flex-col items-center justify-center p-16 border-2 border-dashed rounded-2xl bg-muted/10">
+            <Frown className="h-12 w-12 text-muted-foreground/40" />
+            <h3 className="mt-4 text-lg font-bold">No results</h3>
+            <p className="text-sm text-muted-foreground">
+              Try removing some filters.
             </p>
-            {hasActiveFilters && (
-              <Button variant="outline" className="mt-6" onClick={clearFilters}>
-                Clear All Filters
-              </Button>
-            )}
           </div>
         )}
       </div>
