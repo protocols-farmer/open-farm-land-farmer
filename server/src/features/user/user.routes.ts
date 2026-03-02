@@ -10,9 +10,7 @@ import { extractUser } from "@/middleware/extractUser.js";
 const router: Router = Router();
 
 // --- PUBLIC ROUTES (No token required) ---
-// This route is for fetching public user profiles.
-// It MUST be defined BEFORE the '/:id' route to avoid conflicts.
-router.get("/profile/:username", userController.getUserByUsername);
+router.get("/profile/:username", extractUser, userController.getUserByUsername);
 
 // --- PROTECTED ROUTES (Token is now required for all routes below) ---
 router.use(verifyToken);
@@ -26,7 +24,7 @@ router.patch(
     { name: "bannerImage", maxCount: 1 },
   ]),
   validate(updateUserProfileSchema),
-  userController.updateMyProfile
+  userController.updateMyProfile,
 );
 router.delete("/me", userController.deleteMyAccount);
 
@@ -35,6 +33,4 @@ router.delete("/me", userController.deleteMyAccount);
 router.get("/:id", userController.getUserById);
 router.delete("/:id", userController.deleteUserById);
 
-// Add extractUser here
-router.get("/profile/:username", extractUser, userController.getUserByUsername);
 export default router;

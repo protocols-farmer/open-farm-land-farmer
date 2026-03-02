@@ -22,14 +22,14 @@ class UserController {
     });
   });
 
-  // src/features/user/user.controller.ts
   updateMyProfile = asyncHandler(async (req: Request, res: Response) => {
     const userId = req.user!.id;
     const updateData = { ...req.body };
     const files = req.files as { [fieldname: string]: Express.Multer.File[] };
 
-    // 1. Get current user so we can find their OLD image URLs
     const currentUser = await userService.findUserById(userId);
+
+    const newlyUploadedPublicIds: string[] = [];
 
     const fieldsToNullify = [
       "bio",
@@ -44,46 +44,55 @@ class UserController {
         updateData[field] = null;
     });
 
-    const version = Date.now();
+    try {
+      const version = Date.now();
 
-    // 2. Handle Profile Image
-    if (files?.profileImage?.[0]) {
-      const result = await uploadToCloudinary(
-        files.profileImage[0].path,
-        "user_assets",
-        `profile_${userId}_${version}`
+      if (files?.profileImage?.[0]) {
+        const result = await uploadToCloudinary(
+          files.profileImage[0].path,
+          "user_assets",
+          `profile_${userId}_${version}`,
+        );
+        updateData.profileImage = result.secure_url;
+        newlyUploadedPublicIds.push(result.public_id);
+      }
+
+      if (files?.bannerImage?.[0]) {
+        const result = await uploadToCloudinary(
+          files.bannerImage[0].path,
+          "user_assets",
+          `banner_${userId}_${version}`,
+        );
+        updateData.bannerImage = result.secure_url;
+        newlyUploadedPublicIds.push(result.public_id);
+      }
+
+      const updatedUser = await userService.updateUserProfile(
+        userId,
+        updateData,
       );
 
-      // If they had an old image, delete it from Cloudinary now
-      if (currentUser?.profileImage) {
+      if (updateData.profileImage && currentUser?.profileImage) {
         const oldId = extractPublicIdFromUrl(currentUser.profileImage);
         if (oldId) await deleteFromCloudinary(oldId);
       }
-      updateData.profileImage = result.secure_url;
-    }
-
-    // 3. Handle Banner Image
-    if (files?.bannerImage?.[0]) {
-      const result = await uploadToCloudinary(
-        files.bannerImage[0].path,
-        "user_assets",
-        `banner_${userId}_${version}`
-      );
-
-      if (currentUser?.bannerImage) {
+      if (updateData.bannerImage && currentUser?.bannerImage) {
         const oldId = extractPublicIdFromUrl(currentUser.bannerImage);
         if (oldId) await deleteFromCloudinary(oldId);
       }
-      updateData.bannerImage = result.secure_url;
+
+      res.status(200).json({
+        status: "success",
+        message: "Profile updated successfully.",
+        data: { user: updatedUser },
+      });
+    } catch (error) {
+      const cleanup = newlyUploadedPublicIds.map((id) =>
+        deleteFromCloudinary(id),
+      );
+      await Promise.allSettled(cleanup);
+      throw error;
     }
-
-    const updatedUser = await userService.updateUserProfile(userId, updateData);
-
-    res.status(200).json({
-      status: "success",
-      message: "Profile updated successfully.",
-      data: { user: updatedUser },
-    });
   });
 
   getUserByUsername = asyncHandler(async (req: Request, res: Response) => {

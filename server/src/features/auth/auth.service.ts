@@ -17,7 +17,7 @@ import {
   LogoutInputDto,
   ChangePasswordInputDto,
   SignUpRequestDto,
-} from "@/types/auth.types.js";
+} from "@/features/auth/auth.types.js";
 import { userService, SafeUser } from "../user/user.service.js";
 
 const MAX_USERNAME_LEN = 50;
@@ -92,7 +92,7 @@ export class AuthService {
 
     const isPasswordCorrect = await bcrypt.compare(
       password,
-      userWithPassword.hashedPassword
+      userWithPassword.hashedPassword,
     );
     if (!isPasswordCorrect) {
       throw createHttpError(401, "The password you entered is incorrect.");
@@ -111,7 +111,7 @@ export class AuthService {
 
   public async changeUserPassword(
     userId: string,
-    input: ChangePasswordInputDto
+    input: ChangePasswordInputDto,
   ): Promise<void> {
     const { currentPassword, newPassword } = input;
 
@@ -121,19 +121,19 @@ export class AuthService {
     if (!user || !user.hashedPassword) {
       throw createHttpError(
         401,
-        "User not found or account has no password set."
+        "User not found or account has no password set.",
       );
     }
 
     // 2. Verify current password is correct
     const isCurrentCorrect = await bcrypt.compare(
       currentPassword,
-      user.hashedPassword
+      user.hashedPassword,
     );
     if (!isCurrentCorrect) {
       throw createHttpError(
         400,
-        "The current password you entered is incorrect."
+        "The current password you entered is incorrect.",
       );
     }
 
@@ -143,7 +143,7 @@ export class AuthService {
     if (isSameAsOld) {
       throw createHttpError(
         400,
-        "New password cannot be the same as your current password."
+        "New password cannot be the same as your current password.",
       );
     }
 
@@ -165,12 +165,12 @@ export class AuthService {
 
     logger.info(
       { userId },
-      "Password changed successfully. All sessions revoked."
+      "Password changed successfully. All sessions revoked.",
     );
   }
 
   public async handleRefreshTokenRotation(
-    input: RefreshTokenInputDto
+    input: RefreshTokenInputDto,
   ): Promise<{
     newAccessToken: string;
     newRefreshToken: string;
@@ -182,7 +182,7 @@ export class AuthService {
 
     // 1. Verify JWT signature & basic payload (Done outside DB to save resources)
     const decodedOldToken = await verifyAndValidateRefreshToken(
-      input.incomingRefreshToken
+      input.incomingRefreshToken,
     );
 
     // 2. FAIL-FAST: Check user status BEFORE starting the transaction
@@ -218,7 +218,7 @@ export class AuthService {
     if (!input.incomingRefreshToken) return;
     try {
       const decoded = await verifyAndValidateRefreshToken(
-        input.incomingRefreshToken
+        input.incomingRefreshToken,
       );
       await this.revokeTokenByJti(decoded.jti);
     } catch (error) {

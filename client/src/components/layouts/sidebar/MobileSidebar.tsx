@@ -60,7 +60,6 @@ interface CollapsibleNavSection {
 
 const mainNav: NavItem[] = [
   { href: "/", label: "Home", icon: Home },
-  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/profile", label: "Profile", icon: User },
 ];
 

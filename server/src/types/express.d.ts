@@ -21,7 +21,7 @@ declare global {
   namespace Express {
     // Here, we are "merging" our custom user property into the global Express Request type
     interface Request {
-      user?: SanitizedUser | null;
+      user?: SanitizedUser | UserJWTPayload | null;
     }
   }
 }

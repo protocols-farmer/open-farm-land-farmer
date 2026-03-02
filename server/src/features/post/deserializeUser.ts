@@ -4,7 +4,7 @@ import jwt from "jsonwebtoken";
 import prisma from "@/db/prisma.js";
 import { asyncHandler } from "@/middleware/asyncHandler.js";
 import { config } from "@/config/index.js";
-import { DecodedAccessTokenPayload } from "@/types/auth.types.js";
+import { DecodedAccessTokenPayload } from "@/features/auth/auth.types.js";
 import { logger } from "@/config/logger.js";
 
 /**
@@ -26,7 +26,7 @@ export const deserializeUser = asyncHandler(
     try {
       const decoded = jwt.verify(
         token,
-        config.jwt.accessSecret
+        config.jwt.accessSecret,
       ) as DecodedAccessTokenPayload;
 
       const user = await prisma.user.findUnique({
@@ -57,11 +57,11 @@ export const deserializeUser = asyncHandler(
     } catch (error) {
       // Token expired or malformed - we treat them as a guest
       logger.debug(
-        "DeserializeUser: Invalid token provided. Treating as guest."
+        "DeserializeUser: Invalid token provided. Treating as guest.",
       );
       req.user = null;
     }
 
     next();
-  }
+  },
 );

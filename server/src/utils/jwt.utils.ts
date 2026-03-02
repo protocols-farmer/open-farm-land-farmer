@@ -7,7 +7,7 @@ import prisma, { ExtendedTransactionClient } from "../db/prisma.js";
 import {
   DecodedAccessTokenPayload,
   DecodedRefreshTokenPayload,
-} from "../types/auth.types.js";
+} from "../features/auth/auth.types.js";
 import { createHttpError } from "./error.factory.js";
 import { HttpError } from "./HttpError.js";
 import { logger } from "../config/logger.js";
@@ -19,8 +19,7 @@ export const generateAccessToken = (user: User): string => {
     systemRole: user.systemRole,
     type: "access",
     username: user.username,
-    displayName: user.name,
-    ...(user.profileImage && { profileImage: user.profileImage }),
+    name: user.name, // Use 'name' here    ...(user.profileImage && { profileImage: user.profileImage }),
   };
 
   return jwt.sign(payload, config.jwt.accessSecret, {
@@ -34,7 +33,7 @@ export const generateAccessToken = (user: User): string => {
  */
 export const generateAndStoreRefreshToken = async (
   userId: string,
-  tx: ExtendedTransactionClient = prisma // Default to the main extended client
+  tx: ExtendedTransactionClient = prisma, // Default to the main extended client
 ): Promise<{ token: string; expiresAt: Date }> => {
   const jti = crypto.randomUUID();
   const expiresAt = new Date();
@@ -51,19 +50,19 @@ export const generateAndStoreRefreshToken = async (
     {
       expiresIn: `${config.jwt.refreshExpiresInDays}d`,
       jwtid: jti,
-    }
+    },
   );
 
   return { token, expiresAt };
 };
 
 export const verifyAndValidateRefreshToken = async (
-  token: string
+  token: string,
 ): Promise<DecodedRefreshTokenPayload> => {
   try {
     const decoded = jwt.verify(
       token,
-      config.jwt.refreshSecret
+      config.jwt.refreshSecret,
     ) as DecodedRefreshTokenPayload;
 
     if (!decoded.jti || !decoded.id || decoded.type !== "refresh") {
@@ -84,11 +83,11 @@ export const verifyAndValidateRefreshToken = async (
         });
         logger.fatal(
           { userId: decoded.id, jti: decoded.jti },
-          "SECURITY BREACH: Refresh token reuse detected. All sessions invalidated."
+          "SECURITY BREACH: Refresh token reuse detected. All sessions invalidated.",
         );
         throw createHttpError(
           403,
-          "Security breach detected. Please log in again."
+          "Security breach detected. Please log in again.",
         );
       }
       throw createHttpError(403, "Session invalid or expired.");
@@ -108,13 +107,13 @@ export const verifyAndValidateRefreshToken = async (
     ) {
       throw createHttpError(
         403,
-        "Your session is invalid. Please log in again."
+        "Your session is invalid. Please log in again.",
       );
     }
 
     throw createHttpError(
       500,
-      "Internal server error during session verification."
+      "Internal server error during session verification.",
     );
   }
 };

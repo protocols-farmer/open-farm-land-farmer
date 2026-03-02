@@ -3,7 +3,7 @@ import jwt from "jsonwebtoken";
 import { Request, Response, NextFunction } from "express";
 import prisma, { ExtendedPrismaClient } from "../db/prisma.js"; // REFINED: Using Extended Type
 import { config } from "../config/index.js";
-import { DecodedAccessTokenPayload } from "../types/auth.types.js";
+import { DecodedAccessTokenPayload } from "../features/auth/auth.types.js";
 import { createHttpError } from "../utils/error.factory.js";
 import { asyncHandler } from "./asyncHandler.js";
 import { logger } from "../config/logger.js";
@@ -16,7 +16,7 @@ export const verifyToken = asyncHandler(
     const authHeader = req.headers.authorization;
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
       return next(
-        createHttpError(401, "Unauthorized: No Bearer token provided.")
+        createHttpError(401, "Unauthorized: No Bearer token provided."),
       );
     }
 
@@ -29,7 +29,7 @@ export const verifyToken = asyncHandler(
       // 2. Token Verification
       const decoded = jwt.verify(
         token,
-        config.jwt.accessSecret
+        config.jwt.accessSecret,
       ) as DecodedAccessTokenPayload;
 
       // 3. Payload Validation
@@ -41,10 +41,10 @@ export const verifyToken = asyncHandler(
       ) {
         logger.warn(
           { payload: decoded },
-          "[Auth Middleware] Invalid token payload"
+          "[Auth Middleware] Invalid token payload",
         );
         return next(
-          createHttpError(401, "Unauthorized: Invalid token payload.")
+          createHttpError(401, "Unauthorized: Invalid token payload."),
         );
       }
 
@@ -52,13 +52,13 @@ export const verifyToken = asyncHandler(
       const userFromDb = await (prisma as ExtendedPrismaClient).user.findUnique(
         {
           where: { id: decoded.id },
-        }
+        },
       );
 
       if (!userFromDb) {
         logger.warn(
           { userId: decoded.id },
-          "[Auth Middleware] User not found in DB"
+          "[Auth Middleware] User not found in DB",
         );
         return next(createHttpError(401, "Unauthorized: User not found."));
       }
@@ -67,13 +67,13 @@ export const verifyToken = asyncHandler(
       if (userFromDb.status !== "ACTIVE") {
         logger.warn(
           { userId: userFromDb.id, status: userFromDb.status },
-          "[Auth Middleware] Access denied: Account is not ACTIVE"
+          "[Auth Middleware] Access denied: Account is not ACTIVE",
         );
 
         // Throwing here triggers the global error handler with a specific message
         throw createHttpError(
           403,
-          `Your account is ${userFromDb.status.toLowerCase()}. Please contact support.`
+          `Your account is ${userFromDb.status.toLowerCase()}. Please contact support.`,
         );
       }
 
@@ -91,7 +91,7 @@ export const verifyToken = asyncHandler(
 
       logger.info(
         { userId: req.user.id, username: req.user.username },
-        "[Auth Middleware] User authenticated and attached to request"
+        "[Auth Middleware] User authenticated and attached to request",
       );
 
       next();
@@ -99,5 +99,5 @@ export const verifyToken = asyncHandler(
       // Pass JWT and Custom Errors to the globalErrorHandler
       next(err);
     }
-  }
+  },
 );

@@ -1,5 +1,4 @@
-// src/types/auth.types.ts
-
+//src/features/auth/auth.types.ts
 import { JwtPayload as OriginalJwtPayload } from "jsonwebtoken";
 import { SystemRole } from "@prisma-client";
 
@@ -11,7 +10,7 @@ export interface DecodedAccessTokenPayload {
   iat: number;
   exp: number;
   username: string;
-  displayName: string | null;
+  name: string | null;
   profileImage?: string;
   bannerImage?: string;
 }
@@ -74,4 +73,13 @@ export interface SignUpInputDto {
   username: string;
   password: string;
   name: string;
+}
+
+export interface UserJWTPayload {
+  id: string;
+  username: string;
+  systemRole: SystemRole;
+  name: string;
+  profileImage?: string;
+  type: "access";
 }

@@ -2,27 +2,27 @@
 import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 import { config } from "@/config/index.js";
-import { SanitizedUser } from "@/types/express.js"; // This now works!
+import { UserJWTPayload } from "@/features/auth/auth.types.js";
 
 export const extractUser = (
   req: Request,
   _res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   const authHeader = req.headers.authorization;
 
   if (authHeader?.startsWith("Bearer ")) {
     const token = authHeader.split(" ")[1];
     try {
-      // HONEST TYPE CAST: We tell TS the token contains the full SanitizedUser
+      // Cast only to what is actually in the JWT
       const decoded = jwt.verify(
         token,
-        config.jwt.accessSecret
-      ) as SanitizedUser;
+        config.jwt.accessSecret,
+      ) as UserJWTPayload;
 
       req.user = decoded;
     } catch {
-      // Invalid token, req.user stays undefined
+      // Fail silently: req.user stays undefined for guests
     }
   }
   next();

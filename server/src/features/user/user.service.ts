@@ -2,7 +2,7 @@
 import bcrypt from "bcryptjs";
 import { Prisma, User } from "@prisma-client";
 import prisma, { ExtendedPrismaClient } from "@/db/prisma.js"; // REFINED: Import ExtendedPrismaClient
-import { SignUpInputDto } from "@/types/auth.types.js";
+import { SignUpInputDto } from "@/features/auth/auth.types.js";
 import { createHttpError } from "@/utils/error.factory.js";
 import { logger } from "@/config/logger.js";
 import {
@@ -87,7 +87,7 @@ export class UserService {
 
   public async updateUserProfile(
     userId: string,
-    data: UserProfileUpdateData
+    data: UserProfileUpdateData,
   ): Promise<SafeUser> {
     const existingUser = await this.findUserById(userId);
     if (!existingUser) throw createHttpError(404, "User not found.");
