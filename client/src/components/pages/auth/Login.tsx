@@ -30,6 +30,7 @@ import {
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { cn, getApiErrorMessage } from "@/lib/utils";
 import { useFocusOnError } from "@/lib/hooks/useFocusOnError";
+import SocialLogin from "./SocialLogin";
 
 const LoginFormContent = () => {
   const router = useRouter();
@@ -204,6 +205,11 @@ const LoginFormContent = () => {
                 </p>
               )}
             </div>
+
+            {/* social login */}
+            {/* <div>
+              <SocialLogin />
+            </div> */}
           </CardContent>
 
           <CardFooter>

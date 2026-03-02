@@ -87,10 +87,15 @@ export const verifyToken = asyncHandler(
         bannerImage: userFromDb.bannerImage || "",
         status: userFromDb.status,
         email: userFromDb.email,
-      };
 
+        bio: userFromDb.bio || "",
+        title: userFromDb.title || "",
+        location: userFromDb.location || "",
+        joinedAt: userFromDb.joinedAt,
+        updatedAt: userFromDb.updatedAt,
+      };
       logger.info(
-        { userId: req.user.id, username: req.user.username },
+        { userId: req.user!.id, username: req.user!.username },
         "[Auth Middleware] User authenticated and attached to request",
       );
 

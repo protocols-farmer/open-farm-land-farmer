@@ -15,6 +15,7 @@ import adminRoutes from "./admin/admin.routes.js";
 import followRoutes from "./follows/follows.routes.js";
 import notificationRoutes from "./notifications/notifications.routes.js";
 import githubRoutes from "./github/github.routes.js";
+import socialAuthRoutes from "./social-auth/social-auth.routes.js";
 
 const router: Router = Router();
 router.use(deserializeUser);
@@ -26,6 +27,7 @@ router.get("/health", (_req, res) => {
 });
 
 router.use("/auth", authRoutes);
+router.use("/social", socialAuthRoutes);
 router.use("/user", userRoutes);
 router.use("/posts", postRoutes);
 router.use("/tags", tagRoutes);
@@ -38,5 +40,5 @@ router.use(guideStepRoutes);
 router.use("/admin", adminRoutes);
 router.use("/follows", followRoutes);
 router.use("/notifications", notificationRoutes);
-router.use("/github", githubRoutes); // Add this line
+router.use("/github", githubRoutes);
 export default router;

@@ -21,8 +21,7 @@ import { guideStepApiSlice } from "./features/guideSection/guideStepApiSlice";
 import { guideSectionApiSlice } from "./features/guideSection/guideSectionApiSlice";
 import { adminApiSlice } from "./features/admin/adminApiSlice";
 import { notificationsApiSlice } from "./features/notifications/notificationsApiSlice";
-import { githubApiSlice } from "./features/github/githubApiSlice";
-
+import { socialAuthApiSlice } from "./features/social-auth/socialAuthApiSlice";
 /**
  * CENTRAL REDUX STORE
  * This is now the "Source of Truth" for the entire application,
@@ -40,6 +39,7 @@ export const store = configureStore({
     // RTK Query Slices
     [userApiSlice.reducerPath]: userApiSlice.reducer,
     [authApiSlice.reducerPath]: authApiSlice.reducer,
+    [socialAuthApiSlice.reducerPath]: socialAuthApiSlice.reducer,
     [postApiSlice.reducerPath]: postApiSlice.reducer,
     [commentApiSlice.reducerPath]: commentApiSlice.reducer,
     [opportunityApiSlice.reducerPath]: opportunityApiSlice.reducer,
@@ -49,11 +49,6 @@ export const store = configureStore({
     [adminApiSlice.reducerPath]: adminApiSlice.reducer,
     [guideSectionApiSlice.reducerPath]: guideSectionApiSlice.reducer,
     [notificationsApiSlice.reducerPath]: notificationsApiSlice.reducer,
-
-    // [githubApiSlice.reducerPath]: githubApiSlice.middleware
-    //   ? githubApiSlice.reducer
-    //   : () => ({}),
-    // [githubApiSlice.reducerPath]: githubApiSlice.reducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
@@ -70,7 +65,7 @@ export const store = configureStore({
       adminApiSlice.middleware,
       guideSectionApiSlice.middleware,
       notificationsApiSlice.middleware,
-      // githubApiSlice.middleware,
+      socialAuthApiSlice.middleware,
     ]),
 });
 

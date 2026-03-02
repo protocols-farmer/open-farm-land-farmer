@@ -17,7 +17,7 @@ router.post(
   "/register",
   authLimiter,
   validate(signupSchema),
-  authController.signup
+  authController.signup,
 );
 router.post("/login", authLimiter, validate(loginSchema), authController.login);
 router.post("/oauth", authLimiter, authController.handleOAuth);
@@ -28,7 +28,7 @@ router.post(
   "/change-password",
   verifyToken,
   validate(changePasswordSchema),
-  authController.changePassword
+  authController.changePassword,
 );
 router.post("/logout-all", verifyToken, authController.logoutAll);
 

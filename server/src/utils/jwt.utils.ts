@@ -19,7 +19,8 @@ export const generateAccessToken = (user: User): string => {
     systemRole: user.systemRole,
     type: "access",
     username: user.username,
-    name: user.name, // Use 'name' here    ...(user.profileImage && { profileImage: user.profileImage }),
+    name: user.name,
+    ...(user.profileImage && { profileImage: user.profileImage }),
   };
 
   return jwt.sign(payload, config.jwt.accessSecret, {

@@ -25,6 +25,7 @@ import {
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { cn, getApiErrorMessage } from "@/lib/utils";
 import { useFocusOnError } from "@/lib/hooks/useFocusOnError";
+import SocialLogin from "./SocialLogin";
 
 const PasswordStrengthIndicator = ({ score }: { score: number }) => {
   const levels = [
@@ -243,6 +244,11 @@ const SignUpForm = () => {
                 </div>
               )}
             />
+
+            {/* social login */}
+            {/* <div>
+              <SocialLogin />
+            </div> */}
           </CardContent>
 
           <CardFooter>

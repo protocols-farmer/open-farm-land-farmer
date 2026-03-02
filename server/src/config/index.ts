@@ -10,7 +10,7 @@ const getEnvVariable = (key: string, required: boolean = true): string => {
     // Throw an error instead of logging and exiting.
     // This allows the global uncaughtException handler to catch and log it properly.
     throw new Error(
-      `❌ Fatal Error: Missing required environment variable ${key}. Check your .env file or platform settings.`
+      `❌ Fatal Error: Missing required environment variable ${key}. Check your .env file or platform settings.`,
     );
   }
   return value || "";
@@ -23,14 +23,14 @@ const getEnvVariable = (key: string, required: boolean = true): string => {
 const getEnvVariableAsInt = (
   key: string,
   required: boolean = true,
-  defaultValue?: number
+  defaultValue?: number,
 ): number => {
   const valueStr = process.env[key];
 
   if (!valueStr) {
     if (required && defaultValue === undefined) {
       throw new Error(
-        `❌ Fatal Error: Missing required environment variable ${key}.`
+        `❌ Fatal Error: Missing required environment variable ${key}.`,
       );
     }
     if (defaultValue !== undefined) {
@@ -44,7 +44,7 @@ const getEnvVariableAsInt = (
 
   if (isNaN(intValue)) {
     throw new Error(
-      `❌ Fatal Error: Invalid integer format for environment variable ${key}. Value: "${valueStr}"`
+      `❌ Fatal Error: Invalid integer format for environment variable ${key}. Value: "${valueStr}"`,
     );
   }
   return intValue;
@@ -67,6 +67,21 @@ interface Config {
     apiKey: string;
     apiSecret: string;
   };
+
+  socialAuth: {
+    google: {
+      clientId: string;
+      clientSecret: string;
+      callbackUrl: string;
+    };
+    github: {
+      clientId: string;
+      clientSecret: string;
+      callbackUrl: string;
+    };
+    frontendUrl: string;
+  };
+
   rateLimits: {
     auth: {
       windowMs: number;
@@ -105,12 +120,12 @@ try {
       accessSecret: getEnvVariable("ACCESS_TOKEN_SECRET", true),
       accessExpiresInSeconds: getEnvVariableAsInt(
         "ACCESS_TOKEN_EXPIRES_IN_SECONDS",
-        true
+        true,
       ),
       refreshSecret: getEnvVariable("REFRESH_TOKEN_SECRET", true),
       refreshExpiresInDays: getEnvVariableAsInt(
         "REFRESH_TOKEN_EXPIRES_IN_DAYS",
-        true
+        true,
       ),
     },
 
@@ -119,6 +134,21 @@ try {
       apiKey: getEnvVariable("CLOUDINARY_API_KEY", true),
       apiSecret: getEnvVariable("CLOUDINARY_API_SECRET", true),
     },
+
+    socialAuth: {
+      google: {
+        clientId: getEnvVariable("GOOGLE_CLIENT_ID", true),
+        clientSecret: getEnvVariable("GOOGLE_CLIENT_SECRET", true),
+        callbackUrl: getEnvVariable("GOOGLE_CALLBACK_URL", true),
+      },
+      github: {
+        clientId: getEnvVariable("GITHUB_CLIENT_ID", true),
+        clientSecret: getEnvVariable("GITHUB_CLIENT_SECRET", true),
+        callbackUrl: getEnvVariable("GITHUB_CALLBACK_URL", true),
+      },
+      frontendUrl: getEnvVariable("FRONTEND_URL", true),
+    },
+
     rateLimits: {
       auth: {
         windowMs: getEnvVariableAsInt("AUTH_LIMIT_WINDOW_MS", false, 900000),
@@ -142,7 +172,7 @@ try {
   // A direct console.error is the most reliable way to show a fatal config error.
   console.error(
     "❌ Critical error during application configuration setup:",
-    error
+    error,
   );
   process.exit(1);
 }

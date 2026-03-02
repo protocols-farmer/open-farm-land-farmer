@@ -1,11 +1,10 @@
 //src/components/pages/auth/SocialLogin.tsx
 "use client";
 
-import { signIn } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 import { GitBranchPlus } from "lucide-react";
 
-// A simple Google SVG icon component
+// A clean Google SVG icon
 const GoogleIcon = () => (
   <svg role="img" viewBox="0 0 24 24" className="h-4 w-4 mr-2">
     <path
@@ -16,14 +15,24 @@ const GoogleIcon = () => (
 );
 
 export default function SocialLogin() {
-  // We define a default callbackUrl in case the user lands here directly
   const handleSignIn = (provider: "google" | "github") => {
-    signIn(provider, { callbackUrl: "/" });
+    // 1. Store the provider so the Callback page knows which mutation to trigger
+    if (typeof window !== "undefined") {
+      sessionStorage.setItem("social_provider", provider);
+    }
+
+    // 2. Build the redirect URL
+    // This points to the backend route that initiates the OAuth handshake
+    const backendUrl =
+      process.env.NEXT_PUBLIC_BACKEND_API_URL || "http://localhost:3001/api/v1";
+
+    // REDIRECT: This takes the user away from your site to the provider's login screen
+    window.location.href = `${backendUrl}/social/${provider}`;
   };
 
   return (
-    <div className="space-y-4 ">
-      {/* Divider */}
+    <div className="space-y-4">
+      {/* Visual Divider */}
       <div className="relative">
         <div className="absolute inset-0 flex items-center">
           <span className="w-full border-t" />
@@ -34,12 +43,14 @@ export default function SocialLogin() {
           </span>
         </div>
       </div>
-      {/* OAuth Buttons */}
-      <div className="grid grid-cols-2 gap-4 ">
+
+      {/* Social Buttons */}
+      <div className="grid grid-cols-2 gap-4">
         <Button
           variant="outline"
           onClick={() => handleSignIn("github")}
-          type="button" // <-- The crucial fix
+          type="button"
+          className="hover:bg-accent hover:text-accent-foreground transition-colors"
         >
           <GitBranchPlus className="mr-2 h-4 w-4" />
           GitHub
@@ -47,7 +58,8 @@ export default function SocialLogin() {
         <Button
           variant="outline"
           onClick={() => handleSignIn("google")}
-          type="button" // <-- The crucial fix
+          type="button"
+          className="hover:bg-accent hover:text-accent-foreground transition-colors"
         >
           <GoogleIcon />
           Google
