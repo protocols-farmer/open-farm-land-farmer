@@ -1,3 +1,5 @@
+//src/components/layouts/sidebar/MobileSidebar.tsx
+
 "use client";
 
 import React from "react";

@@ -6,7 +6,8 @@ import Link from "next/link";
 import { Eye, EyeOff, Loader2, AlertCircle } from "lucide-react";
 import { useForm, SubmitHandler, Controller, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { signIn } from "next-auth/react";
+
+import { useSignupMutation } from "@/lib/features/auth/authApiSlice";
 import { useRouter } from "next/navigation";
 import { signUpSchema, SignUpFormValues } from "@/lib/schemas/auth.schemas";
 import { Button } from "@/components/ui/button";
@@ -46,7 +47,7 @@ const PasswordStrengthIndicator = ({ score }: { score: number }) => {
           className={cn(
             "h-full transition-all duration-300",
             level.width,
-            level.color
+            level.color,
           )}
         />
       ))}
@@ -102,24 +103,18 @@ const SignUpForm = () => {
   }, [currentPassword]);
 
   useFocusOnError(errors, setFocus);
-
+  const [signup, { isLoading }] = useSignupMutation();
   const onSubmit: SubmitHandler<SignUpFormValues> = async (data) => {
     setFormError(null);
     try {
-      const result = await signIn("credentials", {
-        redirect: false,
+      await signup({
         email: data.email,
         password: data.password,
-        action: "signup",
-      });
+      }).unwrap();
 
-      if (result?.error) {
-        setFormError(getApiErrorMessage(result.error));
-      } else if (result?.ok) {
-        window.location.assign("/profile");
-      }
-    } catch (error) {
-      setFormError("An unexpected server error occurred.");
+      window.location.assign("/profile");
+    } catch (error: any) {
+      setFormError(getApiErrorMessage(error));
     }
   };
 
@@ -181,7 +176,7 @@ const SignUpForm = () => {
                   {...register("password")}
                   className={cn(
                     "pr-10",
-                    errors.password && "border-destructive"
+                    errors.password && "border-destructive",
                   )}
                 />
                 <button
@@ -198,7 +193,7 @@ const SignUpForm = () => {
                   <p
                     className={cn(
                       "text-[10px] mt-1 font-semibold uppercase tracking-wider",
-                      passwordStrength.color
+                      passwordStrength.color,
                     )}
                   >
                     Strength: {passwordStrength.label}
@@ -223,7 +218,7 @@ const SignUpForm = () => {
                     onCheckedChange={field.onChange}
                     className={cn(
                       "mt-0.5",
-                      errors.acceptTerms && "border-destructive"
+                      errors.acceptTerms && "border-destructive",
                     )}
                   />
                   <div className="grid gap-1.5 leading-none">

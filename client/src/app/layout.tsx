@@ -2,9 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/layouts/ThemeProvider";
-import SessionProviderWrapper from "@/components/layouts/SessionProviderWrapper";
 import ReduxProvider from "@/components/layouts/ReduxProvider";
-import { NextAuthSync } from "@/components/layouts/NextAuthSync";
 import AuthInitializer from "@/components/layouts/AuthInitializer";
 import { AuthModal } from "@/components/layouts/AuthModal";
 import { Toaster } from "react-hot-toast";
@@ -127,25 +125,19 @@ export default function RootLayout({
       >
         <Background />
         <ReduxProvider>
-          <SessionProviderWrapper>
-            <ThemeProvider
-              attribute="class"
-              defaultTheme="system"
-              enableSystem
-              disableTransitionOnChange
-            >
-              <Toaster position="top-center" reverseOrder={false} />
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange
+          >
+            <Toaster position="top-center" reverseOrder={false} />
 
-              {/* Logic Components */}
-              <NextAuthSync />
-              <AuthInitializer>
-                <main className="relative z-10">{children}</main>
-              </AuthInitializer>
-
-              {/* Global UI Components */}
-              <AuthModal />
-            </ThemeProvider>
-          </SessionProviderWrapper>
+            <AuthInitializer>
+              <main className="relative z-10">{children}</main>
+            </AuthInitializer>
+            <AuthModal />
+          </ThemeProvider>
         </ReduxProvider>
       </body>
     </html>

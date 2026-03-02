@@ -1,6 +1,7 @@
 // =================================================================
 // FILE: src/lib/features/user/userTypes.ts
 // =================================================================
+
 export enum SystemRole {
   USER = "USER",
   SYSTEM_CONTENT_CREATOR = "SYSTEM_CONTENT_CREATOR",
@@ -8,9 +9,10 @@ export enum SystemRole {
   SUPER_ADMIN = "SUPER_ADMIN",
 }
 
-export enum UserRole {
-  STUDENT = "STUDENT",
-  TEACHER = "TEACHER",
+export enum UserStatus {
+  ACTIVE = "ACTIVE",
+  DEACTIVATED = "DEACTIVATED",
+  BANNED = "BANNED",
 }
 
 export type SanitizedUserDto = {
@@ -26,14 +28,12 @@ export type SanitizedUserDto = {
   joinedAt: string;
   updatedAt: string;
   systemRole: SystemRole;
-  userRole: UserRole;
+  status: UserStatus; // Matches backend 'UserStatus'
   twitterUrl: string | null;
   githubUrl: string | null;
   websiteUrl: string | null;
-  // --- ADDED THESE TWO FIELDS ---
   followersCount: number;
   followingCount: number;
-  // ------------------------------
 };
 
 export interface UserProfile extends SanitizedUserDto {
@@ -45,10 +45,8 @@ export interface UserProfile extends SanitizedUserDto {
   isFollowedByCurrentUser: boolean;
 }
 
-export type CurrentUser = SanitizedUserDto;
-
 export interface UsersState {
-  currentUser: CurrentUser | null;
+  currentUser: SanitizedUserDto | null;
 }
 
 // API Response Shapes
@@ -61,11 +59,6 @@ export interface UpdateProfileApiResponse {
   status: string;
   message: string;
   data?: { user: SanitizedUserDto };
-}
-
-export interface DeleteAccountApiResponse {
-  status: string;
-  message: string;
 }
 
 export interface GetUserApiResponse {

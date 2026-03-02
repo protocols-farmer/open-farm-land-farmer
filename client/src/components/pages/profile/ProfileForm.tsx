@@ -5,7 +5,6 @@ import React, { useState, useRef, useMemo } from "react";
 import Image from "next/image";
 import { useForm, SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useSession } from "next-auth/react";
 
 import { useAppSelector, useAppDispatch } from "@/lib/hooks/hooks";
 import { useUpdateMyProfileMutation } from "@/lib/features/user/userApiSlice";
@@ -60,7 +59,7 @@ const getInitials = (name: string | null | undefined): string => {
   const words = name.split(" ").filter(Boolean);
   return (
     (words[0]?.charAt(0) ?? "") +
-    (words.length > 1 ? words[words.length - 1]?.charAt(0) ?? "" : "")
+    (words.length > 1 ? (words[words.length - 1]?.charAt(0) ?? "") : "")
   ).toUpperCase();
 };
 
@@ -68,7 +67,6 @@ export default function ProfileForm({
   user,
   onFinishedEditing,
 }: ProfileFormProps) {
-  const { update: updateNextAuthSession } = useSession();
   const [updateProfile, { isLoading: isUpdating }] =
     useUpdateMyProfileMutation();
   const [uiMessage, setUiMessage] = useState<{
@@ -84,10 +82,10 @@ export default function ProfileForm({
   // Initial previews with cache-busting timestamps
   // Initial previews no longer need the ?t= timestamp
   const [bannerPreview, setBannerPreview] = useState<string | undefined>(
-    user.bannerImage || undefined
+    user.bannerImage || undefined,
   );
   const [avatarPreview, setAvatarPreview] = useState<string | undefined>(
-    user.profileImage || undefined
+    user.profileImage || undefined,
   );
 
   const [croppingImage, setCroppingImage] = useState<{
@@ -134,7 +132,7 @@ export default function ProfileForm({
 
   const handleFileSelect = (
     e: React.ChangeEvent<HTMLInputElement>,
-    type: "profile" | "banner"
+    type: "profile" | "banner",
   ) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -161,7 +159,7 @@ export default function ProfileForm({
     const formData = new FormData();
     formData.append(
       type === "profile" ? "profileImage" : "bannerImage",
-      croppedFile
+      croppedFile,
     );
     setCroppingImage(null);
 
@@ -171,20 +169,10 @@ export default function ProfileForm({
 
       if (type === "profile") {
         setAvatarPreview(blobUrl);
-        if (response.data?.user?.profileImage) {
-          await updateNextAuthSession({
-            user: { image: response.data.user.profileImage },
-          });
-        }
       } else {
         setBannerPreview(blobUrl);
       }
 
-      if (response.data?.user) {
-        await updateNextAuthSession({
-          user: { ...response.data.user },
-        });
-      }
       setUiMessage({ type: "success", text: "Image updated successfully!" });
     } catch (err: any) {
       setUiMessage({
@@ -207,7 +195,7 @@ export default function ProfileForm({
           formData.append(key, newValue);
           hasChanges = true;
         }
-      }
+      },
     );
 
     if (!hasChanges) {
@@ -218,13 +206,6 @@ export default function ProfileForm({
     try {
       const response = await updateProfile(formData).unwrap();
       setUiMessage({ type: "success", text: response.message });
-
-      // --- FIX: Update the ENTIRE session user object ---
-      if (response.data?.user) {
-        await updateNextAuthSession({
-          user: { ...response.data.user },
-        });
-      }
 
       setTimeout(() => onFinishedEditing(), 1500);
     } catch (err: any) {
@@ -340,7 +321,7 @@ export default function ProfileForm({
                 variant={uiMessage.type === "error" ? "destructive" : "default"}
                 className={cn(
                   uiMessage.type === "success" &&
-                    "border-green-500/50 bg-green-50 text-green-700"
+                    "border-green-500/50 bg-green-50 text-green-700",
                 )}
               >
                 {uiMessage.type === "success" ? (

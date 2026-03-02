@@ -1,14 +1,20 @@
-// src/lib/features/user/userApiSlice.ts
+/**
+ * src/lib/features/user/userApiSlice.ts
+ * REFINED: Removed all NextAuth dependencies (getSession, signOut).
+ * Now relies on Redux State for tokens and internal dispatch for cleanup.
+ */
+
 import { createApi } from "@reduxjs/toolkit/query/react";
-import { getSession, signOut } from "next-auth/react";
 import { baseQueryWithReauth } from "../../api/baseQueryWithReauth";
 import { clearCredentials } from "../auth/authSlice";
+import { authStorage } from "@/lib/auth/authStorage";
 import {
   uploadStarted,
   uploadProgressUpdated,
   uploadSucceeded,
   uploadFailed,
 } from "../upload/uploadProgressSlice";
+import type { RootState } from "../../store";
 import type {
   SanitizedUserDto,
   GetMeApiResponse,
@@ -24,18 +30,11 @@ export interface FollowerDto {
   title: string | null;
 }
 
-/**
- * RTK Query slice for user-related API operations.
- * Handles profile fetching, updates, follow interactions, and image uploads.
- */
 export const userApiSlice = createApi({
   reducerPath: "userApi",
   baseQuery: baseQueryWithReauth,
   tagTypes: ["Me", "User", "Followers", "Following"],
   endpoints: (builder) => ({
-    /**
-     * Fetches the currently authenticated user's full private profile.
-     */
     getMe: builder.query<SanitizedUserDto, void>({
       query: () => "/user/me",
       transformResponse: (response: GetMeApiResponse) => response.data.user,
@@ -43,11 +42,6 @@ export const userApiSlice = createApi({
       keepUnusedDataFor: 60,
     }),
 
-    /**
-     * Fetches a public user profile by username.
-     * Maps both username and UUID to tags to ensure cross-slice invalidation works.
-     */
-    // Inside userApiSlice.ts
     getUserByUsername: builder.query<UserProfile, string>({
       query: (username) => `/user/profile/${username}`,
       transformResponse: (response: { status: string; data: UserProfile }) =>
@@ -55,16 +49,13 @@ export const userApiSlice = createApi({
       providesTags: (result, _error, username) =>
         result
           ? [
-              { type: "User", id: result.id }, // <--- THIS LINK IS THE FIX (UUID)
-              { type: "User", id: username }, // Keeps the username tag for the query
+              { type: "User", id: result.id },
+              { type: "User", id: username },
               "User",
             ]
           : ["User"],
     }),
 
-    /**
-     * Follow a user and refresh the profile cache.
-     */
     followUser: builder.mutation<{ status: string; message: string }, string>({
       query: (userId) => ({
         url: `/follows/${userId}/follow`,
@@ -78,9 +69,6 @@ export const userApiSlice = createApi({
       ],
     }),
 
-    /**
-     * Unfollow a user and refresh the profile cache.
-     */
     unfollowUser: builder.mutation<{ status: string; message: string }, string>(
       {
         query: (userId) => ({
@@ -93,12 +81,9 @@ export const userApiSlice = createApi({
           "Followers",
           "Following",
         ],
-      }
+      },
     ),
 
-    /**
-     * Fetch list of followers for a specific user.
-     */
     getFollowers: builder.query<
       { status: string; data: { follower: FollowerDto }[] },
       string
@@ -107,9 +92,6 @@ export const userApiSlice = createApi({
       providesTags: ["Followers"],
     }),
 
-    /**
-     * Fetch list of users a specific person is following.
-     */
     getFollowing: builder.query<
       { status: string; data: { following: FollowerDto }[] },
       string
@@ -120,21 +102,27 @@ export const userApiSlice = createApi({
 
     /**
      * Updates profile data/images with real-time upload progress.
+     * MANUAL REFINEMENT: No longer uses getSession(). Pulls token from Redux.
      */
     updateMyProfile: builder.mutation<UpdateProfileApiResponse, FormData>({
       queryFn: async (formData, api, _extraOptions) => {
-        const { dispatch } = api;
+        const { dispatch, getState } = api;
+
+        // 1. Get token from state instead of NextAuth
+        const state = getState() as RootState;
+        const token = state.auth.token || authStorage.getToken();
+
         const file = (formData.get("profileImage") ||
           formData.get("bannerImage")) as File | null;
 
-        const performUpload = (token: string) => {
+        const performUpload = (authToken: string) => {
           return new Promise<any>((resolve, reject) => {
             const xhr = new XMLHttpRequest();
             xhr.open(
               "PATCH",
-              `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/user/me`
+              `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/user/me`,
             );
-            xhr.setRequestHeader("Authorization", `Bearer ${token}`);
+            xhr.setRequestHeader("Authorization", `Bearer ${authToken}`);
 
             xhr.upload.onprogress = (event) => {
               if (event.lengthComputable) {
@@ -172,20 +160,24 @@ export const userApiSlice = createApi({
         };
 
         try {
-          dispatch(uploadStarted(file?.name || "Profile Update"));
-          const session = await getSession();
-          if (!session?.backendAccessToken) {
+          if (!token) {
             throw {
               status: 401,
-              data: { message: "Session expired. Please log in again." },
+              data: { message: "Unauthorized. No token found." },
             };
           }
-          const result = await performUpload(session.backendAccessToken);
+
+          dispatch(uploadStarted(file?.name || "Profile Update"));
+          const result = await performUpload(token);
           return { data: result };
         } catch (error: any) {
           const status = error.status || 500;
-          if (status === 401)
-            signOut({ callbackUrl: "/auth/login?error=SessionExpired" });
+          if (status === 401) {
+            dispatch(clearCredentials());
+            if (typeof window !== "undefined") {
+              window.location.assign("/auth/login?error=SessionExpired");
+            }
+          }
           return { error: { status, data: error.data } };
         }
       },
@@ -205,8 +197,13 @@ export const userApiSlice = createApi({
         try {
           await queryFulfilled;
           dispatch(clearCredentials());
-          signOut({ callbackUrl: "/" });
-        } catch (error) {}
+          if (typeof window !== "undefined") {
+            window.location.assign("/");
+          }
+        } catch (error) {
+          // Keep local state if deletion fails? Or force clear?
+          // Usually, for account deletion, we force clear regardless.
+        }
       },
     }),
   }),

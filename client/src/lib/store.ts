@@ -1,10 +1,7 @@
-// =================================================================
-// FILE: src/lib/store.ts (Corrected Version)
-// =================================================================
 import { configureStore } from "@reduxjs/toolkit";
 import { setupListeners } from "@reduxjs/toolkit/query";
 
-// Reducers
+// Standard Reducers
 import authReducer from "./features/auth/authSlice";
 import userReducer from "./features/user/userSlice";
 import uploadProgressReducer from "./features/upload/uploadProgressSlice";
@@ -13,21 +10,26 @@ import uiReducer from "./features/ui/uiSlice";
 import commentUiReducer from "./features/comment/commentUiSlice";
 
 // API Slices
-import { commentApiSlice } from "./features/comment/commentApiSlice";
 import { userApiSlice } from "./features/user/userApiSlice";
 import { authApiSlice } from "./features/auth/authApiSlice";
 import { postApiSlice } from "./features/post/postApiSlice";
+import { commentApiSlice } from "./features/comment/commentApiSlice";
 import { opportunityApiSlice } from "./features/opportunities/opportunityApiSlice";
 import { updateApiSlice } from "./features/updates/updateApiSlice";
 import { projectUpdateApiSlice } from "./features/projectUpdate/projectUpdateApiSlice";
 import { guideStepApiSlice } from "./features/guideSection/guideStepApiSlice";
-import { guideSectionApiSlice } from "./features/guideSection/guideSectionApiSlice"; // Correctly imported
+import { guideSectionApiSlice } from "./features/guideSection/guideSectionApiSlice";
 import { adminApiSlice } from "./features/admin/adminApiSlice";
 import { notificationsApiSlice } from "./features/notifications/notificationsApiSlice";
 import { githubApiSlice } from "./features/github/githubApiSlice";
+
+/**
+ * CENTRAL REDUX STORE
+ * This is now the "Source of Truth" for the entire application,
+ * replacing NextAuth session management.
+ */
 export const store = configureStore({
   reducer: {
-    // Standard Reducers
     auth: authReducer,
     user: userReducer,
     uploadProgress: uploadProgressReducer,
@@ -35,7 +37,7 @@ export const store = configureStore({
     ui: uiReducer,
     commentUi: commentUiReducer,
 
-    // RTK Query Reducers
+    // RTK Query Slices
     [userApiSlice.reducerPath]: userApiSlice.reducer,
     [authApiSlice.reducerPath]: authApiSlice.reducer,
     [postApiSlice.reducerPath]: postApiSlice.reducer,
@@ -47,23 +49,29 @@ export const store = configureStore({
     [adminApiSlice.reducerPath]: adminApiSlice.reducer,
     [guideSectionApiSlice.reducerPath]: guideSectionApiSlice.reducer,
     [notificationsApiSlice.reducerPath]: notificationsApiSlice.reducer,
-    [githubApiSlice.reducerPath]: githubApiSlice.reducer,
+
+    // [githubApiSlice.reducerPath]: githubApiSlice.middleware
+    //   ? githubApiSlice.reducer
+    //   : () => ({}),
+    // [githubApiSlice.reducerPath]: githubApiSlice.reducer,
   },
   middleware: (getDefaultMiddleware) =>
-    // Chain all middleware correctly using .concat()
-    getDefaultMiddleware()
-      .concat(userApiSlice.middleware)
-      .concat(authApiSlice.middleware)
-      .concat(postApiSlice.middleware)
-      .concat(commentApiSlice.middleware)
-      .concat(opportunityApiSlice.middleware)
-      .concat(updateApiSlice.middleware)
-      .concat(projectUpdateApiSlice.middleware)
-      .concat(guideStepApiSlice.middleware)
-      .concat(adminApiSlice.middleware)
-      .concat(guideSectionApiSlice.middleware)
-      .concat(notificationsApiSlice.middleware)
-      .concat(githubApiSlice.middleware),
+    getDefaultMiddleware({
+      serializableCheck: false,
+    }).concat([
+      userApiSlice.middleware,
+      authApiSlice.middleware,
+      postApiSlice.middleware,
+      commentApiSlice.middleware,
+      opportunityApiSlice.middleware,
+      updateApiSlice.middleware,
+      projectUpdateApiSlice.middleware,
+      guideStepApiSlice.middleware,
+      adminApiSlice.middleware,
+      guideSectionApiSlice.middleware,
+      notificationsApiSlice.middleware,
+      // githubApiSlice.middleware,
+    ]),
 });
 
 setupListeners(store.dispatch);

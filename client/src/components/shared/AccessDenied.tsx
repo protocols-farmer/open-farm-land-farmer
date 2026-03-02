@@ -1,4 +1,6 @@
-// src/components/shared/AccessDenied.tsx
+//src/components/shared/AccessDenied.tsx
+"use client";
+
 import React from "react";
 import Link from "next/link";
 import { ShieldAlert, ArrowLeft } from "lucide-react";
@@ -6,33 +8,40 @@ import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
+  CardDescription,
   CardHeader,
   CardTitle,
-  CardDescription,
 } from "@/components/ui/card";
 
 export default function AccessDenied() {
   return (
-    <div className="flex items-center justify-center min-h-[70vh] p-6">
-      <Card className="w-full max-w-md text-center shadow-lg border-destructive/20">
-        <CardHeader>
-          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-destructive/10">
-            <ShieldAlert className="h-10 w-10 text-destructive" />
-          </div>
-          <CardTitle className="text-2xl font-bold">Access Denied</CardTitle>
-          <CardDescription>
-            You do not have the required permissions to access the
+    <Card className="w-full max-w-md shadow-2xl border-destructive/20 bg-card/50 backdrop-blur-md">
+      <CardHeader className="text-center pt-8">
+        <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-destructive/10 ring-8 ring-destructive/5">
+          <ShieldAlert className="h-10 w-10 text-destructive animate-pulse" />
+        </div>
+        <CardTitle className="text-3xl font-extrabold tracking-tight">
+          Access Denied
+        </CardTitle>
+        <CardDescription className="text-base mt-2 px-4">
+          You do not have the required permissions to access the
+          <span className="font-bold text-foreground block mt-1">
             Administration Guild.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <Button asChild className="w-full">
-            <Link href="/">
-              <ArrowLeft className="mr-2 h-4 w-4" /> Return to Safety
-            </Link>
-          </Button>
-        </CardContent>
-      </Card>
-    </div>
+          </span>
+        </CardDescription>
+      </CardHeader>
+
+      <CardContent className="p-8 pt-0">
+        <Button
+          variant="default"
+          asChild
+          className="w-full h-11 text-base font-semibold shadow-sm"
+        >
+          <Link href="/">
+            <ArrowLeft className="mr-2 h-5 w-5" /> Return to Safety
+          </Link>
+        </Button>
+      </CardContent>
+    </Card>
   );
 }

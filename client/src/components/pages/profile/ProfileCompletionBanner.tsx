@@ -1,3 +1,4 @@
+//src/components/pages/profile/ProfileCompletionBanner.tsx
 "use client";
 
 import React, { useMemo, useEffect, useRef } from "react";
@@ -54,7 +55,7 @@ export default function ProfileCompletionBanner({
 
     const totalScore = fields.reduce(
       (acc, f) => acc + (f.completed ? f.weight : 0),
-      0
+      0,
     );
     const remainingFields = fields.filter((f) => !f.completed);
 

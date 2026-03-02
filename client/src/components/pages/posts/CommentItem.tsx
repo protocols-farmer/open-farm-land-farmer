@@ -51,6 +51,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { cn } from "@/lib/utils";
 import { MAX_REPLY_LEVEL } from "@/lib/features/comment/comment.config";
+import Link from "next/link";
 
 interface CommentItemProps {
   comment: ProcessedCommentAPI;
@@ -155,20 +156,25 @@ export default function CommentItem({ comment }: CommentItemProps) {
 
   return (
     <div className="flex items-start space-x-3">
-      <Avatar className="h-8 w-8">
-        <AvatarImage src={comment.author?.profileImage || undefined} />
-        <AvatarFallback>
-          {comment.author?.username?.charAt(0).toUpperCase()}
-        </AvatarFallback>
-      </Avatar>
+      <Link href={`/profile/${comment.author?.username}`}>
+        <Avatar className="h-8 w-8 hover:opacity-80 transition-opacity">
+          <AvatarImage src={comment.author?.profileImage || undefined} />
+          <AvatarFallback>
+            {comment.author?.username?.charAt(0).toUpperCase()}
+          </AvatarFallback>
+        </Avatar>
+      </Link>
 
       <div className="flex-1">
         <div className="bg-muted rounded-lg px-4 py-2">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <p className="font-semibold text-sm">
+              <Link
+                href={`/profile/${comment.author?.username}`}
+                className="font-semibold text-sm hover:text-primary transition-colors"
+              >
                 {comment.author?.username || "Anonymous"}
-              </p>
+              </Link>
               <p className="text-xs text-muted-foreground">{timeAgo}</p>
             </div>
             {isOwner && !isEditing && (

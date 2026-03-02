@@ -13,10 +13,8 @@ export function cn(...inputs: ClassValue[]) {
  * Extracts a human-readable error message from backend API responses.
  * Specifically tuned to handle the refined Global Error Handler on our backend.
  */
+// Update only this function in src/lib/utils.ts
 export const getApiErrorMessage = (error: any): string => {
-  // NEW: Handle NextAuth string errors first
-  if (typeof error === "string") return error;
-
   // 1. Check for the standard data.message from our Global Error Handler
   if (error?.data?.message) return error.data.message;
 
@@ -25,7 +23,10 @@ export const getApiErrorMessage = (error: any): string => {
     return error.data.errors[0].message || "Validation failed.";
   }
 
-  // 3. Fallback to standard JS error messages
+  // 3. Fallback to string if the error itself is a string
+  if (typeof error === "string") return error;
+
+  // 4. Fallback to standard JS error messages
   if (error?.message) return error.message;
 
   return "An unexpected error occurred. Please try again.";

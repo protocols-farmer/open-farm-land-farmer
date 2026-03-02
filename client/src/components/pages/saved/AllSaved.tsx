@@ -5,14 +5,20 @@ import { useAppSelector } from "@/lib/hooks/hooks";
 import { selectCurrentUser } from "@/lib/features/user/userSlice";
 import { Bookmark } from "lucide-react";
 import PleaseLogin from "@/components/shared/PleaseLogin";
+import AuthRequiredCard from "@/components/shared/AuthRequiredCard";
 
 export default function AllSaved() {
   const currentUser = useAppSelector(selectCurrentUser);
 
   if (!currentUser) {
-    return <PleaseLogin message="Please log in to see your saved posts." />;
+    return (
+      <AuthRequiredCard
+        title="Collection Locked"
+        description="Please log in to see your personal collection of saved items."
+        actionText="to access your library"
+      />
+    );
   }
-
   return (
     <PostFilterPage
       title="Saved Posts"

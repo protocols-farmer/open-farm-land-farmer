@@ -1,3 +1,4 @@
+//src/components/pages/profile/UserProfile.tsx
 "use client";
 
 import React, { useState } from "react";
@@ -45,7 +46,7 @@ const getInitials = (name: string | null | undefined): string => {
   const words = name.split(" ").filter(Boolean);
   return (
     (words[0]?.charAt(0) ?? "") +
-    (words.length > 1 ? words[words.length - 1]?.charAt(0) ?? "" : "")
+    (words.length > 1 ? (words[words.length - 1]?.charAt(0) ?? "") : "")
   ).toUpperCase();
 };
 

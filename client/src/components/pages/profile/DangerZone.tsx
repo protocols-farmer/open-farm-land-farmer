@@ -2,8 +2,10 @@
 "use client";
 
 import React from "react";
+import { useAppDispatch } from "@/lib/hooks/hooks";
+import { clearCredentials } from "@/lib/features/auth/authSlice";
 import { useDeleteMyAccountMutation } from "@/lib/features/user/userApiSlice";
-import { signOut } from "next-auth/react";
+import { useLogoutMutation } from "@/lib/features/auth/authApiSlice";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -28,23 +30,25 @@ import { LogOut, Trash2, Loader2 } from "lucide-react";
 export default function DangerZone() {
   const [deleteMyAccount, { isLoading: isDeletingAccount }] =
     useDeleteMyAccountMutation();
+  const [logout] = useLogoutMutation();
+  const dispatch = useAppDispatch();
 
   const handleDelete = async () => {
     try {
       await deleteMyAccount().unwrap();
-      // On successful deletion from the backend, sign out on the client
-      await signOut({ callbackUrl: "/auth/login?message=AccountDeleted" });
+      window.location.assign("/auth/login?status=AccountDeleted");
     } catch (err) {
-      // You can show a toast notification here for the error
       console.error("Failed to delete account:", err);
     }
   };
-
   const handleLogout = async () => {
-    // Use the built-in signOut from next-auth to clear the session cookie
-    await signOut({ callbackUrl: "/auth/login" });
+    try {
+      await logout().unwrap();
+    } catch (error) {
+      dispatch(clearCredentials());
+      window.location.assign("/");
+    }
   };
-
   return (
     <Card className="bg-card shadow-lg border-border">
       <CardHeader>

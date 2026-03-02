@@ -1,11 +1,14 @@
-// src/types/express.d.ts
-
+// =================================================================
+// FILE: src/types/express.d.ts
+// =================================================================
 import { SystemRole, UserStatus } from "@prisma-client";
+import { UserJWTPayload } from "../features/auth/auth.types.js";
 
-// This line is important for declaration merging to work correctly.
 export {};
 
-// Define the shape of the user object that your deserializeUser middleware creates
+/**
+ * The "Full User" representation from the database.
+ */
 export interface SanitizedUser {
   id: string;
   name: string;
@@ -13,14 +16,22 @@ export interface SanitizedUser {
   email: string;
   profileImage: string | null;
   bannerImage: string | null;
+  bio: string | null;
+  title: string | null;
+  location: string | null;
   systemRole: SystemRole;
   status: UserStatus;
+  joinedAt: Date;
+  updatedAt: Date;
 }
 
 declare global {
   namespace Express {
-    // Here, we are "merging" our custom user property into the global Express Request type
     interface Request {
+      /**
+       * Can be a Full User (from database check)
+       * or a Lite User (extracted directly from JWT).
+       */
       user?: SanitizedUser | UserJWTPayload | null;
     }
   }

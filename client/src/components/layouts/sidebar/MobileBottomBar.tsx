@@ -1,3 +1,4 @@
+//src/components/layouts/sidebar/MobileBottomBar.tsx
 "use client";
 
 import React from "react";
@@ -72,7 +73,7 @@ export default function MobileBottomBar() {
                 <item.icon
                   className={cn(
                     "h-6 w-6 transition-colors group-hover:text-primary",
-                    isActive ? "text-primary" : "text-muted-foreground"
+                    isActive ? "text-primary" : "text-muted-foreground",
                   )}
                 />
                 {/* Active Indicator Dot */}

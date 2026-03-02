@@ -22,7 +22,7 @@ import {
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Eye, EyeOff, Loader2, Save, CheckCircle, Info } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { signOut } from "next-auth/react";
+import { useLogoutMutation } from "@/lib/features/auth/authApiSlice";
 
 export default function ChangePasswordForm() {
   const [changePassword, { isLoading }] = useChangePasswordMutation();
@@ -42,6 +42,8 @@ export default function ChangePasswordForm() {
     resolver: zodResolver(changePasswordSchema),
   });
 
+  const [logout] = useLogoutMutation();
+
   const onSubmit: SubmitHandler<ChangePasswordFormValues> = async (data) => {
     setUiMessage(null);
     try {
@@ -54,11 +56,8 @@ export default function ChangePasswordForm() {
 
       reset();
 
-      setTimeout(() => {
-        signOut({
-          callbackUrl: "/auth/login?status=password_changed",
-          redirect: true,
-        });
+      setTimeout(async () => {
+        await logout().unwrap();
       }, 2000);
     } catch (err: any) {
       setUiMessage({
@@ -84,7 +83,7 @@ export default function ChangePasswordForm() {
             className={cn(
               "mb-6",
               uiMessage.type === "success" &&
-                "border-green-500/50 text-green-700"
+                "border-green-500/50 text-green-700",
             )}
           >
             {uiMessage.type === "success" ? (

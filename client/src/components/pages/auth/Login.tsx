@@ -13,7 +13,7 @@ import {
 } from "lucide-react";
 import { useForm, SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { signIn } from "next-auth/react";
+import { useLoginMutation } from "@/lib/features/auth/authApiSlice";
 import { useRouter, useSearchParams } from "next/navigation";
 import { loginSchema, LoginFormValues } from "@/lib/schemas/auth.schemas";
 import { Button, buttonVariants } from "@/components/ui/button";
@@ -93,6 +93,7 @@ const LoginFormContent = () => {
     }
     return null;
   }, [searchParams]);
+  const [login, { isLoading }] = useLoginMutation();
 
   // Combine submission errors and URL messages
   const activeMessage = submissionError
@@ -102,27 +103,15 @@ const LoginFormContent = () => {
   const onSubmit: SubmitHandler<LoginFormValues> = async (data) => {
     setSubmissionError(null);
     try {
-      const result = await signIn("credentials", {
-        redirect: false, // We stay in control of the flow
+      await login({
         email: data.email,
         password: data.password,
-        action: "login",
-      });
+      }).unwrap();
 
-      if (result?.error) {
-        setSubmissionError(
-          result.error === "CredentialsSignin"
-            ? "Invalid email or password."
-            : getApiErrorMessage(result.error)
-        );
-      } else if (result?.ok) {
-        // Inside Login.tsx
-        // const cleanCallbackUrl = callbackUrl.split("?")[0];
-        // window.location.assign(cleanCallbackUrl || "/");
-        window.location.assign("/");
-      }
-    } catch (error) {
-      setSubmissionError("An unexpected error occurred.");
+      window.location.assign("/");
+      // window.location.assign(callbackUrl);
+    } catch (error: any) {
+      setSubmissionError(getApiErrorMessage(error));
     }
   };
   return (
@@ -155,7 +144,7 @@ const LoginFormContent = () => {
                   activeMessage.type === "info" &&
                     "bg-blue-500/10 border-blue-500/30 text-blue-700 dark:text-blue-300",
                   activeMessage.type === "success" &&
-                    "bg-green-500/10 border-green-500/30 text-green-700 dark:text-green-300"
+                    "bg-green-500/10 border-green-500/30 text-green-700 dark:text-green-300",
                 )}
               >
                 <activeMessage.icon className="h-4 w-4" />
@@ -186,7 +175,7 @@ const LoginFormContent = () => {
                   href="/auth/forgot-password"
                   className={cn(
                     buttonVariants({ variant: "link", size: "sm" }),
-                    "h-auto p-0 text-xs"
+                    "h-auto p-0 text-xs",
                   )}
                 >
                   Forgot Password?

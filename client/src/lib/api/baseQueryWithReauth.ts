@@ -1,24 +1,34 @@
-// client/src/lib/api/baseQueryWithReauth.ts
+//src/lib/api/baseQueryWithReauth.ts
 import { fetchBaseQuery } from "@reduxjs/toolkit/query";
 import type {
   BaseQueryFn,
   FetchArgs,
   FetchBaseQueryError,
 } from "@reduxjs/toolkit/query";
-import { getSession, signOut } from "next-auth/react";
+import { setCredentials, clearCredentials } from "../features/auth/authSlice";
+import { RootState } from "../store";
 
+// A mutex-like flag to prevent multiple refresh calls at once
+let isRefreshing = false;
+
+/**
+ * Custom base query that handles automatic JWT token injection
+ * and manual Refresh Token Rotation.
+ */
 export const baseQueryWithReauth: BaseQueryFn<
   string | FetchArgs,
   unknown,
   FetchBaseQueryError
 > = async (args, api, extraOptions) => {
-  const session = await getSession();
-  let token = session?.backendAccessToken;
+  const state = api.getState() as RootState;
+  const token = state.auth.token;
 
   const rawBaseQuery = fetchBaseQuery({
     baseUrl: process.env.NEXT_PUBLIC_BACKEND_API_URL,
     prepareHeaders: (headers) => {
-      if (token) headers.set("authorization", `Bearer ${token}`);
+      if (token) {
+        headers.set("authorization", `Bearer ${token}`);
+      }
       return headers;
     },
     credentials: "include",
@@ -27,46 +37,49 @@ export const baseQueryWithReauth: BaseQueryFn<
   // 1. Attempt the original request
   let result = await rawBaseQuery(args, api, extraOptions);
 
-  // 2. Check if it failed with 401
+  // 2. Handle 401 Unauthorized
   if (result.error && result.error.status === 401) {
-    console.warn("Access token expired. Attempting to refresh session...");
+    // If the request itself was the refresh call, don't try to refresh again!
+    const isRefreshRequest =
+      typeof args !== "string" && args.url === "/auth/refresh";
 
-    /**
-     * CRITICAL FIX:
-     * We don't call a custom /refresh endpoint here because NEXT-AUTH
-     * handles the refresh logic in the background via the 'jwt' callback.
-     * We just need to get the UPDATED session.
-     */
-    const refreshedSession = await getSession(); // This triggers NextAuth's internal refresh
-    const newToken = refreshedSession?.backendAccessToken;
+    if (!isRefreshing && !isRefreshRequest) {
+      isRefreshing = true;
+      console.warn("Access token expired. Attempting manual refresh...");
 
-    if (newToken && newToken !== token) {
-      // 3. The refresh worked! Retry the original request with the new token
-      console.log("Session refreshed successfully. Retrying request.");
+      const refreshResult = await rawBaseQuery(
+        { url: "/auth/refresh", method: "POST" },
+        api,
+        extraOptions,
+      );
 
-      const retryBaseQuery = fetchBaseQuery({
-        baseUrl: process.env.NEXT_PUBLIC_BACKEND_API_URL,
-        prepareHeaders: (h) => {
-          h.set("authorization", `Bearer ${newToken}`);
-          return h;
-        },
-        credentials: "include",
-      });
+      if (refreshResult.data) {
+        const data = refreshResult.data as any;
+        const newToken = data.data?.accessToken;
 
-      result = await retryBaseQuery(args, api, extraOptions);
-    } else {
-      // 4. Refresh failed (Refresh Token is likely expired too)
-      console.error("Refresh failed. Redirecting to login.");
+        if (newToken) {
+          console.log("Token refreshed successfully.");
+          api.dispatch(setCredentials({ token: newToken }));
 
-      // Prevent redirecting if we are already on the login page
-      const isAuthAction =
-        typeof args === "string"
-          ? args.includes("login")
-          : args.url.includes("login");
+          // Retry the original request with the new token
+          const retryBaseQuery = fetchBaseQuery({
+            baseUrl: process.env.NEXT_PUBLIC_BACKEND_API_URL,
+            prepareHeaders: (h) => h.set("authorization", `Bearer ${newToken}`),
+            credentials: "include",
+          });
+          result = await retryBaseQuery(args, api, extraOptions);
+        }
+      } else {
+        // Refresh failed (Session expired or refresh token revoked)
+        console.error("Session expired. Logging out.");
+        api.dispatch(clearCredentials());
 
-      if (!isAuthAction) {
-        signOut({ callbackUrl: "/auth/login?error=SessionExpired" });
+        if (typeof window !== "undefined") {
+          // Break the React lifecycle and force a hard redirect
+          window.location.href = "/auth/login?status=session_expired";
+        }
       }
+      isRefreshing = false;
     }
   }
 

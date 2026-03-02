@@ -5,14 +5,19 @@ import { useAppSelector } from "@/lib/hooks/hooks";
 import { selectCurrentUser } from "@/lib/features/user/userSlice";
 import { Heart } from "lucide-react";
 import PleaseLogin from "@/components/shared/PleaseLogin";
+import AuthRequiredCard from "@/components/shared/AuthRequiredCard";
 
 export default function AllLiked() {
   const currentUser = useAppSelector(selectCurrentUser);
 
   if (!currentUser) {
-    return <PleaseLogin message="Please log in to see your liked posts." />;
+    return (
+      <AuthRequiredCard
+        title="Access Locked"
+        description="Please log in to see your liked posts."
+      />
+    );
   }
-
   return (
     <PostFilterPage
       title="Liked Posts"
