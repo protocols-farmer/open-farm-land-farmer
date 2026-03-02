@@ -4,7 +4,7 @@ import app from "./app.js";
 import { config } from "./config/index.js";
 import { disconnectPrisma, connectPrisma } from "./db/prisma.js";
 import { logger } from "./config/logger.js";
-import { initCronJobs } from "./utils/cron.js"; // <--- ADDED
+import { initCronJobs } from "./utils/cron.js";
 
 const PORT = config.port;
 const server = http.createServer(app);
@@ -20,8 +20,7 @@ async function startServer() {
     await connectPrisma();
 
     // 2. Initialize scheduled tasks (Cron Jobs)
-    // We do this here so they only run if the DB connection is successful
-    initCronJobs(); // <--- ADDED
+    initCronJobs();
 
     // 3. Start the HTTP Server
     server.listen(PORT, () => {
@@ -31,7 +30,7 @@ async function startServer() {
     // If the initial DB connection fails, it's a fatal error.
     logger.fatal(
       { err: error },
-      "❌ Failed to connect to database during startup. Server not started."
+      "❌ Failed to connect to database during startup. Server not started.",
     );
     process.exit(1);
   }
@@ -44,7 +43,7 @@ async function startServer() {
 const performGracefulShutdown = async (signalSource: string) => {
   if (isShuttingDown) {
     logger.warn(
-      `[Shutdown] Already in progress (triggered by ${signalSource})...`
+      `[Shutdown] Already in progress (triggered by ${signalSource})...`,
     );
     return;
   }
@@ -98,14 +97,14 @@ const criticalErrorHandler = (errorType: string, error: Error | any) => {
   // Log the catastrophic error with the full error object
   logger.fatal(
     { err: error },
-    `💥 ${errorType}! Attempting graceful shutdown...`
+    `💥 ${errorType}! Attempting graceful shutdown...`,
   );
 
   if (!isShuttingDown) {
     performGracefulShutdown(errorType).catch(() => {
       // This catch is a last resort if the shutdown itself fails.
       logger.fatal(
-        "Force exiting after critical error and failed graceful shutdown."
+        "Force exiting after critical error and failed graceful shutdown.",
       );
       process.exit(1);
     });
@@ -117,7 +116,7 @@ const criticalErrorHandler = (errorType: string, error: Error | any) => {
     }, 7000);
   } else {
     logger.warn(
-      "Shutdown already initiated, but a critical error occurred during the process."
+      "Shutdown already initiated, but a critical error occurred during the process.",
     );
   }
 };
