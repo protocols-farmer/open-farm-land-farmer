@@ -145,6 +145,10 @@ export default function Footer() {
               </Link>
             ))}
           </div>
+          <span className="mt-4 block text-xs text-muted-foreground sm:mt-0">
+            {" "}
+            1.0.0-rc.5{" "}
+          </span>
           <p className="mt-4 text-sm text-muted-foreground sm:mt-0">
             &copy; {currentYear} Open Farm Land. Crafted by developers, for
             developers.

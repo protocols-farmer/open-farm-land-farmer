@@ -31,7 +31,7 @@ export default function HomeHero() {
           <div className="max-w-2xl">
             <div className="inline-flex items-center gap-2 rounded-md border bg-muted/50 px-2 py-1 text-xs font-medium mb-4">
               <span className="flex h-2 w-2 rounded-full bg-primary" />
-              1.0.0-rc.1{" "}
+              1.0.0-rc.5{" "}
             </div>
 
             <h1 className="text-4xl font-black sm:text-6xl">Open Farm Land</h1>
