@@ -207,9 +207,9 @@ const LoginFormContent = () => {
             </div>
 
             {/* social login */}
-            <div>
+            {/* <div>
               <SocialLogin />
-            </div>
+            </div> */}
           </CardContent>
 
           <CardFooter>
