@@ -1,3 +1,4 @@
+//src/components/pages/lessons/AllGuides.tsx
 "use client";
 
 import PostFilterPage from "../posts/PostFilterPage";

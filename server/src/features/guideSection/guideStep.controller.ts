@@ -1,3 +1,4 @@
+//src/features/guideSection/guideStep.controller.ts
 import { asyncHandler } from "@/middleware/asyncHandler.js";
 import { Request, Response } from "express";
 import { guideStepService } from "./guideStep.service.js";
@@ -7,7 +8,7 @@ class GuideStepController {
     const newStep = await guideStepService.create(
       req.user!.id,
       req.params.postId,
-      req.body
+      req.body,
     );
     res
       .status(201)
@@ -18,15 +19,13 @@ class GuideStepController {
     const updatedStep = await guideStepService.update(
       req.user!.id,
       req.params.stepId,
-      req.body
+      req.body,
     );
-    res
-      .status(200)
-      .json({
-        status: "success",
-        message: "Guide step updated.",
-        data: updatedStep,
-      });
+    res.status(200).json({
+      status: "success",
+      message: "Guide step updated.",
+      data: updatedStep,
+    });
   });
 
   delete = asyncHandler(async (req: Request, res: Response) => {

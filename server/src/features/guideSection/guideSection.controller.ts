@@ -1,3 +1,4 @@
+//src/features/guideSection/guideSection.controller.ts
 import { asyncHandler } from "@/middleware/asyncHandler.js";
 import { Request, Response } from "express";
 import { guideSectionService } from "./guideSection.service.js";
@@ -9,15 +10,13 @@ class GuideSectionController {
       req.user!.id,
       req.params.stepId, // Use the ID of the parent step
       req.body,
-      req.file
+      req.file,
     );
-    res
-      .status(201)
-      .json({
-        status: "success",
-        message: "Guide section added.",
-        data: newSection,
-      });
+    res.status(201).json({
+      status: "success",
+      message: "Guide section added.",
+      data: newSection,
+    });
   });
 
   update = asyncHandler(async (req: Request, res: Response) => {
@@ -25,15 +24,13 @@ class GuideSectionController {
       req.user!.id,
       req.params.sectionId,
       req.body,
-      req.file
+      req.file,
     );
-    res
-      .status(200)
-      .json({
-        status: "success",
-        message: "Guide section modified.",
-        data: updatedSection,
-      });
+    res.status(200).json({
+      status: "success",
+      message: "Guide section modified.",
+      data: updatedSection,
+    });
   });
 
   delete = asyncHandler(async (req: Request, res: Response) => {

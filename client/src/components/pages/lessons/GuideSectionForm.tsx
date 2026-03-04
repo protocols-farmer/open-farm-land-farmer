@@ -76,7 +76,7 @@ export default function GuideSectionForm({
           name="title"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Section Title (Optional)</FormLabel>
+              <FormLabel>Section Title</FormLabel>
               <FormControl>
                 <Input placeholder="e.g., Understanding Props" {...field} />
               </FormControl>

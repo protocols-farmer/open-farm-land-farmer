@@ -1,5 +1,3 @@
-// src/lib/features/admin/adminTypes.ts
-
 // These should match the enums in your backend/Prisma schema
 export enum SystemRole {
   USER = "USER",
@@ -18,9 +16,23 @@ export enum PostCategory {
   GUIDE = "GUIDE",
 }
 
+export enum OpportunityType {
+  FULL_TIME = "FULL_TIME",
+  PART_TIME = "PART_TIME",
+  CONTRACT = "CONTRACT",
+  INTERNSHIP = "INTERNSHIP",
+  FREELANCE = "FREELANCE",
+}
+
+export enum UpdateCategory {
+  PLATFORM = "PLATFORM",
+  PROJECT = "PROJECT",
+  SECURITY = "SECURITY",
+  MAINTENANCE = "MAINTENANCE",
+}
+
 // --- Data Shapes ---
 
-// For the main dashboard statistics cards
 export interface AdminDashboardStats {
   totalUsers: number;
   totalPosts: number;
@@ -28,9 +40,10 @@ export interface AdminDashboardStats {
   totalLikes: number;
   totalSaves: number;
   totalShares: number;
+  totalOpportunities: number; // Added
+  totalUpdates: number; // Added
 }
 
-// For a row in the User Management table
 export interface AdminUserRow {
   id: string;
   name: string;
@@ -38,20 +51,19 @@ export interface AdminUserRow {
   email: string;
   profileImage: string | null;
   systemRole: SystemRole;
-  joinedAt: string; // ISO date string
+  joinedAt: string;
   _count: {
     posts: number;
     comments: number;
   };
 }
 
-// For a row in the Post Management table
 export interface AdminPostRow {
   id: string;
   title: string;
   description: string;
   category: PostCategory;
-  createdAt: string; // ISO date string
+  createdAt: string;
   likesCount: number;
   commentsCount: number;
   viewsCount: number;
@@ -66,11 +78,10 @@ export interface AdminPostRow {
   images: { url: string }[];
 }
 
-// For a row in the Comment Management table
 export interface AdminCommentRow {
   id: string;
   text: string;
-  createdAt: string; // ISO date string
+  createdAt: string;
   likesCount: number;
   dislikesCount: number;
   author: {
@@ -85,9 +96,38 @@ export interface AdminCommentRow {
   };
 }
 
+export interface AdminOpportunityRow {
+  id: string;
+  title: string;
+  companyName: string;
+  location: string;
+  type: OpportunityType;
+  postedAt: string;
+  poster: {
+    id: string;
+    name: string;
+    username: string;
+    profileImage: string | null;
+  };
+  tags: { tag: { name: string } }[];
+}
+
+export interface AdminUpdateRow {
+  id: string;
+  title: string;
+  category: UpdateCategory;
+  version: string | null;
+  publishedAt: string;
+  author: {
+    id: string;
+    name: string;
+    username: string;
+    profileImage: string | null;
+  };
+}
+
 // --- API Query Arguments ---
 
-// For any paginated/filterable admin endpoint
 export interface AdminApiQuery {
   page?: number;
   limit?: number;
@@ -95,6 +135,7 @@ export interface AdminApiQuery {
   sortBy?: string;
   order?: "asc" | "desc";
   filterByCategory?: PostCategory;
+  filterByUpdateCategory?: UpdateCategory; // Added
 }
 
 // --- Full API Response Shapes ---
@@ -130,6 +171,22 @@ export interface GetAdminCommentsResponse {
   status: string;
   data: {
     comments: AdminCommentRow[];
+    pagination: PaginationInfo;
+  };
+}
+
+export interface GetAdminOpportunitiesResponse {
+  status: string;
+  data: {
+    opportunities: AdminOpportunityRow[];
+    pagination: PaginationInfo;
+  };
+}
+
+export interface GetAdminUpdatesResponse {
+  status: string;
+  data: {
+    updates: AdminUpdateRow[];
     pagination: PaginationInfo;
   };
 }

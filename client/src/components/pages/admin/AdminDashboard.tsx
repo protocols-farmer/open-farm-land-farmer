@@ -1,8 +1,9 @@
-// src/components/pages/admin/AdminDashboard.tsx
 "use client";
 
 import React from "react";
 import { useGetDashboardStatsQuery } from "@/lib/features/admin/adminApiSlice";
+import { useAppSelector } from "@/lib/hooks/hooks";
+import { selectCurrentUser } from "@/lib/features/user/userSlice";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -14,6 +15,8 @@ import {
   Bookmark,
   Share2,
   AlertCircle,
+  Briefcase,
+  BookText,
 } from "lucide-react";
 
 const AdminStatsCard = ({
@@ -48,6 +51,8 @@ const AdminStatsCard = ({
 
 export default function AdminDashboard() {
   const { data: response, isLoading, isError } = useGetDashboardStatsQuery();
+  // Get the user from Redux directly inside the component
+  const currentUser = useAppSelector(selectCurrentUser);
   const stats = response?.data;
 
   if (isError) {
@@ -63,14 +68,19 @@ export default function AdminDashboard() {
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 animate-in fade-in duration-500">
       <div>
         <h1 className="text-3xl font-bold tracking-tight">Admin Dashboard</h1>
         <p className="text-muted-foreground">
-          An overview of your platform's activity.
+          Welcome back,{" "}
+          <span className="text-foreground font-semibold">
+            {currentUser?.name || "Admin"}
+          </span>
+          .
         </p>
       </div>
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         <AdminStatsCard
           title="Total Users"
           value={stats?.totalUsers ?? 0}
@@ -81,6 +91,18 @@ export default function AdminDashboard() {
           title="Total Posts"
           value={stats?.totalPosts ?? 0}
           icon={FileText}
+          isLoading={isLoading}
+        />
+        <AdminStatsCard
+          title="Total Opportunities"
+          value={stats?.totalOpportunities ?? 0}
+          icon={Briefcase}
+          isLoading={isLoading}
+        />
+        <AdminStatsCard
+          title="Total Updates"
+          value={stats?.totalUpdates ?? 0}
+          icon={BookText}
           isLoading={isLoading}
         />
         <AdminStatsCard
@@ -115,7 +137,7 @@ export default function AdminDashboard() {
             <CardTitle>Recent Activity</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-muted-foreground">
+            <p className="text-muted-foreground italic text-sm">
               Activity feed coming soon...
             </p>
           </CardContent>
@@ -125,7 +147,7 @@ export default function AdminDashboard() {
             <CardTitle>Platform Health</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-muted-foreground">
+            <p className="text-muted-foreground italic text-sm">
               Health charts coming soon...
             </p>
           </CardContent>

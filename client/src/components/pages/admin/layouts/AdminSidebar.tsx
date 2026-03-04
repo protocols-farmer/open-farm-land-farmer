@@ -1,4 +1,5 @@
-// src/components/pages/admin/layouts/AdminSidebar.tsx
+//src/components/pages/admin/layouts/AdminSidebar.tsx
+
 "use client";
 
 import React from "react";
@@ -12,7 +13,7 @@ import {
   FileText,
   MessageSquare,
   Briefcase,
-  Book,
+  BookText,
   ShieldCheck,
   Settings,
 } from "lucide-react";
@@ -37,24 +38,23 @@ const navLinks = [
     requiredRole: [SystemRole.SUPER_ADMIN],
   },
   {
-    href: "/admin/comments",
-    label: "Comments",
-    icon: MessageSquare,
-    requiredRole: [SystemRole.SUPER_ADMIN],
-  },
-  {
-    href: "/admin/content/opportunities",
+    href: "/admin/opportunities",
     label: "Opportunities",
     icon: Briefcase,
     requiredRole: [SystemRole.SYSTEM_CONTENT_CREATOR, SystemRole.SUPER_ADMIN],
   },
   {
-    href: "/admin/content/updates",
+    href: "/admin/updates",
     label: "Updates",
-    icon: Book,
+    icon: BookText,
     requiredRole: [SystemRole.SYSTEM_CONTENT_CREATOR, SystemRole.SUPER_ADMIN],
   },
-
+  {
+    href: "/admin/comments",
+    label: "Comments",
+    icon: MessageSquare,
+    requiredRole: [SystemRole.SUPER_ADMIN],
+  },
   {
     href: "/admin/settings",
     label: "Settings",

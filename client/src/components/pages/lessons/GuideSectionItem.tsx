@@ -1,5 +1,4 @@
-// FILE: src/components/pages/guides/GuideSectionItem.tsx
-
+//src/components/pages/lessons/GuideSectionItem.tsx
 "use client";
 
 import React, { useMemo } from "react";
@@ -24,11 +23,7 @@ interface GuideSectionItemProps {
 }
 
 /**
- * --- FIX: A robust helper function to create a valid embed URL ---
- * This function takes a standard video URL and converts it into the
- * correct format needed for embedding in an iframe.
- * @param url The original video URL from YouTube, etc.
- * @returns A valid embed URL or null if the URL is not recognized.
+ * Robust helper function to create a valid embed URL for iframes.
  */
 const getEmbedUrl = (url: string | null | undefined): string | null => {
   if (!url) return null;
@@ -37,34 +32,55 @@ const getEmbedUrl = (url: string | null | undefined): string | null => {
     const urlObject = new URL(url);
     let videoId: string | null = null;
 
-    // Handle standard YouTube URLs (e.g., youtube.com/watch?v=...)
     if (urlObject.hostname.includes("youtube.com")) {
       videoId = urlObject.searchParams.get("v");
       if (videoId) return `https://www.youtube.com/embed/${videoId}`;
-    }
-    // Handle short YouTube URLs (e.g., youtu.be/...)
-    else if (urlObject.hostname.includes("youtu.be")) {
+    } else if (urlObject.hostname.includes("youtu.be")) {
       videoId = urlObject.pathname.slice(1);
       if (videoId) return `https://www.youtube.com/embed/${videoId}`;
-    }
-    // --- IMPROVEMENT: Added support for Vimeo ---
-    else if (urlObject.hostname.includes("vimeo.com")) {
-      // --- FIX: Handle the case where .pop() might return undefined ---
+    } else if (urlObject.hostname.includes("vimeo.com")) {
       videoId = urlObject.pathname.split("/").pop() ?? null;
       if (videoId) return `https://player.vimeo.com/video/${videoId}`;
     }
 
-    // For platforms like Facebook, Instagram, and X, a simple URL transformation
-    // is not possible. They require their own SDKs or specific embed widgets.
-    // You would need to build separate components to handle those.
-
-    return null; // Return null if the platform is not supported
+    return null;
   } catch (error) {
-    // This will catch invalid URLs that can't be parsed
     console.error("Invalid URL provided for embedding:", error);
     return null;
   }
 };
+
+/**
+ * Reusable Actions Component for consistency
+ */
+function SectionActions({
+  onEdit,
+  onDelete,
+}: {
+  onEdit: () => void;
+  onDelete: () => void;
+}) {
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="ghost" size="icon" className="h-8 w-8 flex-shrink-0">
+          <MoreHorizontal className="h-4 w-4" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end">
+        <DropdownMenuItem onClick={onEdit}>
+          <Edit className="mr-2 h-4 w-4" /> Edit
+        </DropdownMenuItem>
+        <DropdownMenuItem
+          onClick={onDelete}
+          className="text-destructive focus:text-destructive"
+        >
+          <Trash className="mr-2 h-4 w-4" /> Delete
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
 
 export function GuideSectionItem({
   section,
@@ -72,10 +88,9 @@ export function GuideSectionItem({
   onEdit,
   onDelete,
 }: GuideSectionItemProps) {
-  // Use the new helper function to get a safe, embeddable URL
   const embedUrl = useMemo(
     () => getEmbedUrl(section.videoUrl),
-    [section.videoUrl]
+    [section.videoUrl],
   );
 
   return (
@@ -83,47 +98,40 @@ export function GuideSectionItem({
       <Card
         key={section.id}
         id={`section-${section.id}`}
-        className="scroll-mt-24 mb-4"
+        className="scroll-mt-24 mb-4 relative overflow-hidden"
       >
-        {(section.title || isAuthor) && (
-          <CardHeader>
+        {/* FIX: Remove the "Gap". 
+          We only render CardHeader if there is an actual title.
+        */}
+        {section.title && (
+          <CardHeader className="pb-2">
             <div className="flex justify-between items-start gap-4">
-              {section.title && (
-                <CardTitle className="text-xl">{section.title}</CardTitle>
-              )}
+              <CardTitle className="text-xl">{section.title}</CardTitle>
               {isAuthor && (
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8 flex-shrink-0 ml-auto"
-                    >
-                      <MoreHorizontal className="h-4 w-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem onClick={onEdit}>
-                      <Edit className="mr-2 h-4 w-4" /> Edit
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      onClick={onDelete}
-                      className="text-destructive focus:text-destructive"
-                    >
-                      <Trash className="mr-2 h-4 w-4" /> Delete
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
+                <SectionActions onEdit={onEdit} onDelete={onDelete} />
               )}
             </div>
           </CardHeader>
         )}
-        <CardContent className="prose dark:prose-invert max-w-none space-y-4">
+
+        <CardContent
+          className={`prose dark:prose-invert max-w-none space-y-4 ${!section.title ? "pt-6" : ""}`}
+        >
+          {/* FIX: If no title exists, we place the author menu absolutely 
+            so it doesn't create a large empty header block.
+          */}
+          {!section.title && isAuthor && (
+            <div className="absolute top-2 right-2 z-10">
+              <SectionActions onEdit={onEdit} onDelete={onDelete} />
+            </div>
+          )}
+
           <div
             dangerouslySetInnerHTML={{
               __html: DOMPurify.sanitize(section.content),
             }}
           />
+
           {section.imageUrl && (
             <div className="relative aspect-video w-full rounded-lg border overflow-hidden not-prose">
               <Image
@@ -134,7 +142,7 @@ export function GuideSectionItem({
               />
             </div>
           )}
-          {/* --- FIX: Use the sanitized embedUrl and add allow attributes --- */}
+
           {embedUrl && (
             <div className="relative aspect-video w-full not-prose">
               <iframe

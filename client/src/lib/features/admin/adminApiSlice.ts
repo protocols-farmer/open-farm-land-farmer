@@ -12,12 +12,21 @@ import {
   SystemRole,
   GetSystemConfigResponse,
   UpdateSystemConfigArgs,
+  GetAdminUpdatesResponse,
+  GetAdminOpportunitiesResponse,
 } from "./adminTypes";
 
 export const adminApiSlice = createApi({
   reducerPath: "adminApi",
   baseQuery: baseQueryWithReauth,
-  tagTypes: ["AdminStats", "AdminUsers", "AdminPosts", "AdminComments"],
+  tagTypes: [
+    "AdminStats",
+    "AdminUsers",
+    "AdminPosts",
+    "AdminComments",
+    "AdminOpportunities",
+    "AdminUpdates",
+  ],
   endpoints: (builder) => ({
     getDashboardStats: builder.query<GetAdminStatsResponse, void>({
       query: () => "/admin/stats",
@@ -125,6 +134,62 @@ export const adminApiSlice = createApi({
       }),
       invalidatesTags: ["AdminStats"],
     }),
+
+    getAdminOpportunities: builder.query<
+      GetAdminOpportunitiesResponse,
+      AdminApiQuery
+    >({
+      query: (args) => {
+        const params = new URLSearchParams();
+        Object.entries(args).forEach(([key, value]) => {
+          if (value) params.append(key, String(value));
+        });
+        return `/admin/opportunities?${params.toString()}`;
+      },
+      providesTags: (result) =>
+        result
+          ? [
+              ...result.data.opportunities.map(({ id }) => ({
+                type: "AdminOpportunities" as const,
+                id,
+              })),
+              { type: "AdminOpportunities", id: "LIST" },
+            ]
+          : [{ type: "AdminOpportunities", id: "LIST" }],
+    }),
+
+    getAdminUpdates: builder.query<GetAdminUpdatesResponse, AdminApiQuery>({
+      query: (args) => {
+        const params = new URLSearchParams();
+        Object.entries(args).forEach(([key, value]) => {
+          if (value) params.append(key, String(value));
+        });
+        return `/admin/updates?${params.toString()}`;
+      },
+      providesTags: (result) =>
+        result
+          ? [
+              ...result.data.updates.map(({ id }) => ({
+                type: "AdminUpdates" as const,
+                id,
+              })),
+              { type: "AdminUpdates", id: "LIST" },
+            ]
+          : [{ type: "AdminUpdates", id: "LIST" }],
+    }),
+
+    deleteOpportunity: builder.mutation<
+      { success: boolean; id: string },
+      string
+    >({
+      query: (id) => ({ url: `/admin/opportunities/${id}`, method: "DELETE" }),
+      invalidatesTags: ["AdminOpportunities", "AdminStats"],
+    }),
+
+    deleteUpdate: builder.mutation<{ success: boolean; id: string }, string>({
+      query: (id) => ({ url: `/admin/updates/${id}`, method: "DELETE" }),
+      invalidatesTags: ["AdminUpdates", "AdminStats"],
+    }),
   }),
 });
 
@@ -139,4 +204,8 @@ export const {
   useDeleteCommentMutation,
   useGetSystemConfigQuery,
   useUpdateSystemConfigMutation,
+  useGetAdminOpportunitiesQuery, // Added
+  useGetAdminUpdatesQuery,
+  useDeleteOpportunityMutation, // Added
+  useDeleteUpdateMutation,
 } = adminApiSlice;

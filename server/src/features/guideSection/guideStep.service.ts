@@ -1,3 +1,4 @@
+//src/features/guideSection/guideStep.service.ts
 import prisma from "@/db/prisma.js";
 import { GuideStep } from "@prisma-client";
 import { createHttpError } from "@/utils/error.factory.js";
@@ -14,7 +15,7 @@ class GuideStepService {
   async create(
     userId: string,
     postId: string,
-    data: CreateGuideStepDto
+    data: CreateGuideStepDto,
   ): Promise<GuideStep> {
     await this.verifyAuthorship(userId, postId);
     return prisma.guideStep.create({
@@ -29,7 +30,7 @@ class GuideStepService {
   async update(
     userId: string,
     stepId: string,
-    data: UpdateGuideStepDto
+    data: UpdateGuideStepDto,
   ): Promise<GuideStep> {
     const step = await prisma.guideStep.findUnique({
       where: { id: stepId },

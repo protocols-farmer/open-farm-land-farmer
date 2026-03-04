@@ -1,3 +1,4 @@
+//src/features/guideSection/guideSection.service.ts
 import prisma from "@/db/prisma.js";
 import { Prisma, GuideSection } from "@prisma-client";
 import { createHttpError } from "@/utils/error.factory.js";
@@ -13,26 +14,23 @@ import {
 class GuideSectionService {
   /**
    * Security check to ensure user is the author of the parent guide.
-   * It now checks ownership by going from the section -> step -> post -> author.
    */
   private async verifyAuthorshipBySection(userId: string, sectionId: string) {
     const section = await prisma.guideSection.findUnique({
       where: { id: sectionId },
-      // Traverse up the relations to get the original author's ID
       include: { step: { include: { post: { select: { authorId: true } } } } },
     });
     if (!section || section.step.post.authorId !== userId) {
       throw createHttpError(
         403,
-        "You are not authorized to modify this section."
+        "You are not authorized to modify this section.",
       );
     }
-    return section; // Return the fetched section to avoid a second DB call
+    return section;
   }
 
   /**
-   * Security check for creating a new section.
-   * Checks ownership via the parent stepId.
+   * Security check for creating a new section via stepId.
    */
   private async verifyAuthorshipByStep(userId: string, stepId: string) {
     const step = await prisma.guideStep.findUnique({
@@ -42,28 +40,30 @@ class GuideSectionService {
     if (!step || step.post.authorId !== userId) {
       throw createHttpError(
         403,
-        "You are not authorized to add a section to this step."
+        "You are not authorized to add a section to this step.",
       );
     }
   }
 
   /**
    * Create a new guide section.
-   * It now accepts a stepId instead of a postId.
+   * Handles empty title strings by converting them to null to prevent UI gaps.
    */
   async create(
     userId: string,
-    stepId: string, // <-- CHANGED from postId
+    stepId: string,
     data: CreateGuideSectionDto,
-    imageFile?: Express.Multer.File
+    imageFile?: Express.Multer.File,
   ): Promise<GuideSection> {
-    // Use the new security check
     await this.verifyAuthorshipByStep(userId, stepId);
 
+    // Build the create input explicitly to handle exactOptionalPropertyTypes
     const createData: Prisma.GuideSectionCreateInput = {
-      ...data,
+      content: data.content,
       order: Number(data.order),
-      // Connect to a step, NOT a post
+      // If title is missing or just whitespace, store as null
+      title: data.title?.trim() ? data.title : null,
+      videoUrl: data.videoUrl || null,
       step: { connect: { id: stepId } },
     };
 
@@ -83,16 +83,24 @@ class GuideSectionService {
     userId: string,
     sectionId: string,
     data: UpdateGuideSectionDto,
-    imageFile?: Express.Multer.File
+    imageFile?: Express.Multer.File,
   ): Promise<GuideSection> {
     const guideSection = await this.verifyAuthorshipBySection(
       userId,
-      sectionId
+      sectionId,
     );
 
-    const updateData: Prisma.GuideSectionUpdateInput = { ...data };
-    if (data.order) {
-      updateData.order = Number(data.order);
+    // Map properties explicitly to avoid 'undefined' type errors
+    const updateData: Prisma.GuideSectionUpdateInput = {};
+
+    if (data.content !== undefined) updateData.content = data.content;
+    if (data.order !== undefined) updateData.order = Number(data.order);
+    if (data.videoUrl !== undefined)
+      updateData.videoUrl = data.videoUrl || null;
+
+    // Explicitly nullify title if it's an empty string or whitespace
+    if (data.title !== undefined) {
+      updateData.title = data.title?.trim() ? data.title : null;
     }
 
     if (imageFile) {
@@ -116,7 +124,7 @@ class GuideSectionService {
   async delete(userId: string, sectionId: string): Promise<void> {
     const guideSection = await this.verifyAuthorshipBySection(
       userId,
-      sectionId
+      sectionId,
     );
 
     if (guideSection.imagePublicId) {
