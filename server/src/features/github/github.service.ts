@@ -1,5 +1,4 @@
-// server/src/features/github/github.service.ts
-
+//src/features/github/github.service.ts
 import { config } from "@/config/index.js";
 import { createHttpError } from "@/utils/error.factory.js";
 import { logger } from "@/config/logger.js";
@@ -15,7 +14,7 @@ export class GitHubService {
 
   public async getGitHubData(
     owner: string,
-    repoName?: string
+    repoName?: string,
   ): Promise<GitHubResponseDto> {
     const isRepoRequest = !!repoName;
     const query = isRepoRequest ? this.getRepoQuery() : this.getProfileQuery();
@@ -33,30 +32,28 @@ export class GitHubService {
         body: JSON.stringify({ query, variables }),
       });
 
-      // FIXED: Use the interface here to tell TS what the response looks like
       const result = (await response.json()) as RawGitHubGraphResponse;
 
       if (!response.ok || result.errors) {
         logger.error(
           { err: result.errors, owner, repoName },
-          "GitHub GraphQL Error"
+          "GitHub GraphQL Error",
         );
         throw createHttpError(
           response.status || 500,
-          result.errors?.[0]?.message || "GitHub API Error"
+          result.errors?.[0]?.message || "GitHub API Error",
         );
       }
 
-      // Type Guards to handle the polymorphic data
       if (isRepoRequest && "repository" in result.data) {
         return this.transformRepoData(
-          (result.data as RawGitHubRepoResponse).repository
+          (result.data as RawGitHubRepoResponse).repository,
         );
       }
 
       if (!isRepoRequest && "user" in result.data) {
         return this.transformProfileData(
-          (result.data as RawGitHubProfileResponse).user
+          (result.data as RawGitHubProfileResponse).user,
         );
       }
 
@@ -123,7 +120,7 @@ export class GitHubService {
   }
 
   private transformRepoData(
-    repo: RawGitHubRepoResponse["repository"]
+    repo: RawGitHubRepoResponse["repository"],
   ): GitHubResponseDto {
     return {
       type: "REPO",
@@ -153,7 +150,7 @@ export class GitHubService {
   }
 
   private transformProfileData(
-    user: RawGitHubProfileResponse["user"]
+    user: RawGitHubProfileResponse["user"],
   ): GitHubResponseDto {
     return {
       type: "USER",

@@ -74,13 +74,10 @@ export default function ProfileForm({
     text: string;
   } | null>(null);
 
-  // --- Optimization: Flattened Dependencies for Cache Busting ---
   const pImage = user.profileImage;
   const bImage = user.bannerImage;
   const uAt = user.updatedAt;
 
-  // Initial previews with cache-busting timestamps
-  // Initial previews no longer need the ?t= timestamp
   const [bannerPreview, setBannerPreview] = useState<string | undefined>(
     user.bannerImage || undefined,
   );
@@ -117,10 +114,8 @@ export default function ProfileForm({
     },
   });
 
-  // Clean up local blob URLs to prevent memory leaks
   React.useEffect(() => {
     return () => {
-      // If the preview is a local blob URL, revoke it
       if (avatarPreview?.startsWith("blob:")) {
         URL.revokeObjectURL(avatarPreview);
       }
@@ -145,6 +140,13 @@ export default function ProfileForm({
     if (e.target) e.target.value = "";
   };
 
+  React.useEffect(() => {
+    if (uiMessage?.type === "success" || uiMessage?.type === "info") {
+      const timer = setTimeout(() => setUiMessage(null), 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [uiMessage]);
+
   const handleCropComplete = async (croppedImageBase64: string) => {
     if (!croppingImage) return;
     const { type } = croppingImage;
@@ -156,6 +158,7 @@ export default function ProfileForm({
       return;
     }
 
+    setUiMessage(null);
     const formData = new FormData();
     formData.append(
       type === "profile" ? "profileImage" : "bannerImage",
@@ -164,7 +167,7 @@ export default function ProfileForm({
     setCroppingImage(null);
 
     try {
-      const response = await updateProfile(formData).unwrap();
+      await updateProfile(formData).unwrap();
       const blobUrl = URL.createObjectURL(croppedFile);
 
       if (type === "profile") {
@@ -173,11 +176,14 @@ export default function ProfileForm({
         setBannerPreview(blobUrl);
       }
 
-      setUiMessage({ type: "success", text: "Image updated successfully!" });
+      setUiMessage({
+        type: "success",
+        text: `${type === "profile" ? "Avatar" : "Banner"} updated successfully!`,
+      });
     } catch (err: any) {
       setUiMessage({
         type: "error",
-        text: err?.data?.message || "Upload failed.",
+        text: err?.data?.message || "Image upload failed.",
       });
     }
   };
@@ -187,10 +193,20 @@ export default function ProfileForm({
     const formData = new FormData();
     let hasChanges = false;
 
+    const nullableFields = [
+      "bio",
+      "title",
+      "location",
+      "twitterUrl",
+      "githubUrl",
+      "websiteUrl",
+    ];
+
     (Object.keys(data) as Array<keyof UpdateProfileFormValues>).forEach(
       (key) => {
-        const newValue = data[key] || "";
+        const newValue = data[key]?.trim() || "";
         const oldValue = (user as any)[key] || "";
+
         if (newValue !== oldValue) {
           formData.append(key, newValue);
           hasChanges = true;
@@ -199,19 +215,22 @@ export default function ProfileForm({
     );
 
     if (!hasChanges) {
-      setUiMessage({ type: "info", text: "No changes to save." });
+      setUiMessage({ type: "info", text: "No profile changes detected." });
       return;
     }
 
     try {
       const response = await updateProfile(formData).unwrap();
-      setUiMessage({ type: "success", text: response.message });
+      setUiMessage({
+        type: "success",
+        text: response.message || "Profile updated!",
+      });
 
       setTimeout(() => onFinishedEditing(), 1500);
     } catch (err: any) {
       setUiMessage({
         type: "error",
-        text: err?.data?.message || "Update failed.",
+        text: err?.data?.message || "Failed to update profile details.",
       });
     }
   };

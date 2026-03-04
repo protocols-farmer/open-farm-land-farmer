@@ -1,3 +1,4 @@
+//src/lib/auth/authStorage.ts
 /**
  * src/lib/auth/authStorage.ts
  * * Foundational utility for managing JWT tokens in the browser.

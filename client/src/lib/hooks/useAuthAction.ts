@@ -30,12 +30,11 @@ export const useAuthAction = () => {
 
   const handleAuthAction = (
     action: () => void,
-    interactionType: InteractionType = "perform this action"
+    interactionType: InteractionType = "perform this action",
   ) => {
     if (currentUser) {
       action();
     } else {
-      // Instead of redirecting, open the modal
       dispatch(openAuthModal(interactionType));
     }
   };

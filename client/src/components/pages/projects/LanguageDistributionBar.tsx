@@ -1,14 +1,9 @@
+//src/components/pages/projects/LanguageDistributionBar.tsx
 "use client";
 
 import React, { useMemo } from "react";
 import { GitHubLanguage } from "@/lib/features/github/githubTypes";
 import { calculateLanguagePercentages } from "@/lib/features/github/githubUtils";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 
 interface LanguageDistributionBarProps {
   languages: GitHubLanguage[];
@@ -19,7 +14,7 @@ export default function LanguageDistributionBar({
 }: LanguageDistributionBarProps) {
   const percentages = useMemo(
     () => calculateLanguagePercentages(languages),
-    [languages]
+    [languages],
   );
 
   if (percentages.length === 0) return null;

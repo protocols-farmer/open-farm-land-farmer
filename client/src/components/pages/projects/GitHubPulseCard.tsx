@@ -1,7 +1,7 @@
-//src/components/pages/projects/GitHubPulseCard.tsx
+// src/components/pages/projects/GitHubPulseCard.tsx
 "use client";
 
-import React from "react";
+import React, { useEffect } from "react";
 import { useGetRepoPulseQuery } from "@/lib/features/github/githubApiSlice";
 import {
   Card,
@@ -10,15 +10,7 @@ import {
   CardTitle,
   CardDescription,
 } from "@/components/ui/card";
-import {
-  Github,
-  Star,
-  GitFork,
-  AlertCircle,
-  Users,
-  BookOpen,
-  User,
-} from "lucide-react";
+import { Github, Star, GitFork, AlertCircle, User } from "lucide-react";
 import { formatCompactNumber } from "@/lib/utils";
 import GitHubSkeleton from "./GitHubSkeleton";
 import LanguageDistributionBar from "./LanguageDistributionBar";
@@ -27,12 +19,26 @@ import CommitHistoryList from "./CommitHistoryList";
 import ContributorStats from "./ContributorStats";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
+import { toast } from "sonner"; // or react-hot-toast
 
 export default function GitHubPulseCard({ githubUrl }: { githubUrl: string }) {
-  const { data, isLoading, isError } = useGetRepoPulseQuery(githubUrl);
+  // 1. Optimized Hook: Skip the query if the URL is empty to prevent unnecessary errors
+  const { data, isLoading, isError, error } = useGetRepoPulseQuery(githubUrl, {
+    skip: !githubUrl,
+  });
+
+  // 2. Handle Side Effects: Move toast notifications into useEffect
+  // to avoid updating other components during the render phase.
+  useEffect(() => {
+    if (isError) {
+      console.error("GitHub API Error:", error);
+      toast.error("Could not fetch latest GitHub pulse data.");
+    }
+  }, [isError, error]);
 
   if (isLoading) return <GitHubSkeleton />;
 
+  // 3. Graceful Degradation: If there's an error or no data, show the friendly error card
   if (isError || !data) {
     return (
       <Card className="border-destructive/20 bg-destructive/5">
@@ -43,9 +49,13 @@ export default function GitHubPulseCard({ githubUrl }: { githubUrl: string }) {
               Unable to load GitHub insights
             </p>
             <p className="text-[11px] text-muted-foreground">
-              Ensure the URL is a public repository <br />
-              (e.g.,{" "}
-              <code className="text-foreground">github.com/user/repo</code>)
+              User must ensure that the URL is a public repository, <br /> the
+              repository exists, and the URL is formatted correctly <br />
+              <span className="flex flex-col ">
+                <code className="text-foreground">github.com/user/repo</code>
+                <span> or for profiles: </span>
+                <code className="text-foreground">github.com/user</code>
+              </span>
             </p>
           </div>
         </CardContent>

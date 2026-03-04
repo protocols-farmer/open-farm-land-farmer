@@ -34,9 +34,7 @@ export default function HomeHero() {
               1.0.0-rc.1{" "}
             </div>
 
-            <h1 className="text-4xl font-black uppercase  sm:text-6xl">
-              Open Farm Land
-            </h1>
+            <h1 className="text-4xl font-black sm:text-6xl">Open Farm Land</h1>
 
             <p className="mt-4 text-lg text-muted-foreground leading-relaxed">
               This is a platform for sharing your <strong>ideas</strong>,

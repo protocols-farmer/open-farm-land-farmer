@@ -37,12 +37,11 @@ export const loginSchema = z.object({
 export const changePasswordSchema = z.object({
   body: z.object({
     currentPassword: z.string().min(1, "Current password is required."),
-    // REFINED: Just use the rules. The "same as old" check happens in the Service.
+
     newPassword: passwordRules,
   }),
 });
 
-// Types inferred from schemas
 export type SignupInput = z.infer<typeof signupSchema>["body"];
 export type LoginInput = z.infer<typeof loginSchema>["body"];
 export type ChangePasswordInput = z.infer<typeof changePasswordSchema>["body"];

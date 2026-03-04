@@ -1,3 +1,4 @@
+//src/features/guideSection/guideStep.routes.ts
 import { Router } from "express";
 import { guideStepController } from "./guideStep.controller.js";
 import { verifyToken } from "@/middleware/auth.middleware.js";
@@ -8,18 +9,19 @@ import {
 } from "./guideStep.validation.js";
 
 const router: Router = Router();
-router.use(verifyToken);
 
 router.post(
   "/posts/:postId/steps",
+  verifyToken,
   validate(createGuideStepSchema),
-  guideStepController.create
+  guideStepController.create,
 );
 router.put(
   "/steps/:stepId",
+  verifyToken,
   validate(updateGuideStepSchema),
-  guideStepController.update
+  guideStepController.update,
 );
-router.delete("/steps/:stepId", guideStepController.delete);
+router.delete("/steps/:stepId", verifyToken, guideStepController.delete);
 
 export default router;

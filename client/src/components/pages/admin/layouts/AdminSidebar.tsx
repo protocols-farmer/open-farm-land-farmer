@@ -14,6 +14,7 @@ import {
   Briefcase,
   Book,
   ShieldCheck,
+  Settings,
 } from "lucide-react";
 
 const navLinks = [
@@ -53,6 +54,13 @@ const navLinks = [
     icon: Book,
     requiredRole: [SystemRole.SYSTEM_CONTENT_CREATOR, SystemRole.SUPER_ADMIN],
   },
+
+  {
+    href: "/admin/settings",
+    label: "Settings",
+    icon: Settings,
+    requiredRole: [SystemRole.SUPER_ADMIN],
+  },
 ];
 
 interface AdminSidebarProps {
@@ -86,7 +94,7 @@ export default function AdminSidebar({ userRole }: AdminSidebarProps) {
               href={link.href}
               className={cn(
                 "group flex items-center gap-3 rounded-md px-3 py-2.5 text-muted-foreground transition-all hover:bg-accent hover:text-foreground",
-                isActive && "bg-accent font-semibold text-foreground"
+                isActive && "bg-accent font-semibold text-foreground",
               )}
             >
               <link.icon className="h-5 w-5" />

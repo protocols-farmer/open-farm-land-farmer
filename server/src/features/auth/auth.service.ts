@@ -1,6 +1,6 @@
 //src/features/auth/auth.service.ts
 import bcrypt from "bcryptjs";
-import prisma, { rawPrisma } from "@/db/prisma.js"; // Import rawPrisma
+import prisma, { rawPrisma } from "@/db/prisma.js";
 import { User } from "@prisma-client";
 import { createHttpError } from "@/utils/error.factory.js";
 import { logger } from "@/config/logger.js";
@@ -30,7 +30,6 @@ export class AuthService {
   }> {
     const { email, password } = input;
 
-    // --- 1. GENERATE UNIQUE USERNAME ---
     let username = "";
     let isUnique = false;
 
@@ -46,11 +45,9 @@ export class AuthService {
       const existing = await prisma.user.findUnique({ where: { username } });
       if (!existing) isUnique = true;
     }
-    // --- 2. GENERATE DEFAULT NAME ---
+
     const generatedName = "New Wanderer";
 
-    // --- 3. CONSTRUCT FULL PAYLOAD ---
-    // We cast this as SignUpInputDto so the userService is happy
     const fullUserData: SignUpInputDto = {
       email,
       password,
@@ -58,10 +55,8 @@ export class AuthService {
       name: generatedName,
     };
 
-    // 4. Create the user
     const user = await userService.createUser(fullUserData);
 
-    // 5. Token Generation
     const accessToken = generateAccessToken(user as unknown as User);
     const { token: refreshToken, expiresAt } =
       await generateAndStoreRefreshToken(user.id);
@@ -77,7 +72,6 @@ export class AuthService {
   }> {
     const { email, password } = input;
 
-    // --- FIX: Use rawPrisma here to get the password for verification ---
     const userWithPassword = await rawPrisma.user.findUnique({
       where: { email },
     });
@@ -102,7 +96,6 @@ export class AuthService {
     const { token: refreshToken, expiresAt } =
       await generateAndStoreRefreshToken(userWithPassword.id);
 
-    // Cast to SafeUser for the response (password is removed at runtime by extension)
     return {
       user: userWithPassword as unknown as SafeUser,
       tokens: { accessToken, refreshToken, refreshTokenExpiresAt: expiresAt },
@@ -115,7 +108,6 @@ export class AuthService {
   ): Promise<void> {
     const { currentPassword, newPassword } = input;
 
-    // 1. Fetch user using rawPrisma to get the current hashedPassword
     const user = await rawPrisma.user.findUnique({ where: { id: userId } });
 
     if (!user || !user.hashedPassword) {
@@ -125,7 +117,6 @@ export class AuthService {
       );
     }
 
-    // 2. Verify current password is correct
     const isCurrentCorrect = await bcrypt.compare(
       currentPassword,
       user.hashedPassword,
@@ -137,8 +128,6 @@ export class AuthService {
       );
     }
 
-    // 3. SECURITY: Check if new password is same as old password
-    // This must be done via bcrypt.compare because the database stores a hash
     const isSameAsOld = await bcrypt.compare(newPassword, user.hashedPassword);
     if (isSameAsOld) {
       throw createHttpError(
@@ -147,11 +136,8 @@ export class AuthService {
       );
     }
 
-    // 4. Hash the new password
     const newHashedPassword = await bcrypt.hash(newPassword, 10);
 
-    // 5. Atomic Transaction: Update password AND kill all existing sessions
-    // This forces the user (and any potential hijackers) to log in again with the new credentials
     await prisma.$transaction([
       prisma.user.update({
         where: { id: userId },
@@ -180,34 +166,36 @@ export class AuthService {
       throw createHttpError(401, "Refresh token is required.");
     }
 
-    // 1. Verify JWT signature & basic payload (Done outside DB to save resources)
     const decodedOldToken = await verifyAndValidateRefreshToken(
       input.incomingRefreshToken,
     );
+    const storedToken = await prisma.refreshToken.findUnique({
+      where: { jti: decodedOldToken.jti },
+    });
 
-    // 2. FAIL-FAST: Check user status BEFORE starting the transaction
+    if (!storedToken) {
+      throw createHttpError(
+        401,
+        "Session invalid or expired (Database Reset).",
+      );
+    }
     const user = await prisma.user.findUnique({
       where: { id: decodedOldToken.id },
     });
 
     if (!user || user.status !== "ACTIVE") {
-      // If we have a valid JTI but inactive user, revoke this specific token immediately
       await this.revokeTokenByJti(decodedOldToken.jti);
       throw createHttpError(403, "Access denied: Account is inactive.");
     }
 
-    // 3. Start Transaction for atomic rotation
     return await prisma.$transaction(async (tx) => {
-      // 4. Revoke the old token (prevents reuse)
       await tx.refreshToken.update({
         where: { jti: decodedOldToken.jti },
         data: { revoked: true },
       });
 
-      // 5. Generate the new pair
       const newAccessToken = generateAccessToken(user as unknown as User);
 
-      // 6. Store new token using the transaction client (tx)
       const { token: newRefreshToken, expiresAt: newRefreshTokenExpiresAt } =
         await generateAndStoreRefreshToken(user.id, tx);
 
@@ -244,7 +232,6 @@ export class AuthService {
         },
       });
     } else {
-      // --- REFINED: Collision-Safe Username Generation ---
       let username: string;
       let isUnique = false;
       const baseName = profile.email
@@ -261,7 +248,7 @@ export class AuthService {
         data: {
           email: profile.email,
           name: profile.name ?? "New User",
-          username: username!, // guaranteed unique now
+          username: username!,
           ...(profile.image && { profileImage: profile.image }),
         },
       });

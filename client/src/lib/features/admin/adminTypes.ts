@@ -133,3 +133,20 @@ export interface GetAdminCommentsResponse {
     pagination: PaginationInfo;
   };
 }
+
+export interface SystemConfig {
+  id: string;
+  maintenanceMode: boolean;
+  maintenanceMessage: string | null;
+  updatedAt: string;
+}
+
+export interface GetSystemConfigResponse {
+  status: string;
+  data: SystemConfig;
+}
+
+export interface UpdateSystemConfigArgs {
+  maintenanceMode?: boolean;
+  maintenanceMessage?: string;
+}

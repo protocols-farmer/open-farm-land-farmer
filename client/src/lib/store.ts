@@ -1,7 +1,7 @@
+//src/lib/store.ts
+
 import { configureStore } from "@reduxjs/toolkit";
 import { setupListeners } from "@reduxjs/toolkit/query";
-
-// Standard Reducers
 import authReducer from "./features/auth/authSlice";
 import userReducer from "./features/user/userSlice";
 import uploadProgressReducer from "./features/upload/uploadProgressSlice";
@@ -22,6 +22,7 @@ import { guideSectionApiSlice } from "./features/guideSection/guideSectionApiSli
 import { adminApiSlice } from "./features/admin/adminApiSlice";
 import { notificationsApiSlice } from "./features/notifications/notificationsApiSlice";
 import { socialAuthApiSlice } from "./features/social-auth/socialAuthApiSlice";
+import { githubApiSlice } from "./features/github/githubApiSlice";
 /**
  * CENTRAL REDUX STORE
  * This is now the "Source of Truth" for the entire application,
@@ -49,6 +50,7 @@ export const store = configureStore({
     [adminApiSlice.reducerPath]: adminApiSlice.reducer,
     [guideSectionApiSlice.reducerPath]: guideSectionApiSlice.reducer,
     [notificationsApiSlice.reducerPath]: notificationsApiSlice.reducer,
+    [githubApiSlice.reducerPath]: githubApiSlice.reducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
@@ -66,6 +68,7 @@ export const store = configureStore({
       guideSectionApiSlice.middleware,
       notificationsApiSlice.middleware,
       socialAuthApiSlice.middleware,
+      githubApiSlice.middleware,
     ]),
 });
 

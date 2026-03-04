@@ -1,5 +1,4 @@
-// src/features/admin/admin.service.ts
-
+//src/features/admin/admin.service.ts
 import prisma from "@/db/prisma.js";
 import { Prisma, SystemRole } from "@prisma-client";
 import {
@@ -8,6 +7,8 @@ import {
   AdminPostRow,
   AdminApiQuery,
   AdminCommentRow,
+  AdminOpportunityRow,
+  AdminUpdateRow,
   SanitizedUser,
 } from "./admin.types.js";
 
@@ -23,6 +24,8 @@ class AdminService {
       totalLikes,
       totalSaves,
       totalShares,
+      totalOpportunities,
+      totalUpdates,
     ] = await prisma.$transaction([
       prisma.user.count(),
       prisma.post.count(),
@@ -30,7 +33,10 @@ class AdminService {
       prisma.postLike.count(),
       prisma.postSave.count(),
       prisma.postShare.count(),
+      prisma.opportunity.count(),
+      prisma.update.count(),
     ]);
+
     return {
       totalUsers,
       totalPosts,
@@ -38,6 +44,8 @@ class AdminService {
       totalLikes,
       totalSaves,
       totalShares,
+      totalOpportunities,
+      totalUpdates,
     };
   }
 
@@ -45,7 +53,7 @@ class AdminService {
    * Fetches a paginated, searchable, and filterable list of all users.
    */
   public async getAllUsers(
-    query: AdminApiQuery
+    query: AdminApiQuery,
   ): Promise<{ users: AdminUserRow[]; total: number }> {
     const {
       page = 1,
@@ -79,10 +87,10 @@ class AdminService {
   }
 
   /**
-   * Fetches a paginated, searchable, and filterable list of all posts.
+   * Fetches a paginated, searchable list of all posts.
    */
   public async getAllPosts(
-    query: AdminApiQuery
+    query: AdminApiQuery,
   ): Promise<{ posts: AdminPostRow[]; total: number }> {
     const {
       page = 1,
@@ -98,13 +106,10 @@ class AdminService {
       where.OR = [
         { title: { contains: q, mode: "insensitive" } },
         { author: { name: { contains: q, mode: "insensitive" } } },
-        { author: { username: { contains: q, mode: "insensitive" } } },
       ];
     }
 
-    if (filterByCategory) {
-      where.category = filterByCategory;
-    }
+    if (filterByCategory) where.category = filterByCategory;
 
     const [posts, total] = await prisma.$transaction([
       prisma.post.findMany({
@@ -131,10 +136,105 @@ class AdminService {
   }
 
   /**
-   * Fetches a paginated, searchable list of all comments.
+   * Fetches all Opportunities (Searchable by title, company, or poster)
+   */
+  public async getAllOpportunities(
+    query: AdminApiQuery,
+  ): Promise<{ opportunities: AdminOpportunityRow[]; total: number }> {
+    const {
+      page = 1,
+      limit = 10,
+      q,
+      sortBy = "postedAt",
+      order = "desc",
+    } = query;
+    const where: Prisma.OpportunityWhereInput = {};
+
+    if (q) {
+      where.OR = [
+        { title: { contains: q, mode: "insensitive" } },
+        { companyName: { contains: q, mode: "insensitive" } },
+        { poster: { username: { contains: q, mode: "insensitive" } } },
+      ];
+    }
+
+    const [opportunities, total] = await prisma.$transaction([
+      prisma.opportunity.findMany({
+        where,
+        skip: (page - 1) * limit,
+        take: limit,
+        orderBy: { [sortBy]: order },
+        include: {
+          poster: {
+            select: {
+              id: true,
+              name: true,
+              username: true,
+              profileImage: true,
+            },
+          },
+          tags: { select: { tag: { select: { name: true } } } },
+        },
+      }),
+      prisma.opportunity.count({ where }),
+    ]);
+
+    return { opportunities: opportunities as AdminOpportunityRow[], total };
+  }
+
+  /**
+   * Fetches all Updates (Platform or Project updates)
+   */
+  public async getAllUpdates(
+    query: AdminApiQuery,
+  ): Promise<{ updates: AdminUpdateRow[]; total: number }> {
+    const {
+      page = 1,
+      limit = 10,
+      q,
+      sortBy = "publishedAt",
+      order = "desc",
+      filterByUpdateCategory,
+    } = query;
+    const where: Prisma.UpdateWhereInput = {};
+
+    if (q) {
+      where.OR = [
+        { title: { contains: q, mode: "insensitive" } },
+        { version: { contains: q, mode: "insensitive" } },
+      ];
+    }
+
+    if (filterByUpdateCategory) where.category = filterByUpdateCategory;
+
+    const [updates, total] = await prisma.$transaction([
+      prisma.update.findMany({
+        where,
+        skip: (page - 1) * limit,
+        take: limit,
+        orderBy: { [sortBy]: order },
+        include: {
+          author: {
+            select: {
+              id: true,
+              name: true,
+              username: true,
+              profileImage: true,
+            },
+          },
+        },
+      }),
+      prisma.update.count({ where }),
+    ]);
+
+    return { updates: updates as AdminUpdateRow[], total };
+  }
+
+  /**
+   * Fetches all comments.
    */
   public async getAllComments(
-    query: AdminApiQuery
+    query: AdminApiQuery,
   ): Promise<{ comments: AdminCommentRow[]; total: number }> {
     const {
       page = 1,
@@ -149,7 +249,6 @@ class AdminService {
       where.OR = [
         { text: { contains: q, mode: "insensitive" } },
         { author: { username: { contains: q, mode: "insensitive" } } },
-        { post: { title: { contains: q, mode: "insensitive" } } },
       ];
     }
 
@@ -177,40 +276,51 @@ class AdminService {
     return { comments: comments as AdminCommentRow[], total };
   }
 
-  /**
-   * --- FIX: Re-added the missing method ---
-   * Updates a user's system role.
-   */
   public async updateUserRole(
     userId: string,
-    newRole: SystemRole
+    newRole: SystemRole,
   ): Promise<SanitizedUser> {
-    // Change 'User' to 'SanitizedUser'
     return prisma.user.update({
       where: { id: userId },
       data: { systemRole: newRole },
-    }) as Promise<SanitizedUser>; // Explicitly cast to handle the extension mismatch
+    }) as Promise<SanitizedUser>;
   }
 
-  /**
-   * Deletes a user by their ID.
-   */
   public async deleteUser(userId: string): Promise<void> {
     await prisma.user.delete({ where: { id: userId } });
   }
 
-  /**
-   * Deletes a post by its ID.
-   */
   public async deletePost(postId: string): Promise<void> {
     await prisma.post.delete({ where: { id: postId } });
   }
 
-  /**
-   * Deletes a comment by its ID.
-   */
   public async deleteComment(commentId: string): Promise<void> {
     await prisma.comment.delete({ where: { id: commentId } });
+  }
+
+  public async deleteOpportunity(id: string): Promise<void> {
+    await prisma.opportunity.delete({ where: { id } });
+  }
+
+  public async deleteUpdate(id: string): Promise<void> {
+    await prisma.update.delete({ where: { id } });
+  }
+
+  public async getSystemConfig() {
+    let config = await prisma.systemConfig.findFirst();
+    if (!config) config = await prisma.systemConfig.create({ data: {} });
+    return config;
+  }
+
+  public async updateSystemConfig(data: {
+    maintenanceMode?: boolean;
+    maintenanceMessage?: string;
+  }) {
+    const config = await this.getSystemConfig();
+    return prisma.systemConfig.update({
+      where: { id: config.id },
+      data,
+    });
   }
 }
 

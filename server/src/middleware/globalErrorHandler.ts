@@ -1,4 +1,4 @@
-// src/middleware/globalErrorHandler.ts
+//src/middleware/globalErrorHandler.ts
 import { Request, Response, NextFunction, ErrorRequestHandler } from "express";
 import { Prisma } from "@prisma-client";
 import { config } from "../config/index.js";
@@ -13,13 +13,12 @@ export const globalErrorHandler: ErrorRequestHandler = (
   err: any,
   _req: Request,
   res: Response,
-  _next: NextFunction
+  _next: NextFunction,
 ): void => {
   let statusCode = err.statusCode || 500;
   let message = err.message || "An internal server error occurred.";
   let status = statusCode >= 400 && statusCode < 500 ? "fail" : "error";
 
-  // Log the error for internal tracking
   logger.error(
     {
       err: {
@@ -29,28 +28,21 @@ export const globalErrorHandler: ErrorRequestHandler = (
         meta: err.meta,
       },
     },
-    "💥 Error Intercepted by Global Handler"
+    "💥 Error Intercepted by Global Handler",
   );
 
-  // --- 1. Handle HttpError (Custom Errors) ---
   if (err instanceof HttpError) {
     statusCode = err.statusCode;
     message = err.message;
-  }
-
-  // --- 2. Handle Prisma Errors ---
-  // --- 2. Handle Prisma Errors ---
-  else if (
+  } else if (
     err instanceof Prisma.PrismaClientKnownRequestError ||
     err.code?.startsWith("P")
   ) {
     switch (err.code) {
       case "P2002": {
-        // Unique constraint violation
         statusCode = 409;
         status = "fail";
 
-        // Fallback logic for when meta.target is missing
         const target = (err.meta as any)?.target?.join(", ");
         const errMsg = err.message?.toLowerCase() || "";
 
@@ -75,9 +67,7 @@ export const globalErrorHandler: ErrorRequestHandler = (
         message = "A database error occurred.";
         status = "fail";
     }
-  }
-  // --- 3. Handle Multer Errors (File Uploads) ---
-  else if (err instanceof MulterError) {
+  } else if (err instanceof MulterError) {
     statusCode = 400;
     status = "fail";
     switch (err.code) {
@@ -90,10 +80,7 @@ export const globalErrorHandler: ErrorRequestHandler = (
       default:
         message = `File upload error: ${err.message}`;
     }
-  }
-
-  // --- 4. Handle JWT Specific Errors ---
-  else if (err instanceof TokenExpiredError) {
+  } else if (err instanceof TokenExpiredError) {
     statusCode = 401;
     message = "Your session has expired. Please log in again.";
     status = "fail";
@@ -103,13 +90,11 @@ export const globalErrorHandler: ErrorRequestHandler = (
     status = "fail";
   }
 
-  // --- Final Response Construction ---
   const responsePayload: { status: string; message: string; stack?: string } = {
     status,
     message,
   };
 
-  // Only expose the stack trace in development mode
   if (config.nodeEnv === "development") {
     responsePayload.stack = err.stack;
   }

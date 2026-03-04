@@ -26,8 +26,9 @@ export default function EditUpdatePage({ updateId }: { updateId: string }) {
     if (
       currentUser &&
       !(
-        currentUser.systemRole === SystemRole.DEVELOPER ||
-        currentUser.systemRole === SystemRole.SUPER_ADMIN
+        currentUser?.systemRole === SystemRole.DEVELOPER ||
+        currentUser?.systemRole === SystemRole.SUPER_ADMIN ||
+        currentUser?.systemRole === SystemRole.SYSTEM_CONTENT_CREATOR
       )
     ) {
       toast.error("You are not authorized to access this page.");

@@ -1,3 +1,4 @@
+//src/components/pages/projects/GitHubRepoCard.tsx
 "use client";
 
 import React from "react";

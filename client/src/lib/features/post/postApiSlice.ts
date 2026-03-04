@@ -71,6 +71,9 @@ export const postApiSlice = createApi({
           params.append("savedByUserId", args.savedByUserId);
         }
 
+        if (args.authorId) {
+          params.append("authorId", args.authorId);
+        }
         // Return the final URL, e.g., "/tags?likedByUserId=123"
         return `/tags?${params.toString()}`;
       },
@@ -164,9 +167,9 @@ export const postApiSlice = createApi({
                 if (draft) {
                   draft.sharesCount++;
                 }
-              }
-            )
-          )
+              },
+            ),
+          ),
         );
         const queries = (getState() as RootState).postApi.queries;
         for (const key in queries) {
@@ -180,8 +183,8 @@ export const postApiSlice = createApi({
                   if (post) {
                     post.sharesCount++;
                   }
-                }
-              )
+                },
+              ),
             );
           }
         }
@@ -195,8 +198,8 @@ export const postApiSlice = createApi({
                 if (draft) {
                   draft.sharesCount = shareData.data.sharesCount;
                 }
-              }
-            )
+              },
+            ),
           );
           for (const key in queries) {
             if (key.startsWith("getPosts(")) {
@@ -209,8 +212,8 @@ export const postApiSlice = createApi({
                     if (post) {
                       post.sharesCount = shareData.data.sharesCount;
                     }
-                  }
-                )
+                  },
+                ),
               );
             }
           }

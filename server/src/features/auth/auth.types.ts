@@ -2,7 +2,6 @@
 import { JwtPayload as OriginalJwtPayload } from "jsonwebtoken";
 import { SystemRole } from "@prisma-client";
 
-// --- JWT Payloads ---
 export interface DecodedAccessTokenPayload {
   id: string;
   systemRole: SystemRole;
@@ -20,12 +19,11 @@ export interface DecodedRefreshTokenPayload extends OriginalJwtPayload {
   type: "refresh";
 }
 
-// --- Service Input DTOs (Data Transfer Objects) ---
 export interface SignUpInputDto {
   email: string;
   username: string;
   password: string;
-  name: string; // Should match the 'name' field in the User model
+  name: string;
 }
 
 export interface LoginInputDto {
@@ -42,7 +40,6 @@ export interface LogoutInputDto {
   incomingRefreshToken?: string | undefined;
 }
 
-// --- Service Output DTOs ---
 export interface AuthTokens {
   accessToken: string;
   refreshToken: string;

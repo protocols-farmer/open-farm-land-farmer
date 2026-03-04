@@ -11,23 +11,36 @@ import {
 import { SafeUser } from "@/features/user/user.service.js";
 import { SocialProfile, SocialAuthResponse } from "./social-auth.types.js";
 import { User } from "@prisma-client";
+import { HttpError } from "@/utils/HttpError.js";
 
 export class SocialAuthService {
   /**
    * Exchanges Google's 'code' for a user profile
    */
+
   async getGoogleUser(code: string): Promise<SocialProfile> {
     try {
-      const { data } = await axios.post("https://oauth2.googleapis.com/token", {
-        code,
-        client_id: config.socialAuth.google.clientId,
-        client_secret: config.socialAuth.google.clientSecret,
-        redirect_uri: config.socialAuth.google.callbackUrl,
-        grant_type: "authorization_code",
-      });
+      const tokenResponse = await axios.post(
+        "https://oauth2.googleapis.com/token",
+        {
+          code,
+          client_id: config.socialAuth.google.clientId,
+          client_secret: config.socialAuth.google.clientSecret,
+          redirect_uri: config.socialAuth.google.callbackUrl,
+          grant_type: "authorization_code",
+        },
+        {
+          timeout: 15000,
+        },
+      );
+
+      const { access_token } = tokenResponse.data;
 
       const { data: profile } = await axios.get(
-        `https://www.googleapis.com/oauth2/v3/userinfo?access_token=${data.access_token}`,
+        "https://www.googleapis.com/oauth2/v3/userinfo",
+        {
+          headers: { Authorization: `Bearer ${access_token}` },
+        },
       );
 
       return {
@@ -36,50 +49,120 @@ export class SocialAuthService {
         image: profile.picture,
         sub: profile.sub,
       };
-    } catch (error) {
+    } catch (error: any) {
+      if (
+        error.code === "ECONNRESET" ||
+        error.code === "ETIMEDOUT" ||
+        error.code === "ENOTFOUND"
+      ) {
+        logger.error(
+          {
+            code: error.code,
+            message: error.message,
+          },
+          "NETWORK ERROR: Google OAuth servers are unreachable from this machine.",
+        );
+
+        throw createHttpError(
+          503,
+          "Google server connection failed. Check your local DNS/Internet.",
+        );
+      }
+
+      const googleError = error.response?.data;
+      if (googleError) {
+        logger.error({ googleError }, "Google API rejected the OAuth request.");
+        throw createHttpError(
+          401,
+          `Google: ${googleError.error_description || googleError.error}`,
+        );
+      }
+
       logger.error({ err: error }, "Google OAuth Exchange Failed");
       throw createHttpError(401, "Failed to authenticate with Google.");
     }
   }
+
   async getGithubUser(code: string): Promise<SocialProfile> {
     try {
-      // 1. Exchange code for access token
-      const { data: tokenData } = await axios.post(
+      const response = await axios.post(
         "https://github.com/login/oauth/access_token",
         {
           client_id: config.socialAuth.github.clientId,
           client_secret: config.socialAuth.github.clientSecret,
           code,
         },
-        { headers: { Accept: "application/json" } },
+        {
+          headers: { Accept: "application/json" },
+          timeout: 15000,
+        },
       );
 
-      // 2. Use token to get user profile
+      if (response.data.error) {
+        logger.error(
+          { githubError: response.data.error },
+          "GitHub Auth logic error",
+        );
+        throw createHttpError(
+          401,
+          `GitHub: ${response.data.error_description}`,
+        );
+      }
+
+      const accessToken = response.data.access_token;
+
       const { data: profile } = await axios.get("https://api.github.com/user", {
-        headers: { Authorization: `Bearer ${tokenData.access_token}` },
+        headers: { Authorization: `Bearer ${accessToken}` },
       });
 
-      // 3. GitHub users sometimes have private emails. If email is null, we fetch emails separately.
       let email = profile.email;
+
       if (!email) {
         const { data: emails } = await axios.get(
           "https://api.github.com/user/emails",
           {
-            headers: { Authorization: `Bearer ${tokenData.access_token}` },
+            headers: { Authorization: `Bearer ${accessToken}` },
           },
         );
-        email = emails.find((e: any) => e.primary && e.verified)?.email;
+
+        /**
+         * We look for:
+         * 1. The primary email
+         * 2. That is verified
+         * 3. Failing that, just the first email in the list
+         */
+        const primaryEmail =
+          emails.find((e: any) => e.primary && e.verified) ||
+          emails.find((e: any) => e.verified) ||
+          emails[0];
+
+        email = primaryEmail?.email;
+      }
+
+      if (!email) {
+        logger.warn(
+          { githubId: profile.id },
+          "GitHub returned no email even after /user/emails check.",
+        );
+        email = `${profile.login}@github.com`;
       }
 
       return {
-        email: email,
-        name: profile.name || profile.login, // GitHub users often use logins (usernames)
+        email: email.toLowerCase(),
+        name: profile.name || profile.login,
         image: profile.avatar_url,
-        id: profile.id.toString(),
       };
-    } catch (error) {
-      logger.error({ err: error }, "GitHub OAuth Exchange Failed");
-      throw createHttpError(401, "Failed to authenticate with GitHub.");
+    } catch (error: any) {
+      if (error instanceof HttpError) throw error;
+
+      logger.error(
+        { message: error.message, code: error.code },
+        "HARD NETWORK ERROR calling GitHub",
+      );
+      throw createHttpError(
+        500,
+        "GitHub server connection failed. Check your internet/proxy.",
+      );
     }
   }
   /**
@@ -91,29 +174,48 @@ export class SocialAuthService {
     });
 
     if (!user) {
-      // Logic for collision-safe username (Matching your AuthService logic)
-      let username = "";
-      let isUnique = false;
-      const basePart = profile.email
-        .split("@")[0]
-        .replace(/[^a-zA-Z0-9_]/g, "");
+      try {
+        let username = "";
+        let isUnique = false;
+        const basePart = profile.email
+          .split("@")[0]
+          .replace(/[^a-zA-Z0-9_]/g, "");
 
-      while (!isUnique) {
-        const randomSuffix = Math.floor(1000 + Math.random() * 9000);
-        username = `${basePart}_${randomSuffix}`;
-        const existing = await prisma.user.findUnique({ where: { username } });
-        if (!existing) isUnique = true;
+        while (!isUnique) {
+          const randomSuffix = Math.floor(1000 + Math.random() * 9000);
+          username = `${basePart}_${randomSuffix}`;
+          const existing = await prisma.user.findUnique({
+            where: { username },
+          });
+          if (!existing) isUnique = true;
+        }
+
+        user = await prisma.user.create({
+          data: {
+            email: profile.email,
+            name: profile.name || "New Wanderer",
+            username: username,
+            profileImage: profile.image || null,
+          },
+        });
+        logger.info({ userId: user.id }, "New social user created.");
+      } catch (createError: any) {
+        if (createError.code === "P2002") {
+          logger.warn("Race condition hit: User created by parallel request.");
+          user = await prisma.user.findUnique({
+            where: { email: profile.email },
+          });
+        } else {
+          throw createError;
+        }
       }
+    }
 
-      user = await prisma.user.create({
-        data: {
-          email: profile.email,
-          name: profile.name || "New Wanderer",
-          username: username,
-          profileImage: profile.image || null,
-        },
-      });
-      logger.info({ userId: user.id }, "New social user created.");
+    if (!user) {
+      throw createHttpError(
+        500,
+        "User resolution failed after creation attempt.",
+      );
     }
 
     const accessToken = generateAccessToken(user as unknown as User);
@@ -122,7 +224,11 @@ export class SocialAuthService {
 
     return {
       user: user as unknown as SafeUser,
-      tokens: { accessToken, refreshToken, refreshTokenExpiresAt: expiresAt },
+      tokens: {
+        accessToken,
+        refreshToken,
+        refreshTokenExpiresAt: expiresAt,
+      },
     };
   }
 }

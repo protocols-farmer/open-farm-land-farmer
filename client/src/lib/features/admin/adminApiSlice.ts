@@ -10,6 +10,8 @@ import {
   GetAdminPostsResponse,
   GetAdminCommentsResponse,
   SystemRole,
+  GetSystemConfigResponse,
+  UpdateSystemConfigArgs,
 } from "./adminTypes";
 
 export const adminApiSlice = createApi({
@@ -104,6 +106,25 @@ export const adminApiSlice = createApi({
       }),
       invalidatesTags: ["AdminComments", "AdminStats"],
     }),
+
+    // Add these endpoints to src/lib/features/admin/adminApiSlice.ts
+
+    getSystemConfig: builder.query<GetSystemConfigResponse, void>({
+      query: () => "/admin/system-config",
+      providesTags: ["AdminStats"], // Using AdminStats as a proxy tag for simplicity
+    }),
+
+    updateSystemConfig: builder.mutation<
+      GetSystemConfigResponse,
+      UpdateSystemConfigArgs
+    >({
+      query: (body) => ({
+        url: "/admin/system-config",
+        method: "PATCH",
+        body,
+      }),
+      invalidatesTags: ["AdminStats"],
+    }),
   }),
 });
 
@@ -116,4 +137,6 @@ export const {
   useDeleteUserMutation,
   useDeletePostMutation,
   useDeleteCommentMutation,
+  useGetSystemConfigQuery,
+  useUpdateSystemConfigMutation,
 } = adminApiSlice;

@@ -128,6 +128,7 @@ export default function PostFilterPage({
     else if (!category) params.delete("category");
 
     router.replace(`${pathname}?${params.toString()}`);
+    router.replace(`${pathname}?${params.toString()}`, { scroll: false });
   }, [
     debouncedSearchTerm,
     selectedCategory,

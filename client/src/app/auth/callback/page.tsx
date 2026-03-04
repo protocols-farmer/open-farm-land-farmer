@@ -4,68 +4,59 @@
 import { useEffect, useRef, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Loader2 } from "lucide-react";
-import {
-  useLoginWithGoogleMutation,
-  useLoginWithGithubMutation,
-} from "@/lib/features/social-auth/socialAuthApiSlice";
+import { useCheckSocialStatusMutation } from "@/lib/features/social-auth/socialAuthApiSlice";
 import { toast } from "sonner";
 
 function CallbackContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-
-  // 1. Get both mutations
-  const [loginWithGoogle] = useLoginWithGoogleMutation();
-  const [loginWithGithub] = useLoginWithGithubMutation();
+  const [checkSocialStatus] = useCheckSocialStatusMutation();
 
   const hasCalled = useRef(false);
 
   useEffect(() => {
-    const code = searchParams.get("code");
+    const status = searchParams.get("status");
+    const provider = searchParams.get("provider") || "Social";
 
-    // We'll retrieve the provider from sessionStorage (set in the SocialLogin component)
-    // Default to google if something goes wrong
-    const provider = sessionStorage.getItem("social_provider") || "google";
-
-    if (code && !hasCalled.current) {
+    if (status === "success" && !hasCalled.current) {
       hasCalled.current = true;
 
-      // 2. Select the correct mutation based on provider
-      const loginMutation =
-        provider === "github" ? loginWithGithub : loginWithGoogle;
-
-      loginMutation({ code })
+      checkSocialStatus()
         .unwrap()
         .then(() => {
           toast.success("Welcome back!", {
-            description: `Successfully authenticated with ${provider}.`,
+            description: `Successfully authenticated via ${provider}.`,
           });
-          sessionStorage.removeItem("social_provider"); // Cleanup
           router.push("/");
         })
         .catch((err) => {
-          toast.error(err?.data?.message || "Social login failed.");
+          console.error("Social Auth Verification Error:", err);
+          toast.error(
+            err?.data?.message || "Failed to finalize social session.",
+          );
           router.push("/auth/login");
         });
+    } else if (status === "error") {
+      toast.error("Social authentication was cancelled or failed.");
+      router.push("/auth/login");
     }
-  }, [searchParams, loginWithGoogle, loginWithGithub, router]);
+  }, [searchParams, checkSocialStatus, router]);
 
   return (
     <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-4">
       <Loader2 className="h-10 w-10 animate-spin text-primary" />
-      <div className="text-center">
+      <div className="text-center px-4">
         <h2 className="text-xl font-semibold text-foreground">
-          Authenticating...
+          Finalizing Login
         </h2>
-        <p className="text-muted-foreground text-sm">
-          Finishing your journey back to the farmland.
+        <p className="text-muted-foreground text-sm max-w-xs mx-auto">
+          We&apos;re verifying your session and preparing your dashboard.
         </p>
       </div>
     </div>
   );
 }
 
-// 3. Wrap in Suspense to satisfy Next.js requirements
 export default function AuthCallbackPage() {
   return (
     <Suspense

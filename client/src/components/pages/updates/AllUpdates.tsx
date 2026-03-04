@@ -21,7 +21,8 @@ export default function AllUpdatesPage() {
   // FIX: Determine if the current user has permission to create an update.
   const canCreate =
     currentUser?.systemRole === SystemRole.DEVELOPER ||
-    currentUser?.systemRole === SystemRole.SUPER_ADMIN;
+    currentUser?.systemRole === SystemRole.SUPER_ADMIN ||
+    currentUser?.systemRole === SystemRole.SYSTEM_CONTENT_CREATOR;
 
   return (
     <div className="container mx-auto py-8">

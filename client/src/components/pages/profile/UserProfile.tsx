@@ -24,8 +24,6 @@ import {
   Loader2,
 } from "lucide-react";
 
-// --- RTK Query & State ---
-// FIXED: All hooks MUST come from userApiSlice to share the same cache brain
 import {
   useGetUserByUsernameQuery,
   useFollowUserMutation,
@@ -34,13 +32,11 @@ import {
 import { useAppSelector } from "@/lib/hooks/hooks";
 import { selectCurrentUser } from "@/lib/features/user/userSlice";
 
-// --- UI Components ---
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
 import PostFilterPage from "@/components/pages/posts/PostFilterPage";
 
-// --- INTERNAL HELPERS ---
 const getInitials = (name: string | null | undefined): string => {
   if (!name) return "?";
   const words = name.split(" ").filter(Boolean);
@@ -106,7 +102,6 @@ export default function UserProfile() {
   const currentUser = useAppSelector(selectCurrentUser);
   const [isCopied, setIsCopied] = useState(false);
 
-  // Fetch profile data
   const {
     data: user,
     isLoading,
@@ -116,7 +111,6 @@ export default function UserProfile() {
     refetchOnMountOrArgChange: true,
   });
 
-  // Mutations - isLoading provides that "Honest" loader feel
   const [followUser, { isLoading: isFollowing }] = useFollowUserMutation();
   const [unfollowUser, { isLoading: isUnfollowing }] =
     useUnfollowUserMutation();

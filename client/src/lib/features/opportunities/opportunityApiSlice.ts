@@ -56,7 +56,10 @@ export const opportunityApiSlice = createApi({
         body,
       }),
       transformResponse: (response: GetOpportunityResponse) => response.data,
-      invalidatesTags: (result, error, { id }) => [{ type: "Opportunity", id }],
+      invalidatesTags: (result, error, { id }) => [
+        { type: "Opportunity", id },
+        { type: "Opportunity", id: "LIST" },
+      ],
     }),
     deleteOpportunity: builder.mutation<{ success: boolean }, string>({
       query: (id) => ({ url: `/opportunities/${id}`, method: "DELETE" }),

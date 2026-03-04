@@ -114,6 +114,7 @@ export interface GetTagsArgs {
   category?: PostCategory;
   likedByUserId?: string; // <-- Add this
   savedByUserId?: string; //
+  authorId?: string;
 }
 
 export interface LikePostApiResponse {

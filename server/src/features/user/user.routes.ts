@@ -9,13 +9,10 @@ import { extractUser } from "@/middleware/extractUser.js";
 
 const router: Router = Router();
 
-// --- PUBLIC ROUTES (No token required) ---
 router.get("/profile/:username", extractUser, userController.getUserByUsername);
 
-// --- PROTECTED ROUTES (Token is now required for all routes below) ---
 router.use(verifyToken);
 
-// --- Routes for the authenticated user ("me") ---
 router.get("/me", userController.getMe);
 router.patch(
   "/me",
@@ -28,8 +25,6 @@ router.patch(
 );
 router.delete("/me", userController.deleteMyAccount);
 
-// --- Admin/Protected Routes ---
-// This route for fetching a user by their UUID is now protected.
 router.get("/:id", userController.getUserById);
 router.delete("/:id", userController.deleteUserById);
 

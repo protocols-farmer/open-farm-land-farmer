@@ -1,4 +1,4 @@
-// src/middleware/deserializeUser.ts
+//src/features/post/deserializeUser.ts
 import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 import prisma from "@/db/prisma.js";
@@ -40,6 +40,11 @@ export const deserializeUser = asyncHandler(
           bannerImage: true,
           systemRole: true,
           status: true,
+          bio: true,
+          title: true,
+          location: true,
+          joinedAt: true,
+          updatedAt: true,
         },
       });
 
@@ -48,14 +53,12 @@ export const deserializeUser = asyncHandler(
         return next();
       }
 
-      // Attach user to the request
       req.user = {
         ...user,
         profileImage: user.profileImage || "",
         bannerImage: user.bannerImage || "",
       };
     } catch (error) {
-      // Token expired or malformed - we treat them as a guest
       logger.debug(
         "DeserializeUser: Invalid token provided. Treating as guest.",
       );

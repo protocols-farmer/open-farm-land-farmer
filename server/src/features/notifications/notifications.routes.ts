@@ -1,3 +1,4 @@
+//src/features/notifications/notifications.routes.ts
 import { Router } from "express";
 import { notificationsController } from "./notifications.controller.js";
 import { verifyToken } from "@/middleware/auth.middleware.js";

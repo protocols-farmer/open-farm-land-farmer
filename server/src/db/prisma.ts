@@ -1,31 +1,27 @@
-// src/db/prisma.ts
+//src/db/prisma.ts
+
 import { PrismaClient, Prisma } from "@prisma-client";
 import { config } from "../config/index.js";
 import { logger } from "../config/logger.js";
 import { PrismaPg } from "@prisma/adapter-pg";
 import pg from "pg";
 
-// 1. Configure the Postgres Connection Pool
 const pool = new pg.Pool({
   connectionString: config.databaseUrl,
 });
 
-// 2. Create the Driver Adapter
 const adapter = new PrismaPg(pool);
 
-// 3. Define Log Levels
 const logLevels: Prisma.LogLevel[] =
   config.nodeEnv === "development"
     ? ["query", "info", "warn", "error"]
     : ["error"];
 
-// 4. Initialize Prisma Client with the Adapter
 const prismaClient = new PrismaClient({
   adapter,
   log: logLevels,
 });
 
-// --- Constants for Retry Logic ---
 const MAX_QUERY_RETRIES = 3;
 const QUERY_RETRY_BASE_DELAY_MS = 1000;
 const RETRIABLE_PRISMA_ERROR_CODES: string[] = [
@@ -39,20 +35,17 @@ const RETRIABLE_PRISMA_ERROR_CODES: string[] = [
   "P3006",
 ];
 
-// 5. Extend the client (Combined Retry Logic + Sanitization)
 const prisma = prismaClient.$extends({
-  // --- EXTENSION: Auto-Sanitization ---
-  // This automatically removes the 'hashedPassword' field whenever a User record is returned.
   result: {
     user: {
       hashedPassword: {
         compute() {
-          return undefined; // Fields set to undefined are omitted from the resulting object
+          return undefined;
         },
       },
     },
   },
-  // --- EXTENSION: Query Retry Logic ---
+
   query: {
     $allModels: {
       $allOperations: async ({ model, operation, args, query }) => {
@@ -66,7 +59,7 @@ const prisma = prismaClient.$extends({
 
             if (error instanceof Prisma.PrismaClientKnownRequestError) {
               errorCode = error.code;
-              // Retry only on connection-related errors
+
               if (
                 !RETRIABLE_PRISMA_ERROR_CODES.includes(error.code) ||
                 attempts > MAX_QUERY_RETRIES
@@ -89,51 +82,50 @@ const prisma = prismaClient.$extends({
                 maxRetries: MAX_QUERY_RETRIES,
                 code: errorCode,
               },
-              `Prisma query failed. Retrying in ${delayMs / 1000}s...`
+              `Prisma query failed. Retrying in ${delayMs / 1000}s...`,
             );
 
             await new Promise((resolve) => setTimeout(resolve, delayMs));
           }
         }
         throw new Error(
-          `Query (${model}.${operation}) failed after ${MAX_QUERY_RETRIES} retries.`
+          `Query (${model}.${operation}) failed after ${MAX_QUERY_RETRIES} retries.`,
         );
       },
     },
   },
 });
 
-// --- Connection Logic ---
 const MAX_CONNECT_RETRIES = 5;
 const CONNECT_RETRY_DELAY_MS = 5000;
 
 export async function connectPrisma(
-  retriesLeft: number = MAX_CONNECT_RETRIES
+  retriesLeft: number = MAX_CONNECT_RETRIES,
 ): Promise<void> {
   try {
     await prisma.$connect();
     logger.info(
-      "✅ Successfully connected to the database via Prisma Adapter (pg)."
+      "✅ Successfully connected to the database via Prisma Adapter (pg).",
     );
   } catch (error: any) {
     const currentAttempt = MAX_CONNECT_RETRIES - retriesLeft + 1;
 
     logger.error(
       { err: error, attempt: currentAttempt, maxRetries: MAX_CONNECT_RETRIES },
-      `❌ Prisma Connection Error`
+      `❌ Prisma Connection Error`,
     );
 
     if (retriesLeft > 0) {
       logger.info(
-        `Retrying connection in ${CONNECT_RETRY_DELAY_MS / 1000} seconds...`
+        `Retrying connection in ${CONNECT_RETRY_DELAY_MS / 1000} seconds...`,
       );
       await new Promise((resolve) =>
-        setTimeout(resolve, CONNECT_RETRY_DELAY_MS)
+        setTimeout(resolve, CONNECT_RETRY_DELAY_MS),
       );
       return connectPrisma(retriesLeft - 1);
     } else {
       logger.fatal(
-        "❌ Exhausted all retries. Failed to connect to the database. Exiting."
+        "❌ Exhausted all retries. Failed to connect to the database. Exiting.",
       );
       process.exit(1);
     }

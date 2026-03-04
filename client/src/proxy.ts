@@ -5,7 +5,6 @@ import type { NextRequest } from "next/server";
 
 const guestOnlyRoutes = ["/auth/login", "/auth/signup"];
 
-// RENAME THIS FROM "middleware" TO "proxy"
 export function proxy(request: NextRequest) {
   const isAuthenticated = request.cookies.has("jid");
   const { pathname } = request.nextUrl;

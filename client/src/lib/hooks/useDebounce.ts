@@ -1,4 +1,4 @@
-// src/lib/hooks/useDebounce.ts
+//src/lib/hooks/useDebounce.ts
 "use client";
 
 import { useState, useEffect } from "react";
@@ -11,21 +11,17 @@ import { useState, useEffect } from "react";
  * @returns The debounced value, which only updates after the delay has passed.
  */
 export function useDebounce<T>(value: T, delay: number): T {
-  // State to store the debounced value
   const [debouncedValue, setDebouncedValue] = useState<T>(value);
 
   useEffect(() => {
-    // Set up a timer to update the debounced value after the specified delay
     const handler = setTimeout(() => {
       setDebouncedValue(value);
     }, delay);
 
-    // Clean up the timer if the value changes (e.g., user types again)
-    // This is the key to debouncing: we cancel the previous timer and start a new one.
     return () => {
       clearTimeout(handler);
     };
-  }, [value, delay]); // Only re-run the effect if value or delay changes
+  }, [value, delay]);
 
   return debouncedValue;
 }

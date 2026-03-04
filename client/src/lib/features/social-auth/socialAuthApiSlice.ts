@@ -1,52 +1,34 @@
+// src/lib/features/social-auth/socialAuthApiSlice.ts
 import { createApi } from "@reduxjs/toolkit/query/react";
 import { baseQueryWithReauth } from "../../api/baseQueryWithReauth";
 import { setCredentials } from "../auth/authSlice";
-import { SocialAuthResponse, SocialLoginInput } from "./socialTypes";
+import { SocialAuthResponse } from "./socialTypes";
 
 export const socialAuthApiSlice = createApi({
   reducerPath: "socialAuthApi",
   baseQuery: baseQueryWithReauth,
   endpoints: (builder) => ({
     /**
-     * Exchange Google Auth Code for Session
-     * Hits: GET /api/v1/social/google/callback?code=...
+     * NEW: Finalizes the social login flow.
+     * After the backend redirects to /auth/callback, the frontend calls this
+     * to exchange the HttpOnly cookie for a JWT Access Token.
      */
-    loginWithGoogle: builder.mutation<SocialAuthResponse, SocialLoginInput>({
-      query: ({ code }) => ({
-        url: `/social/google/callback?code=${code}`,
+    checkSocialStatus: builder.mutation<SocialAuthResponse, void>({
+      query: () => ({
+        url: "/social/status",
         method: "GET",
       }),
       async onQueryStarted(_, { dispatch, queryFulfilled }) {
         try {
           const { data } = await queryFulfilled;
-          // Syncs the new token into your main Auth state
+          // Synchronize the new Access Token into the global Auth state
           dispatch(setCredentials({ token: data.data.tokens.accessToken }));
         } catch (error) {
-          // Error handling happens in the component/page
-        }
-      },
-    }),
-
-    /**
-     * Exchange GitHub Auth Code for Session
-     * Hits: GET /api/v1/social/github/callback?code=...
-     */
-    loginWithGithub: builder.mutation<SocialAuthResponse, SocialLoginInput>({
-      query: ({ code }) => ({
-        url: `/social/github/callback?code=${code}`,
-        method: "GET",
-      }),
-      async onQueryStarted(_, { dispatch, queryFulfilled }) {
-        try {
-          const { data } = await queryFulfilled;
-          dispatch(setCredentials({ token: data.data.tokens.accessToken }));
-        } catch (error) {
-          // Error handling happens in the component/page
+          // Failure handled by the callback page logic
         }
       },
     }),
   }),
 });
 
-export const { useLoginWithGoogleMutation, useLoginWithGithubMutation } =
-  socialAuthApiSlice;
+export const { useCheckSocialStatusMutation } = socialAuthApiSlice;

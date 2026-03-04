@@ -25,7 +25,7 @@ export default function About() {
             priority
           />
         </div>
-        <h1 className="text-6xl font-black   mb-6">Open Farmland</h1>
+        <h1 className="text-6xl font-black   mb-6">Open Farm Land</h1>
         <p className="text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
           This is a platform for sharing your ideas, project journey, blogs,
           resources, articles and more,stuff!

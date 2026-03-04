@@ -1,3 +1,4 @@
+//src/components/pages/projects/GitHubSkeleton.tsx
 "use client";
 
 import { Card, CardContent, CardHeader } from "@/components/ui/card";

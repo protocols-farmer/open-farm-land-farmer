@@ -1,11 +1,10 @@
-// src/middleware/multer.config.ts
+//src/middleware/multer.config.ts
 import multer, { FileFilterCallback } from "multer";
 import path from "path";
 import fs from "fs";
 import { Request } from "express";
 import { createHttpError } from "@/utils/error.factory.js";
 
-// Ensure temp directory exists
 const IMAGE_UPLOADS_DIR = path.join(process.cwd(), "uploads/images_temp");
 if (!fs.existsSync(IMAGE_UPLOADS_DIR)) {
   fs.mkdirSync(IMAGE_UPLOADS_DIR, { recursive: true });
@@ -22,7 +21,7 @@ const imageStorage = multer.diskStorage({
 const imageFileFilter = (
   _req: Request,
   file: Express.Multer.File,
-  cb: FileFilterCallback
+  cb: FileFilterCallback,
 ) => {
   const allowedMimeTypes = [
     "image/jpeg",
@@ -41,10 +40,9 @@ const imageFileFilter = (
 export const uploadImage = multer({
   storage: imageStorage,
   fileFilter: imageFileFilter,
-  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
+  limits: { fileSize: 5 * 1024 * 1024 },
 });
 
-// Document Uploads logic... (kept same as your previous code)
 const DOCUMENT_UPLOADS_DIR = path.join(process.cwd(), "uploads/documents_temp");
 if (!fs.existsSync(DOCUMENT_UPLOADS_DIR)) {
   fs.mkdirSync(DOCUMENT_UPLOADS_DIR, { recursive: true });

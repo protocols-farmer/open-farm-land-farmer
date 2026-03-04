@@ -1,14 +1,11 @@
 //src/features/user/user.service.ts
 import bcrypt from "bcryptjs";
 import { Prisma, User } from "@prisma-client";
-import prisma, { ExtendedPrismaClient } from "@/db/prisma.js"; // REFINED: Import ExtendedPrismaClient
+import prisma, { ExtendedPrismaClient } from "@/db/prisma.js";
 import { SignUpInputDto } from "@/features/auth/auth.types.js";
 import { createHttpError } from "@/utils/error.factory.js";
 import { logger } from "@/config/logger.js";
-import {
-  deleteFromCloudinary,
-  extractPublicIdFromUrl,
-} from "@/config/cloudinary.js";
+import { deleteFromCloudinary } from "@/config/cloudinary.js";
 
 export type SafeUser = Omit<User, "hashedPassword">;
 
@@ -19,14 +16,15 @@ interface UserProfileUpdateData {
   title?: string;
   location?: string;
   profileImage?: string;
+  profileImagePublicId?: string;
   bannerImage?: string;
+  bannerImagePublicId?: string;
   twitterUrl?: string | null;
   githubUrl?: string | null;
   websiteUrl?: string | null;
 }
 
 export class UserService {
-  // REFINED: Helper to access the correctly typed user delegate from the extended client
   private get userDelegate() {
     return (prisma as ExtendedPrismaClient).user;
   }
@@ -53,34 +51,42 @@ export class UserService {
     const { email, username, password, name } = input;
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // REFINED: Extension handles the password omission automatically
     return (await this.userDelegate.create({
       data: { email, username, hashedPassword, name },
     })) as unknown as SafeUser;
   }
 
   public async deleteUserAccount(userId: string): Promise<void> {
-    const user = await this.findUserById(userId);
+    const user = await this.userDelegate.findUnique({
+      where: { id: userId },
+    });
+
     if (!user) return;
 
     const deletionPromises = [];
 
-    // Instead of guessing the name, we get the real ID from the URL in the DB
-    if (user.profileImage) {
-      const publicId = extractPublicIdFromUrl(user.profileImage);
-      if (publicId) deletionPromises.push(deleteFromCloudinary(publicId));
+    if (user.profileImagePublicId) {
+      deletionPromises.push(deleteFromCloudinary(user.profileImagePublicId));
     }
-    if (user.bannerImage) {
-      const publicId = extractPublicIdFromUrl(user.bannerImage);
-      if (publicId) deletionPromises.push(deleteFromCloudinary(publicId));
+    if (user.bannerImagePublicId) {
+      deletionPromises.push(deleteFromCloudinary(user.bannerImagePublicId));
     }
 
-    await Promise.allSettled(deletionPromises);
+    if (deletionPromises.length > 0) {
+      await Promise.allSettled(deletionPromises);
+    }
 
     try {
       await this.userDelegate.delete({ where: { id: userId } });
-      logger.info({ userId }, "User and assets deleted successfully.");
+      logger.info(
+        { userId },
+        "✅ User and associated assets deleted successfully.",
+      );
     } catch (error) {
+      logger.error(
+        { err: error, userId },
+        "❌ Failed to delete user record from DB.",
+      );
       throw createHttpError(500, "Could not delete user account.");
     }
   }
@@ -93,11 +99,12 @@ export class UserService {
     if (!existingUser) throw createHttpError(404, "User not found.");
 
     try {
-      // REFINED: Clean return type through the delegate
-      return (await this.userDelegate.update({
+      const updatedUser = await this.userDelegate.update({
         where: { id: userId },
         data,
-      })) as unknown as SafeUser;
+      });
+
+      return updatedUser as unknown as SafeUser;
     } catch (e: any) {
       if (
         e.code === "P2002" ||
@@ -106,6 +113,8 @@ export class UserService {
       ) {
         throw createHttpError(409, "This username is already taken.");
       }
+
+      logger.error({ err: e, userId }, "❌ Profile update failed.");
       throw createHttpError(500, "Could not update profile.");
     }
   }

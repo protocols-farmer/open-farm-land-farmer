@@ -1,8 +1,17 @@
-// src/features/admin/admin.types.ts
-
-import { User, Post, Comment, PostCategory, UserStatus } from "@prisma-client";
+//src/features/admin/admin.types.ts
+import {
+  User,
+  Post,
+  Comment,
+  PostCategory,
+  UserStatus,
+  Opportunity,
+  Update,
+  UpdateCategory,
+} from "@prisma-client";
 
 export type SanitizedUser = Omit<User, "hashedPassword">;
+
 // Data shape for the main dashboard statistics card
 export interface AdminDashboardStats {
   totalUsers: number;
@@ -11,16 +20,19 @@ export interface AdminDashboardStats {
   totalLikes: number;
   totalSaves: number;
   totalShares: number;
+  totalOpportunities: number;
+  totalUpdates: number;
 }
 
-// Data shape for a user row in the admin user management table
+// Data shape for a user row
 export type AdminUserRow = SanitizedUser & {
   _count: {
     posts: number;
     comments: number;
   };
 };
-// Data shape for a post row in the admin post management table
+
+// Data shape for a post row
 export type AdminPostRow = Post & {
   author: {
     id: string;
@@ -31,7 +43,7 @@ export type AdminPostRow = Post & {
   images: { url: string }[];
 };
 
-// Data shape for a comment row in the admin comment management table
+// Data shape for a comment row
 export type AdminCommentRow = Comment & {
   author: {
     id: string;
@@ -45,6 +57,27 @@ export type AdminCommentRow = Comment & {
   };
 };
 
+// Data shape for an opportunity row
+export type AdminOpportunityRow = Opportunity & {
+  poster: {
+    id: string;
+    name: string;
+    username: string;
+    profileImage: string | null;
+  };
+  tags: { tag: { name: string } }[];
+};
+
+// Data shape for a platform update row
+export type AdminUpdateRow = Update & {
+  author: {
+    id: string;
+    name: string;
+    username: string;
+    profileImage: string | null;
+  };
+};
+
 // Type for the API query parameters
 export interface AdminApiQuery {
   page?: number;
@@ -54,4 +87,5 @@ export interface AdminApiQuery {
   order?: "asc" | "desc";
   filterByRole?: UserStatus;
   filterByCategory?: PostCategory;
+  filterByUpdateCategory?: UpdateCategory;
 }

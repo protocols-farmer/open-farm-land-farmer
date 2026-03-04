@@ -1,3 +1,4 @@
+//src/components/pages/updates/UpdateDetails.tsx
 "use client";
 
 import React, { useMemo, useState } from "react";
@@ -74,7 +75,8 @@ export default function UpdateDetails({ updateId }: { updateId: string }) {
 
   const canModify =
     currentUser?.systemRole === SystemRole.DEVELOPER ||
-    currentUser?.systemRole === SystemRole.SUPER_ADMIN;
+    currentUser?.systemRole === SystemRole.SUPER_ADMIN ||
+    currentUser?.systemRole === SystemRole.SYSTEM_CONTENT_CREATOR;
 
   /**
    * PERFORMANCE FIX: useMemo handles parsing + sanitization.

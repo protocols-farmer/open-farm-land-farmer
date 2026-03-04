@@ -1,3 +1,5 @@
+//src/lib/auth/useHydration.ts
+
 /**
  * src/lib/auth/useHydration.ts
  * * Custom hook to hydrate the Redux store from LocalStorage on app boot.
@@ -17,17 +19,12 @@ export const useHydration = () => {
 
   useEffect(() => {
     const hydrate = async () => {
-      // 1. Check if a token exists in the browser
       const token = authStorage.getToken();
 
       if (token) {
-        // 2. If it exists, populate Redux immediately.
-        // This allows AuthInitializer to see 'isAuthenticated' as true
-        // and trigger the 'getMe' query to fetch the full profile.
         dispatch(setCredentials({ token }));
       }
 
-      // 3. Signal that we are done checking storage
       setIsHydrated(true);
     };
 

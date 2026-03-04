@@ -43,33 +43,42 @@ class UpdateService {
     id: string,
     data: UpdateUpdateDto,
     userId: string,
-    userRole: SystemRole
+    userRole: SystemRole,
   ) {
     const updateToModify = await this.findOne(id);
-    // This logic is correct: only the author or a SUPER_ADMIN can modify.
-    if (updateToModify.authorId !== userId && userRole !== "SUPER_ADMIN") {
+    const isAuthorized =
+      updateToModify.authorId === userId ||
+      userRole === SystemRole.SUPER_ADMIN ||
+      userRole === SystemRole.DEVELOPER;
+
+    if (!isAuthorized) {
       throw createHttpError(
         403,
-        "You are not authorized to modify this update."
+        "You are not authorized to modify this update.",
       );
     }
-    const updated = await prisma.update.update({
+
+    return prisma.update.update({
       where: { id },
       data,
       include: { author: { select: { name: true, profileImage: true } } },
     });
-    return updated;
   }
-
   public async remove(id: string, userId: string, userRole: SystemRole) {
     const updateToModify = await this.findOne(id);
-    // This logic is correct.
-    if (updateToModify.authorId !== userId && userRole !== "SUPER_ADMIN") {
+
+    const isAuthorized =
+      updateToModify.authorId === userId ||
+      userRole === SystemRole.SUPER_ADMIN ||
+      userRole === SystemRole.DEVELOPER;
+
+    if (!isAuthorized) {
       throw createHttpError(
         403,
-        "You are not authorized to delete this update."
+        "You are not authorized to delete this update.",
       );
     }
+
     await prisma.update.delete({ where: { id } });
   }
 }

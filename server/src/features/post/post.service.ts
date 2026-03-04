@@ -1,3 +1,4 @@
+//src/features/post/post.service.ts
 import prisma from "@/db/prisma.js";
 import { Post, SystemRole, Prisma, SharePlatform } from "@prisma-client";
 import { createHttpError } from "@/utils/error.factory.js";
@@ -5,14 +6,13 @@ import { logger } from "@/config/logger.js";
 import { deleteFromCloudinary } from "@/config/cloudinary.js";
 import { PostQueryFilters } from "./post.types.js";
 
-// --- FIX: The interface now correctly expects an array of image objects ---
 interface CreatePostData {
   title: string;
   description: string;
   content: string;
   category: Post["category"];
   tags: { name: string }[];
-  images?: { url: string; publicId: string }[]; // Changed from imageUrls: string[]
+  images?: { url: string; publicId: string }[];
   externalLink?: string;
   githubLink?: string;
 }
@@ -20,15 +20,14 @@ interface CreatePostData {
 type UpdatePostData = Partial<Omit<CreatePostData, "images">> & {
   retainedImageUrls?: string[];
   newImages?: { url: string; publicId: string }[];
-  postTags?: string; // <-- ADD THIS LINE
+  postTags?: string;
 };
 
 export class PostService {
   public async createPost(
     authorId: string,
-    data: CreatePostData
+    data: CreatePostData,
   ): Promise<Post> {
-    // --- FIX: Destructure 'images' to match the updated interface ---
     const { images, tags, ...postData } = data;
 
     return prisma.$transaction(async (tx) => {
@@ -54,11 +53,10 @@ export class PostService {
 
       const newPost = await tx.post.create({ data: createInput });
 
-      // --- FIX: The 'images' variable is now an array of objects, making '...img' valid ---
       if (images && images.length > 0) {
         await tx.postImage.createMany({
           data: images.map((img, index) => ({
-            ...img, // This is now correct as img is { url, publicId }
+            ...img,
             postId: newPost.id,
             order: index + 1,
           })),
@@ -67,7 +65,7 @@ export class PostService {
 
       logger.info(
         { postId: newPost.id, authorId },
-        "New post created successfully."
+        "New post created successfully.",
       );
       return tx.post.findUniqueOrThrow({
         where: { id: newPost.id },
@@ -80,7 +78,6 @@ export class PostService {
   }
 
   public async getPostById(postId: string, userId?: string) {
-    // Add optional userId
     const post = await prisma.post.findUnique({
       where: { id: postId },
       include: {
@@ -108,7 +105,6 @@ export class PostService {
       return null;
     }
 
-    // If a userId is provided, check their like/save status for this post
     if (userId) {
       const like = await prisma.postLike.findUnique({
         where: { userId_postId: { userId, postId } },
@@ -117,7 +113,6 @@ export class PostService {
         where: { userId_postId: { userId, postId } },
       });
 
-      // Return the post with the added user-specific booleans
       return {
         ...post,
         isLikedByCurrentUser: !!like,
@@ -125,7 +120,6 @@ export class PostService {
       };
     }
 
-    // If no userId, return the post with default false values
     return {
       ...post,
       isLikedByCurrentUser: false,
@@ -135,13 +129,11 @@ export class PostService {
 
   public async getAllPosts(
     filters: PostQueryFilters,
-    userId?: string // The optional userId for auth-aware results
+    userId?: string,
   ): Promise<{ posts: any[]; total: number }> {
-    // --- Setup and Parsing ---
     const limit = filters.limit ? parseInt(String(filters.limit), 10) : 10;
     const page = filters.page ? parseInt(String(filters.page), 10) : 1;
 
-    // --- ADDED: Destructure the new filters from the filters object ---
     const {
       q,
       category,
@@ -153,10 +145,8 @@ export class PostService {
     } = filters;
     const skip = (page - 1) * limit;
 
-    // --- Building the dynamic WHERE and ORDER BY clauses ---
     const where: Prisma.PostWhereInput = {};
 
-    // --- ADDED: The logic to handle the new filters ---
     if (authorId) {
       where.authorId = authorId;
     }
@@ -166,7 +156,6 @@ export class PostService {
     if (savedByUserId) {
       where.savedBy = { some: { userId: savedByUserId } };
     }
-    // --- END OF ADDED LOGIC ---
 
     if (category) {
       where.category = category;
@@ -213,18 +202,13 @@ export class PostService {
         break;
     }
 
-    // --- The rest of the function is completely unchanged. ---
-    // It correctly fetches the data based on the `where` clause we just built
-    // and then enriches it with the current user's like/save status.
-
     const [posts, total] = await prisma.$transaction([
       prisma.post.findMany({
-        where, // The `where` object now contains our new filter logic
+        where,
         skip,
         take: limit,
         orderBy,
         include: {
-          // This `include` block does NOT need to be changed
           author: {
             select: {
               id: true,
@@ -240,7 +224,6 @@ export class PostService {
       prisma.post.count({ where }),
     ]);
 
-    // This "Enriching" part works perfectly with the new filters
     if (!userId || posts.length === 0) {
       return {
         posts: posts.map((p) => ({
@@ -274,15 +257,13 @@ export class PostService {
   public async updatePost(
     userId: string,
     postId: string,
-    data: UpdatePostData
+    data: UpdatePostData,
   ): Promise<Post> {
-    // FIX: Destructure `postTags` out of the data object so it's not passed to Prisma.
-    // The rest of the `textData` will be valid for the database update.
     const {
       retainedImageUrls = [],
       newImages = [],
       tags,
-      postTags, // This is pulled out and then ignored.
+      postTags,
       ...textData
     } = data;
 
@@ -296,7 +277,7 @@ export class PostService {
       throw createHttpError(403, "You are not authorized to edit this post.");
 
     const imagesToDelete = postToUpdate.images.filter(
-      (img) => !retainedImageUrls.includes(img.url)
+      (img) => !retainedImageUrls.includes(img.url),
     );
 
     if (imagesToDelete.length > 0) {
@@ -304,9 +285,9 @@ export class PostService {
         deleteFromCloudinary(img.publicId).catch((err) =>
           logger.error(
             { err, publicId: img.publicId },
-            "Cloudinary asset deletion failed"
-          )
-        )
+            "Cloudinary asset deletion failed",
+          ),
+        ),
       );
       Promise.allSettled(deletePromises);
     }
@@ -327,10 +308,8 @@ export class PostService {
         });
       }
 
-      // `textData` is now clean and doesn't contain the invalid `postTags` field.
       const updateInput: Prisma.PostUpdateInput = { ...textData };
 
-      // The `tags` logic remains the same, as it correctly uses the structured `tags` array.
       if (tags) {
         updateInput.tags = {
           deleteMany: {},
@@ -362,7 +341,7 @@ export class PostService {
   public async deletePost(
     userId: string,
     userRole: SystemRole,
-    postId: string
+    postId: string,
   ): Promise<void> {
     const postToDelete = await prisma.post.findUnique({
       where: { id: postId },
@@ -379,9 +358,9 @@ export class PostService {
         deleteFromCloudinary(img.publicId).catch((err) =>
           logger.error(
             { err, publicId: img.publicId },
-            "Cloudinary asset deletion failed"
-          )
-        )
+            "Cloudinary asset deletion failed",
+          ),
+        ),
       );
       Promise.allSettled(deletePromises);
     }
@@ -396,11 +375,9 @@ export class PostService {
     });
 
     if (existingLike) {
-      // If the user already liked it, do nothing and return the current post state
       return prisma.post.findUniqueOrThrow({ where: { id: postId } });
     }
 
-    // Use a transaction to create the like and increment the counter
     const [, updatedPost] = await prisma.$transaction([
       prisma.postLike.create({ data: { userId, postId } }),
       prisma.post.update({
@@ -418,11 +395,9 @@ export class PostService {
     });
 
     if (!existingLike) {
-      // If there's no like to remove, do nothing and return current post state
       return prisma.post.findUniqueOrThrow({ where: { id: postId } });
     }
 
-    // Use a transaction to delete the like and decrement the counter
     const [, updatedPost] = await prisma.$transaction([
       prisma.postLike.delete({ where: { id: existingLike.id } }),
       prisma.post.update({
@@ -475,9 +450,8 @@ export class PostService {
   public async sharePost(
     sharerId: string,
     postId: string,
-    platform: SharePlatform
+    platform: SharePlatform,
   ): Promise<Post> {
-    // We don't need to check for existing shares, just create a new one
     const [, updatedPost] = await prisma.$transaction([
       prisma.postShare.create({ data: { sharerId, postId, platform } }),
       prisma.post.update({
@@ -494,13 +468,11 @@ export class PostService {
     });
 
     if (existingView) {
-      // If the view already exists, just update the user's personal view count.
       await prisma.postView.update({
         where: { id: existingView.id },
         data: { viewCountByUser: { increment: 1 } },
       });
     } else {
-      // If the view does not exist, try to create it.
       try {
         await prisma.$transaction([
           prisma.postView.create({ data: { userId, postId } }),
@@ -510,16 +482,11 @@ export class PostService {
           }),
         ]);
       } catch (error: any) {
-        // This is the fix. We catch potential errors.
         if (error.code === "P2002") {
-          // If the error is P2002, it's the unique constraint violation.
-          // This means a race condition happened and another request already created the view.
-          // This is not a real error for us, so we can safely ignore it and move on.
           console.log(
-            "Race condition on PostView creation handled gracefully. Ignoring duplicate create."
+            "Race condition on PostView creation handled gracefully. Ignoring duplicate create.",
           );
         } else {
-          // If it's any other error, we should re-throw it so it can be handled globally.
           throw error;
         }
       }

@@ -1,3 +1,4 @@
+//src/app/layout.tsx
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
@@ -7,6 +8,7 @@ import AuthInitializer from "@/components/layouts/AuthInitializer";
 import { AuthModal } from "@/components/layouts/AuthModal";
 import { Toaster } from "react-hot-toast";
 import Background from "@/components/pages/home/Background";
+import MaintenanceGuard from "@/components/shared/MaintenanceGuard";
 
 const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
 const geistMono = Geist_Mono({
@@ -134,7 +136,9 @@ export default function RootLayout({
             <Toaster position="top-center" reverseOrder={false} />
 
             <AuthInitializer>
-              <main className="relative z-10">{children}</main>
+              <MaintenanceGuard>
+                <main className="relative z-10">{children}</main>
+              </MaintenanceGuard>
             </AuthInitializer>
             <AuthModal />
           </ThemeProvider>

@@ -100,15 +100,10 @@ export const userApiSlice = createApi({
       providesTags: ["Following"],
     }),
 
-    /**
-     * Updates profile data/images with real-time upload progress.
-     * MANUAL REFINEMENT: No longer uses getSession(). Pulls token from Redux.
-     */
     updateMyProfile: builder.mutation<UpdateProfileApiResponse, FormData>({
       queryFn: async (formData, api, _extraOptions) => {
         const { dispatch, getState } = api;
 
-        // 1. Get token from state instead of NextAuth
         const state = getState() as RootState;
         const token = state.auth.token || authStorage.getToken();
 
@@ -181,13 +176,14 @@ export const userApiSlice = createApi({
           return { error: { status, data: error.data } };
         }
       },
+      // REFINED: Invalidate all relevant tags to keep public and private views in sync
       invalidatesTags: (result) => [
         "Me",
+        "User", // Invalidate general user list
         { type: "User", id: result?.data?.user?.username },
         { type: "User", id: result?.data?.user?.id },
       ],
     }),
-
     /**
      * Permanently deletes the user account.
      */

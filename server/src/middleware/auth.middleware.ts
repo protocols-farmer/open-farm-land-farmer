@@ -1,7 +1,7 @@
 //src/middleware/auth.middleware.ts
 import jwt from "jsonwebtoken";
 import { Request, Response, NextFunction } from "express";
-import prisma, { ExtendedPrismaClient } from "../db/prisma.js"; // REFINED: Using Extended Type
+import prisma, { ExtendedPrismaClient } from "../db/prisma.js";
 import { config } from "../config/index.js";
 import { DecodedAccessTokenPayload } from "../features/auth/auth.types.js";
 import { createHttpError } from "../utils/error.factory.js";
@@ -12,7 +12,6 @@ export const verifyToken = asyncHandler(
   async (req: Request, _res: Response, next: NextFunction) => {
     logger.debug({ path: req.path }, "[Auth Middleware] verifyToken triggered");
 
-    // 1. Token extraction
     const authHeader = req.headers.authorization;
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
       return next(
@@ -26,13 +25,11 @@ export const verifyToken = asyncHandler(
     }
 
     try {
-      // 2. Token Verification
       const decoded = jwt.verify(
         token,
         config.jwt.accessSecret,
       ) as DecodedAccessTokenPayload;
 
-      // 3. Payload Validation
       if (
         !decoded.id ||
         !decoded.systemRole ||
@@ -48,7 +45,6 @@ export const verifyToken = asyncHandler(
         );
       }
 
-      // 4. Database User Validation (Using Extended Client for Type Safety)
       const userFromDb = await (prisma as ExtendedPrismaClient).user.findUnique(
         {
           where: { id: decoded.id },
@@ -63,21 +59,18 @@ export const verifyToken = asyncHandler(
         return next(createHttpError(401, "Unauthorized: User not found."));
       }
 
-      // 5. REFINED: Strict Account Status Check
       if (userFromDb.status !== "ACTIVE") {
         logger.warn(
           { userId: userFromDb.id, status: userFromDb.status },
           "[Auth Middleware] Access denied: Account is not ACTIVE",
         );
 
-        // Throwing here triggers the global error handler with a specific message
         throw createHttpError(
           403,
           `Your account is ${userFromDb.status.toLowerCase()}. Please contact support.`,
         );
       }
 
-      // 6. Attach Sanitized User to Request
       req.user = {
         id: userFromDb.id,
         systemRole: userFromDb.systemRole,
@@ -101,7 +94,6 @@ export const verifyToken = asyncHandler(
 
       next();
     } catch (err) {
-      // Pass JWT and Custom Errors to the globalErrorHandler
       next(err);
     }
   },

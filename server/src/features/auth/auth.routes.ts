@@ -1,7 +1,7 @@
 //src/features/auth/auth.routes.ts
 import { Router } from "express";
 import { authController } from "@/features/auth/auth.controller.js";
-import { validate } from "@/middleware/validate.js"; // You will need to create this middleware
+import { validate } from "@/middleware/validate.js";
 import {
   changePasswordSchema,
   loginSchema,
@@ -12,7 +12,6 @@ import { authLimiter } from "@/middleware/rateLimiter.js";
 
 const router: Router = Router();
 
-// --- Public Routes ---
 router.post(
   "/register",
   authLimiter,
@@ -22,7 +21,7 @@ router.post(
 router.post("/login", authLimiter, validate(loginSchema), authController.login);
 router.post("/oauth", authLimiter, authController.handleOAuth);
 router.post("/refresh", authController.refreshAccessToken);
-// --- Protected Routes (require a valid token) ---
+
 router.post("/logout", verifyToken, authController.logout);
 router.post(
   "/change-password",

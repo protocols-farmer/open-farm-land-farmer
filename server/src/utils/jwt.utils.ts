@@ -34,13 +34,12 @@ export const generateAccessToken = (user: User): string => {
  */
 export const generateAndStoreRefreshToken = async (
   userId: string,
-  tx: ExtendedTransactionClient = prisma, // Default to the main extended client
+  tx: ExtendedTransactionClient = prisma,
 ): Promise<{ token: string; expiresAt: Date }> => {
   const jti = crypto.randomUUID();
   const expiresAt = new Date();
   expiresAt.setDate(expiresAt.getDate() + config.jwt.refreshExpiresInDays);
 
-  // Now 'tx' is correctly typed to include your extensions (like hashedPassword compute)
   await tx.refreshToken.create({
     data: { jti, userId, expiresAt },
   });
@@ -74,10 +73,8 @@ export const verifyAndValidateRefreshToken = async (
       where: { jti: decoded.jti },
     });
 
-    // --- SECURITY: REUSE DETECTION ---
     if (!storedToken || storedToken.revoked) {
       if (storedToken?.revoked) {
-        // Someone is trying to reuse a rotated token! Revoke everything for this user.
         await prisma.refreshToken.updateMany({
           where: { userId: decoded.id },
           data: { revoked: true },

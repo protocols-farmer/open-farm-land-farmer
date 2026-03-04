@@ -1,3 +1,4 @@
+//src/features/post/post.validation.ts
 import { z } from "zod";
 import { PostCategory } from "@prisma-client";
 
@@ -13,14 +14,11 @@ const preprocessTags = (val: unknown) => {
   return val;
 };
 
-// === UPDATED: Reusable schemas with corrected return paths ===
-
 const externalLinkSchema = z
   .string()
   .optional()
   .or(z.literal(""))
   .superRefine((url, ctx) => {
-    // We only run validation if the url is not empty
     if (url) {
       if (!url.startsWith("http://") && !url.startsWith("https://")) {
         ctx.addIssue({
@@ -37,7 +35,6 @@ const externalLinkSchema = z
         });
       }
     }
-    // No "return" statements are needed. If no issues are added, it passes.
   });
 
 const strictGitHubLinkSchema = z
@@ -45,14 +42,13 @@ const strictGitHubLinkSchema = z
   .optional()
   .or(z.literal(""))
   .superRefine((url, ctx) => {
-    // We only run validation if the url is not empty
     if (url) {
       if (!url.startsWith("http://") && !url.startsWith("https://")) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           message: "URL must start with 'http://' or 'https://'.",
         });
-        // We can return here to prevent further checks on an invalid URL
+
         return;
       }
       try {
@@ -70,10 +66,7 @@ const strictGitHubLinkSchema = z
         });
       }
     }
-    // No "return" statements are needed on the success path.
   });
-
-// =======================================================================
 
 export const createPostSchema = z.object({
   body: z.object({
@@ -89,7 +82,7 @@ export const createPostSchema = z.object({
       z
         .array(z.string().min(1, "Tag cannot be empty."))
         .min(1, "At least one tag is required.")
-        .max(10, "You can add up to 10 tags.")
+        .max(10, "You can add up to 10 tags."),
     ),
     externalLink: externalLinkSchema,
     githubLink: strictGitHubLinkSchema,
@@ -112,7 +105,7 @@ export const updatePostSchema = z.object({
         z
           .array(z.string().min(1, "Tag cannot be empty."))
           .min(1, "At least one tag is required.")
-          .max(10, "You can add up to 10 tags.")
+          .max(10, "You can add up to 10 tags."),
       )
       .optional(),
     externalLink: externalLinkSchema,

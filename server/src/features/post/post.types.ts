@@ -1,5 +1,4 @@
-// src/features/post/post.types.ts
-
+//src/features/post/post.types.ts
 import { PostCategory } from "@prisma-client";
 
 /**
@@ -9,10 +8,10 @@ import { PostCategory } from "@prisma-client";
 export interface PostQueryFilters {
   page?: number;
   limit?: number;
-  q?: string; // The search query string
+  q?: string;
   category?: PostCategory;
   sort?: "newest" | "oldest" | "title-asc" | "title-desc";
-  tags?: string; // Comma-separated string of tag names
+  tags?: string;
   authorId?: string;
   likedByUserId?: string;
   savedByUserId?: string;

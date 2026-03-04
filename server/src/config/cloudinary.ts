@@ -1,4 +1,5 @@
 // src/config/cloudinary.ts
+
 import {
   v2 as cloudinaryV2,
   UploadApiResponse,
@@ -24,7 +25,7 @@ logger.info("✅ Cloudinary configured successfully.");
 export const uploadToCloudinary = async (
   filePath: string,
   folder: string,
-  publicId?: string
+  publicId?: string,
 ): Promise<UploadApiResponse> => {
   const uploadOptions: UploadApiOptions = {
     folder: folder,
@@ -37,7 +38,7 @@ export const uploadToCloudinary = async (
     const result = await cloudinaryV2.uploader.upload(filePath, uploadOptions);
     logger.info(
       { public_id: result.public_id, url: result.secure_url },
-      "File successfully uploaded to Cloudinary"
+      "File successfully uploaded to Cloudinary",
     );
     return result;
   } catch (error) {
@@ -52,7 +53,7 @@ export const uploadToCloudinary = async (
     } catch (unlinkErr) {
       logger.warn(
         { err: unlinkErr, filePath },
-        "Non-critical: Failed to delete temporary local file. It may have been moved or already deleted."
+        "Non-critical: Failed to delete temporary local file. It may have been moved or already deleted.",
       );
     }
   }
@@ -62,7 +63,7 @@ export const uploadToCloudinary = async (
  * Deletes an asset from Cloudinary using its public_id.
  */
 export const deleteFromCloudinary = async (
-  publicId: string
+  publicId: string,
 ): Promise<DeleteApiResponse> => {
   try {
     const result = await cloudinaryV2.uploader.destroy(publicId, {
@@ -70,7 +71,7 @@ export const deleteFromCloudinary = async (
     });
     logger.info(
       { publicId, result: result.result },
-      "Asset successfully deleted from Cloudinary"
+      "Asset successfully deleted from Cloudinary",
     );
     return result;
   } catch (error) {

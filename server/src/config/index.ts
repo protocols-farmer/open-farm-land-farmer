@@ -1,4 +1,4 @@
-// server/src/config/index.ts
+//src/config/index.ts
 
 /**
  * Helper to get and validate environment variables.
@@ -7,8 +7,6 @@
 const getEnvVariable = (key: string, required: boolean = true): string => {
   const value = process.env[key];
   if (!value && required) {
-    // Throw an error instead of logging and exiting.
-    // This allows the global uncaughtException handler to catch and log it properly.
     throw new Error(
       `❌ Fatal Error: Missing required environment variable ${key}. Check your .env file or platform settings.`,
     );
@@ -36,7 +34,7 @@ const getEnvVariableAsInt = (
     if (defaultValue !== undefined) {
       return defaultValue;
     }
-    // This case should ideally not be hit if logic is correct
+
     return NaN;
   }
 
@@ -50,7 +48,6 @@ const getEnvVariableAsInt = (
   return intValue;
 };
 
-// Define the structure of your configuration
 interface Config {
   nodeEnv: "development" | "production" | "test";
   port: number;
@@ -101,9 +98,6 @@ interface Config {
   };
 }
 
-// Build the config object
-// The try/catch block ensures that if config validation fails,
-// it's logged before the process exits.
 let config: Config;
 
 try {
@@ -160,7 +154,7 @@ try {
       },
     },
     cookies: {
-      refreshTokenName: "jid", // Often good to keep constants like this here too
+      refreshTokenName: "jid",
     },
     github: {
       pat: getEnvVariable("GITHUB_PAT", true),
@@ -168,8 +162,6 @@ try {
     logLevel: getEnvVariable("LOG_LEVEL", false) || "info",
   };
 } catch (error) {
-  // At this early stage, the logger is not initialized.
-  // A direct console.error is the most reliable way to show a fatal config error.
   console.error(
     "❌ Critical error during application configuration setup:",
     error,

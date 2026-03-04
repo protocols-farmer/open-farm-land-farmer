@@ -17,9 +17,9 @@ export const authLimiter = rateLimit({
       createHttpError(
         429,
         `Too many attempts. Please try again in ${Math.ceil(
-          config.rateLimits.auth.windowMs / 60000
-        )} minutes.`
-      )
+          config.rateLimits.auth.windowMs / 60000,
+        )} minutes.`,
+      ),
     );
   },
 });
@@ -27,10 +27,7 @@ export const authLimiter = rateLimit({
 /**
  * GLOBAL API LIMITER: Prevents general DDOS or scraping.
  */
-// 1. APPLY RATE LIMITING FIRST
-// This ensures that even before parsing JSON or cookies,
-// you check if the user is spamming the server.
-// app.use("/api", apiLimiter);
+
 export const apiLimiter = rateLimit({
   windowMs: config.rateLimits.api.windowMs,
   max: config.rateLimits.api.max,

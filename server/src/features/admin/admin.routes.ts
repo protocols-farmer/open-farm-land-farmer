@@ -1,5 +1,3 @@
-// src/features/admin/admin.routes.ts
-
 import { Router } from "express";
 import { adminController } from "./admin.controller.js";
 import { requireRole } from "@/middleware/admin.middleware.js";
@@ -7,23 +5,107 @@ import { verifyToken } from "@/middleware/auth.middleware.js";
 
 const router: Router = Router();
 
-// Apply authentication and SUPER_ADMIN role protection to ALL routes in this file.
-router.use(verifyToken, requireRole(["SUPER_ADMIN"]));
+// ==========================================
+// 1. PUBLIC ROUTES
+// ==========================================
+router.get("/system-config", adminController.getSystemConfig);
 
-// Dashboard
-router.get("/stats", adminController.getDashboardStats);
+// ==========================================
+// 2. SHARED ADMIN ROUTES (Super Admin & Content Creator)
+// ==========================================
+router.get(
+  "/stats",
+  verifyToken,
+  requireRole(["SUPER_ADMIN", "SYSTEM_CONTENT_CREATOR"]),
+  adminController.getDashboardStats,
+);
+
+// ==========================================
+// 3. SUPER ADMIN ONLY ROUTES
+// ==========================================
+
+// System Maintenance Toggle
+router.patch(
+  "/system-config",
+  verifyToken,
+  requireRole(["SUPER_ADMIN"]),
+  adminController.updateSystemConfig,
+);
 
 // User Management
-router.get("/users", adminController.getAllUsers);
-router.patch("/users/:id/role", adminController.updateUserRole);
-router.delete("/users/:id", adminController.deleteUser);
+router.get(
+  "/users",
+  verifyToken,
+  requireRole(["SUPER_ADMIN"]),
+  adminController.getAllUsers,
+);
+router.patch(
+  "/users/:id/role",
+  verifyToken,
+  requireRole(["SUPER_ADMIN"]),
+  adminController.updateUserRole,
+);
+router.delete(
+  "/users/:id",
+  verifyToken,
+  requireRole(["SUPER_ADMIN"]),
+  adminController.deleteUser,
+);
 
 // Post Management
-router.get("/posts", adminController.getAllPosts);
-router.delete("/posts/:id", adminController.deletePost);
+router.get(
+  "/posts",
+  verifyToken,
+  requireRole(["SUPER_ADMIN"]),
+  adminController.getAllPosts,
+);
+router.delete(
+  "/posts/:id",
+  verifyToken,
+  requireRole(["SUPER_ADMIN"]),
+  adminController.deletePost,
+);
 
-// --- NEW: Comment Management ---
-router.get("/comments", adminController.getAllComments);
-router.delete("/comments/:id", adminController.deleteComment);
+// Opportunity Management
+router.get(
+  "/opportunities",
+  verifyToken,
+  requireRole(["SUPER_ADMIN"]),
+  adminController.getAllOpportunities,
+);
+router.delete(
+  "/opportunities/:id",
+  verifyToken,
+  requireRole(["SUPER_ADMIN"]),
+  adminController.deleteOpportunity,
+);
+
+// Update Management
+router.get(
+  "/updates",
+  verifyToken,
+  requireRole(["SUPER_ADMIN"]),
+  adminController.getAllUpdates,
+);
+router.delete(
+  "/updates/:id",
+  verifyToken,
+  requireRole(["SUPER_ADMIN"]),
+  adminController.deleteUpdate,
+);
+
+// Comment Management
+router.get(
+  "/comments",
+  verifyToken,
+  requireRole(["SUPER_ADMIN"]),
+  adminController.getAllComments,
+);
+router.delete(
+  "/comments/:id",
+  verifyToken,
+  requireRole(["SUPER_ADMIN"]),
+  adminController.deleteComment,
+);
 
 export default router;

@@ -11,7 +11,7 @@ interface AuthState {
 const initialState: AuthState = {
   token: null,
   isAuthenticated: false,
-  isHydrated: false, // Prevents UI flicker during initial token check
+  isHydrated: false,
 };
 
 const authSlice = createSlice({
@@ -47,7 +47,7 @@ const authSlice = createSlice({
     clearCredentials(state) {
       state.token = null;
       state.isAuthenticated = false;
-      state.isHydrated = true; // Still hydrated, just logged out
+      state.isHydrated = true;
       authStorage.clearStorage();
     },
   },
@@ -56,7 +56,6 @@ const authSlice = createSlice({
 export const { setCredentials, clearCredentials, completeHydration } =
   authSlice.actions;
 
-// Selectors
 export const selectCurrentToken = (state: { auth: AuthState }) =>
   state.auth.token;
 export const selectIsAuthenticated = (state: { auth: AuthState }) =>

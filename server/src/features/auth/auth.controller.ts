@@ -3,6 +3,7 @@ import { asyncHandler } from "@/middleware/asyncHandler.js";
 import { Request, Response } from "express";
 import { authService } from "./auth.service.js";
 import { config } from "@/config/index.js";
+import { createHttpError } from "@/utils/error.factory.js";
 
 class AuthController {
   /**
@@ -24,7 +25,7 @@ class AuthController {
     this.setRefreshTokenCookie(
       res,
       tokens.refreshToken,
-      tokens.refreshTokenExpiresAt
+      tokens.refreshTokenExpiresAt,
     );
 
     res.status(201).json({
@@ -40,7 +41,7 @@ class AuthController {
     this.setRefreshTokenCookie(
       res,
       tokens.refreshToken,
-      tokens.refreshTokenExpiresAt
+      tokens.refreshTokenExpiresAt,
     );
 
     res.status(200).json({
@@ -50,24 +51,44 @@ class AuthController {
     });
   });
 
+  // src/features/auth/auth.controller.ts
+
   refreshAccessToken = asyncHandler(async (req: Request, res: Response) => {
     const incomingRefreshToken =
-      req.cookies[config.cookies.refreshTokenName] || req.body.refreshToken;
+      req.cookies?.[config.cookies.refreshTokenName] || req.body?.refreshToken;
 
-    const { newAccessToken, newRefreshToken, newRefreshTokenExpiresAt } =
-      await authService.handleRefreshTokenRotation({ incomingRefreshToken });
-    this.setRefreshTokenCookie(res, newRefreshToken, newRefreshTokenExpiresAt);
+    if (!incomingRefreshToken) {
+      res.clearCookie(config.cookies.refreshTokenName);
+      throw createHttpError(401, "No refresh token provided.");
+    }
+    try {
+      const { newAccessToken, newRefreshToken, newRefreshTokenExpiresAt } =
+        await authService.handleRefreshTokenRotation({ incomingRefreshToken });
 
-    res.status(200).json({
-      status: "success",
-      message: "Token refreshed successfully.",
-      data: {
-        accessToken: newAccessToken,
-        refreshToken: newRefreshToken,
-      },
-    });
+      this.setRefreshTokenCookie(
+        res,
+        newRefreshToken,
+        newRefreshTokenExpiresAt,
+      );
+
+      res.status(200).json({
+        status: "success",
+        message: "Token refreshed successfully.",
+        data: {
+          accessToken: newAccessToken,
+          refreshToken: newRefreshToken,
+        },
+      });
+    } catch (error) {
+      res.clearCookie(config.cookies.refreshTokenName, {
+        httpOnly: true,
+        secure: config.nodeEnv === "production",
+        sameSite: "strict",
+      });
+
+      throw error;
+    }
   });
-
   logout = asyncHandler(async (req: Request, res: Response) => {
     const incomingRefreshToken = req.cookies[config.cookies.refreshTokenName];
     await authService.handleUserLogout({ incomingRefreshToken });
@@ -84,7 +105,7 @@ class AuthController {
     this.setRefreshTokenCookie(
       res,
       tokens.refreshToken,
-      tokens.refreshTokenExpiresAt
+      tokens.refreshTokenExpiresAt,
     );
 
     res.status(200).json({ status: "success", data: { user, tokens } });

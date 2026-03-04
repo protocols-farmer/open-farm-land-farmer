@@ -17,7 +17,11 @@ router.get("/:id", updateController.findOne);
 
 // The roles allowed to create, update, or delete updates.
 // FIX: Explicitly type the array as SystemRole[]
-const authorizedRoles: SystemRole[] = ["DEVELOPER", "SUPER_ADMIN"];
+const authorizedRoles: SystemRole[] = [
+  "DEVELOPER",
+  "SUPER_ADMIN",
+  "SYSTEM_CONTENT_CREATOR",
+];
 
 // Create a new update
 router.post(
@@ -25,7 +29,7 @@ router.post(
   verifyToken,
   requireRole(authorizedRoles), // Middleware handles authorization check
   validate(createUpdateSchema),
-  updateController.create
+  updateController.create,
 );
 
 // Update an existing update
@@ -34,7 +38,7 @@ router.patch(
   verifyToken,
   requireRole(authorizedRoles), // Middleware handles authorization check
   validate(updateUpdateSchema),
-  updateController.update
+  updateController.update,
 );
 
 // Delete an update
@@ -42,7 +46,7 @@ router.delete(
   "/:id",
   verifyToken,
   requireRole(authorizedRoles), // Middleware handles authorization check
-  updateController.remove
+  updateController.remove,
 );
 
 export default router;

@@ -1,4 +1,4 @@
-// src/lib/utils.ts
+//src/lib/utils.ts
 import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
 
@@ -13,20 +13,16 @@ export function cn(...inputs: ClassValue[]) {
  * Extracts a human-readable error message from backend API responses.
  * Specifically tuned to handle the refined Global Error Handler on our backend.
  */
-// Update only this function in src/lib/utils.ts
+
 export const getApiErrorMessage = (error: any): string => {
-  // 1. Check for the standard data.message from our Global Error Handler
   if (error?.data?.message) return error.data.message;
 
-  // 2. Handle cases where the backend might return an array of errors (like Zod)
   if (Array.isArray(error?.data?.errors) && error.data.errors.length > 0) {
     return error.data.errors[0].message || "Validation failed.";
   }
 
-  // 3. Fallback to string if the error itself is a string
   if (typeof error === "string") return error;
 
-  // 4. Fallback to standard JS error messages
   if (error?.message) return error.message;
 
   return "An unexpected error occurred. Please try again.";

@@ -5,9 +5,9 @@ import { SafeUser } from "@/features/user/user.service.js";
 export interface SocialProfile {
   email: string;
   name: string;
-  image?: string;
-  sub?: string; // Google's unique ID
-  id?: string; // GitHub's unique ID
+  image?: string | null;
+  sub?: string;
+  id?: string;
 }
 
 export interface SocialAuthResponse {

@@ -19,12 +19,9 @@ export default function ProfileCompletionBanner({
 }: ProfileCompletionBannerProps) {
   const hasCelebrated = useRef(false);
 
-  // This is the Cloudinary ID for your default placeholder image
   const DEFAULT_IMAGE_ID = "xi-biooid_bstapi";
 
   const completionData = useMemo(() => {
-    // We split the weights so they total exactly 100.
-    // An image is only 'completed' if it exists AND isn't the default placeholder.
     const fields = [
       {
         label: "Full Name",
@@ -65,9 +62,7 @@ export default function ProfileCompletionBanner({
     };
   }, [user]);
 
-  // --- CELEBRATION LOGIC ---
   useEffect(() => {
-    // Only fire when score is EXACTLY 100
     if (completionData.score === 100 && !hasCelebrated.current) {
       hasCelebrated.current = true;
       const end = Date.now() + 3000;
@@ -93,7 +88,6 @@ export default function ProfileCompletionBanner({
     }
   }, [completionData.score]);
 
-  // Show "Success" state only when 100% is reached (All fields + Both images)
   if (completionData.score >= 100) {
     return (
       <div className="bg-green-500/10 border-2 border-green-500/20 rounded-3xl p-6 mb-10 flex items-center justify-between animate-in zoom-in duration-500">

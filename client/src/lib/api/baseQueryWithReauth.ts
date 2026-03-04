@@ -1,4 +1,4 @@
-//src/lib/api/baseQueryWithReauth.ts
+// src/lib/api/baseQueryWithReauth.ts
 import { fetchBaseQuery } from "@reduxjs/toolkit/query";
 import type {
   BaseQueryFn,
@@ -8,7 +8,6 @@ import type {
 import { setCredentials, clearCredentials } from "../features/auth/authSlice";
 import { RootState } from "../store";
 
-// A mutex-like flag to prevent multiple refresh calls at once
 let isRefreshing = false;
 
 /**
@@ -34,16 +33,35 @@ export const baseQueryWithReauth: BaseQueryFn<
     credentials: "include",
   });
 
-  // 1. Attempt the original request
   let result = await rawBaseQuery(args, api, extraOptions);
 
-  // 2. Handle 401 Unauthorized
   if (result.error && result.error.status === 401) {
-    // If the request itself was the refresh call, don't try to refresh again!
     const isRefreshRequest =
-      typeof args !== "string" && args.url === "/auth/refresh";
+      (typeof args === "string" && args.includes("/auth/refresh")) ||
+      (typeof args !== "string" && args.url === "/auth/refresh");
 
-    if (!isRefreshing && !isRefreshRequest) {
+    /**
+     * THE UNIVERSAL GUARD:
+     * 1. If the refresh request itself failed (401), stop immediately.
+     * 2. If no token exists in Redux, it's a guest request. Do not attempt refresh.
+     * This kills loops on the Login page AND all other pages.
+     */
+    if (isRefreshRequest || !token) {
+      if (token || isRefreshRequest) {
+        api.dispatch(clearCredentials());
+
+        if (typeof window !== "undefined") {
+          const currentPath = window.location.pathname;
+          if (!currentPath.includes("/auth/login")) {
+            // Using replace() prevents history-stack loops
+            window.location.replace("/auth/login?status=session_expired");
+          }
+        }
+      }
+      return result;
+    }
+
+    if (!isRefreshing) {
       isRefreshing = true;
       console.warn("Access token expired. Attempting manual refresh...");
 
@@ -61,7 +79,6 @@ export const baseQueryWithReauth: BaseQueryFn<
           console.log("Token refreshed successfully.");
           api.dispatch(setCredentials({ token: newToken }));
 
-          // Retry the original request with the new token
           const retryBaseQuery = fetchBaseQuery({
             baseUrl: process.env.NEXT_PUBLIC_BACKEND_API_URL,
             prepareHeaders: (h) => h.set("authorization", `Bearer ${newToken}`),
@@ -70,13 +87,13 @@ export const baseQueryWithReauth: BaseQueryFn<
           result = await retryBaseQuery(args, api, extraOptions);
         }
       } else {
-        // Refresh failed (Session expired or refresh token revoked)
-        console.error("Session expired. Logging out.");
+        console.error("Session expired or DB reset. Logging out.");
         api.dispatch(clearCredentials());
 
         if (typeof window !== "undefined") {
-          // Break the React lifecycle and force a hard redirect
-          window.location.href = "/auth/login?status=session_expired";
+          if (!window.location.pathname.includes("/auth/login")) {
+            window.location.replace("/auth/login?status=session_expired");
+          }
         }
       }
       isRefreshing = false;
