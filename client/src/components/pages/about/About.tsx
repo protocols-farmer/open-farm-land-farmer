@@ -17,7 +17,7 @@ export default function About() {
       <section className="mb-24 text-center">
         <div className="flex justify-center mb-8 h-20 relative">
           <Image
-            src="https://res.cloudinary.com/djtww0vax/image/upload/v1766912208/open_zrhcas.png"
+            src="https://res.cloudinary.com/dhr9zmb3i/image/upload/v1772592253/open-farm-land_tlvnyn.png"
             alt="Open Farmland Logo"
             width={200}
             height={200}
@@ -87,7 +87,7 @@ export default function About() {
               </p>
             </div>
             <div className="flex flex-wrap justify-center md:justify-start gap-4">
-              <Button variant="outline" size="sm" asChild>
+              {/* <Button variant="outline" size="sm" asChild>
                 <Link
                   href="https://github.com/protocols-farmer"
                   target="_blank"
@@ -95,7 +95,7 @@ export default function About() {
                   <Github className="mr-2 h-4 w-4" />
                   Github
                 </Link>
-              </Button>
+              </Button> */}
 
               <div className="inline-flex items-center text-xs font-mono text-primary/60 px-4 py-2 border border-primary/20 rounded-full bg-primary/5">
                 <MessageSquare className="mr-2 h-3 w-3 animate-pulse" />
