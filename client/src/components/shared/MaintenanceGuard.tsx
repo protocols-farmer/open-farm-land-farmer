@@ -96,6 +96,9 @@ export default function MaintenanceGuard({
             <h1 className="text-3xl font-semibold tracking-tight">
               System Maintenance
             </h1>
+            <p className="text-muted-foreground">
+              Please reload the page in a few minutes.
+            </p>
 
             <div className="rounded-lg border bg-muted/50 p-4 text-sm text-left w-full space-y-1">
               <p className="font-semibold text-foreground">Reason:</p>

@@ -20,7 +20,7 @@ const geistMono = Geist_Mono({
 const siteConfig = {
   name: "Open Farm Land",
   description:
-    "Open farm lands is a platform to share your ideas, project journeys, blogs, and resources. No we don't recommend using AI-generated fluff. We believe in human creativity and documentation.",
+    "Open Farm Land is a platform to share your ideas, project journeys, blogs, and resources. No we don't recommend using AI-generated fluff. We believe in human creativity and documentation.",
   url: "https://open-farm-land-farmer.vercel.app", // Update this when you have a custom domain
   ogImage:
     "https://res.cloudinary.com/djtww0vax/image/upload/v1766912208/open_zrhcas.png", // Ensure you create this file in /public
