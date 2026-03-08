@@ -17,7 +17,7 @@ export default function About() {
       <section className="mb-24 text-center">
         <div className="flex justify-center mb-8 h-20 relative">
           <Image
-            src="https://res.cloudinary.com/dhr9zmb3i/image/upload/v1772592253/open-farm-land_tlvnyn.png"
+            src="https://res.cloudinary.com/dhr9zmb3i/image/upload/v1772941596/open-farm-land_kfo5ui.png"
             alt="Open Farmland Logo"
             width={200}
             height={200}
@@ -54,7 +54,7 @@ export default function About() {
               </div>
             ) : (
               <Image
-                src="https://res.cloudinary.com/djtww0vax/image/upload/v1747774309/man-2_kbwpu7.jpg"
+                src="https://res.cloudinary.com/dhr9zmb3i/image/upload/v1772941590/cat_kw8xmu.jpg"
                 alt="Protocols Farmer"
                 fill
                 sizes="160px"
