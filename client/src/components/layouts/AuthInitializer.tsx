@@ -52,16 +52,14 @@ export default function AuthInitializer({
           </div>
 
           <div className="space-y-4 w-full">
-            <h1 className="text-4xl font-black tracking-tighter">
-              Authenticating session
-            </h1>
+            <h1 className="text-4xl font-black ">Authenticating session</h1>
             <p className="text-muted-foreground font-medium text-sm leading-relaxed">
               The platform is verifying your security credentials with the farm.
               This usually takes a few moments.
             </p>
 
             <div className="rounded-2xl border bg-muted/20 p-6 text-sm text-left w-full space-y-3">
-              <p className="font-bold tracking-widest text-[10px] uppercase text-primary">
+              <p className="font-bold  text-[10px]  text-primary">
                 Current status
               </p>
               <p className="text-muted-foreground leading-relaxed">

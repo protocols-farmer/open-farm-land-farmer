@@ -51,7 +51,7 @@ export default function MaintenanceGuard({
     return (
       <div className="flex min-h-screen flex-col items-center justify-center bg-background">
         <Loader2 className="h-8 w-8 animate-spin text-primary/40" />
-        <p className="mt-4 text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground/40">
+        <p className="mt-4 text-[10px] font-bold  text-muted-foreground/40">
           Waking up system
         </p>
       </div>
@@ -68,7 +68,7 @@ export default function MaintenanceGuard({
           </div>
 
           <div className="space-y-4 w-full">
-            <h1 className="text-4xl font-black tracking-tighter">
+            <h1 className="text-4xl font-black ">
               {isServerDown
                 ? "System update in progress"
                 : "System maintenance"}
@@ -88,7 +88,7 @@ export default function MaintenanceGuard({
             </p>
 
             <div className="rounded-2xl border bg-muted/20 p-6 text-sm text-left w-full space-y-3">
-              <p className="font-bold tracking-widest text-[10px] uppercase text-primary">
+              <p className="font-bold  text-[10px] text-primary">
                 Current status
               </p>
               <p className="text-muted-foreground leading-relaxed">
@@ -102,7 +102,7 @@ export default function MaintenanceGuard({
 
           <div className="flex w-full flex-col gap-3">
             <div className="pt-8 border-t border-border/50 w-full">
-              <p className="text-[10px] text-muted-foreground font-bold tracking-widest uppercase mb-4">
+              <p className="text-[10px] text-muted-foreground font-bold  mb-4">
                 Administrator access
               </p>
               <Link href="/auth/login" className="w-full">
