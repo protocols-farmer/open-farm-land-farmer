@@ -35,7 +35,7 @@ class UpdateController {
       req.params.id,
       req.body,
       userId,
-      userRole
+      userRole,
     );
     res.status(200).json({ success: true, data: updated });
   });
@@ -47,6 +47,27 @@ class UpdateController {
 
     await updateService.remove(req.params.id, userId, userRole);
     res.status(204).send();
+  });
+
+  /**
+   * 🚜 Public endpoint to fetch the current app version for the UI.
+   */
+  /**
+   * 🚜 Public endpoint to fetch the current app version.
+   */
+  getLatestVersion = asyncHandler(async (_req: Request, res: Response) => {
+    const versionData = await updateService.getLatestVersion();
+
+    if (!versionData) {
+      return res.status(200).json({
+        success: true,
+        data: {
+          version: "1.0.0-beta.1", // 🚜 Consistent fallback versioning
+          title: "Initial public release",
+        },
+      });
+    }
+    return res.status(200).json({ success: true, data: versionData });
   });
 }
 

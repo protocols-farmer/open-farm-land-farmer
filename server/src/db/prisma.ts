@@ -6,6 +6,8 @@ import { logger } from "../config/logger.js";
 import { PrismaPg } from "@prisma/adapter-pg";
 import pg from "pg";
 
+// future :You can wrap the query(args) call in a Promise.race to ensure that no single attempt takes longer than, say, 5 seconds.
+
 const pool = new pg.Pool({
   connectionString: config.databaseUrl,
 });

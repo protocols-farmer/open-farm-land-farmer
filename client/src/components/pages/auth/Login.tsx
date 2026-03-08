@@ -61,6 +61,13 @@ const LoginFormContent = () => {
   const urlMessage = useMemo(() => {
     const error = searchParams.get("error");
     const status = searchParams.get("status");
+    if (status === "verification_sent") {
+      return {
+        type: "info" as const,
+        text: "Verification link sent! Please check your email to verify your account.",
+        icon: Info,
+      };
+    }
 
     if (status === "password_changed") {
       return {

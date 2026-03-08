@@ -1,10 +1,12 @@
-//src/components/pages/profile/ChangePasswordForm.tsx
 "use client";
 
 import React, { useState } from "react";
 import { useForm, SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useChangePasswordMutation } from "@/lib/features/auth/authApiSlice";
+import {
+  useChangePasswordMutation,
+  useLogoutMutation,
+} from "@/lib/features/auth/authApiSlice";
 import {
   changePasswordSchema,
   ChangePasswordFormValues,
@@ -20,16 +22,26 @@ import {
   CardContent,
 } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Eye, EyeOff, Loader2, Save, CheckCircle, Info } from "lucide-react";
+import {
+  Eye,
+  EyeOff,
+  Loader2,
+  Save,
+  CheckCircle,
+  Info,
+  LogOut,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useLogoutMutation } from "@/lib/features/auth/authApiSlice";
 
 export default function ChangePasswordForm() {
   const [changePassword, { isLoading }] = useChangePasswordMutation();
+  const [logout] = useLogoutMutation();
+
   const [uiMessage, setUiMessage] = useState<{
     type: "success" | "error";
     text: string;
   } | null>(null);
+
   const [showCurrent, setShowCurrent] = useState(false);
   const [showNew, setShowNew] = useState(false);
 
@@ -42,38 +54,32 @@ export default function ChangePasswordForm() {
     resolver: zodResolver(changePasswordSchema),
   });
 
-  const [logout] = useLogoutMutation();
-
   const onSubmit: SubmitHandler<ChangePasswordFormValues> = async (data) => {
     setUiMessage(null);
     try {
       await changePassword(data).unwrap();
-
       setUiMessage({
         type: "success",
-        text: "Password updated! Logging you out in 2 seconds...",
+        text: "Security credentials updated. Initiating secure logout...",
       });
-
       reset();
-
       setTimeout(async () => {
         await logout().unwrap();
-      }, 2000);
+      }, 2500);
     } catch (err: any) {
       setUiMessage({
         type: "error",
-        text: err?.data?.message || "Incorrect current password.",
+        text: err?.data?.message || "Verification of current password failed.",
       });
     }
   };
 
   return (
-    <Card>
+    <Card className="border-border shadow-sm">
       <CardHeader>
-        <CardTitle>Change Password</CardTitle>
+        <CardTitle className="text-xl font-bold">Security Update</CardTitle>
         <CardDescription>
-          Update your password here. For security, you will be logged out after
-          a successful change.
+          Changing your password will invalidate all current active sessions.
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -81,19 +87,22 @@ export default function ChangePasswordForm() {
           <Alert
             variant={uiMessage.type === "error" ? "destructive" : "default"}
             className={cn(
-              "mb-6",
+              "mb-6 animate-in fade-in slide-in-from-left-2",
               uiMessage.type === "success" &&
-                "border-green-500/50 text-green-700",
+                "bg-primary/5 border-primary/20 text-primary",
             )}
           >
             {uiMessage.type === "success" ? (
-              <CheckCircle className="h-4 w-4" />
+              <LogOut className="h-4 w-4" />
             ) : (
               <Info className="h-4 w-4" />
             )}
-            <AlertDescription>{uiMessage.text}</AlertDescription>
+            <AlertDescription className="text-xs font-semibold tracking-tight italic">
+              {uiMessage.text}
+            </AlertDescription>
           </Alert>
         )}
+
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           <div className="space-y-1.5">
             <Label htmlFor="currentPassword">Current Password</Label>
@@ -101,74 +110,80 @@ export default function ChangePasswordForm() {
               <Input
                 id="currentPassword"
                 type={showCurrent ? "text" : "password"}
+                className="pr-10 h-10"
                 {...register("currentPassword")}
                 disabled={isLoading}
               />
-              <Button
+              <button
                 type="button"
-                variant="ghost"
-                size="icon"
                 onClick={() => setShowCurrent(!showCurrent)}
-                className="absolute inset-y-0 right-0 h-full px-3 text-muted-foreground"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
               >
-                <Eye size={18} />
-              </Button>
+                {showCurrent ? <EyeOff size={16} /> : <Eye size={16} />}
+              </button>
             </div>
             {errors.currentPassword && (
-              <p className="text-destructive text-xs mt-1">
+              <p className="text-destructive text-[11px] font-medium">
                 {errors.currentPassword.message}
               </p>
             )}
           </div>
-          <div className="grid sm:grid-cols-2 gap-4">
+
+          <div className="grid sm:grid-cols-2 gap-6">
             <div className="space-y-1.5">
               <Label htmlFor="newPassword">New Password</Label>
               <div className="relative">
                 <Input
                   id="newPassword"
                   type={showNew ? "text" : "password"}
+                  className="pr-10 h-10"
                   {...register("newPassword")}
                   disabled={isLoading}
                 />
-                <Button
+                <button
                   type="button"
-                  variant="ghost"
-                  size="icon"
                   onClick={() => setShowNew(!showNew)}
-                  className="absolute inset-y-0 right-0 h-full px-3 text-muted-foreground"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                 >
-                  <Eye size={18} />
-                </Button>
+                  {showNew ? <EyeOff size={16} /> : <Eye size={16} />}
+                </button>
               </div>
               {errors.newPassword && (
-                <p className="text-destructive text-xs mt-1">
+                <p className="text-destructive text-[11px] font-medium">
                   {errors.newPassword.message}
                 </p>
               )}
             </div>
+
             <div className="space-y-1.5">
               <Label htmlFor="confirmNewPassword">Confirm New Password</Label>
               <Input
                 id="confirmNewPassword"
                 type="password"
+                className="h-10"
                 {...register("confirmNewPassword")}
                 disabled={isLoading}
               />
               {errors.confirmNewPassword && (
-                <p className="text-destructive text-xs mt-1">
+                <p className="text-destructive text-[11px] font-medium">
                   {errors.confirmNewPassword.message}
                 </p>
               )}
             </div>
           </div>
-          <div>
-            <Button type="submit" disabled={isLoading}>
+
+          <div className="pt-2">
+            <Button
+              type="submit"
+              disabled={isLoading}
+              className="gap-2 font-bold px-6"
+            >
               {isLoading ? (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                <Loader2 className="h-4 w-4 animate-spin" />
               ) : (
-                <Save className="mr-2 h-4 w-4" />
+                <Save className="h-4 w-4" />
               )}
-              Update Password
+              Update Credentials
             </Button>
           </div>
         </form>

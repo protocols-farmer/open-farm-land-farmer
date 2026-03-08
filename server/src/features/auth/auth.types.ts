@@ -4,6 +4,7 @@ import { SystemRole } from "@prisma-client";
 
 export interface DecodedAccessTokenPayload {
   id: string;
+  email: string;
   systemRole: SystemRole;
   type: "access";
   iat: number;
@@ -75,6 +76,8 @@ export interface SignUpInputDto {
 export interface UserJWTPayload {
   id: string;
   username: string;
+  email: string;
+  isEmailVerified: boolean;
   systemRole: SystemRole;
   name: string;
   profileImage?: string;

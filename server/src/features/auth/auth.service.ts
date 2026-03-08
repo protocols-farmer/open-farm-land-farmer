@@ -1,4 +1,3 @@
-//src/features/auth/auth.service.ts
 import bcrypt from "bcryptjs";
 import prisma, { rawPrisma } from "@/db/prisma.js";
 import { User } from "@prisma-client";
@@ -10,7 +9,6 @@ import {
   verifyAndValidateRefreshToken,
 } from "@/utils/jwt.utils.js";
 import {
-  SignUpInputDto,
   LoginInputDto,
   RefreshTokenInputDto,
   AuthTokens,
@@ -19,11 +17,23 @@ import {
   SignUpRequestDto,
 } from "@/features/auth/auth.types.js";
 import { userService, SafeUser } from "../user/user.service.js";
+import crypto from "crypto";
+import { emailService } from "../email/email.service.js";
+import { config } from "@/config/index.js";
 
 const MAX_USERNAME_LEN = 50;
 const SUFFIX_LEN = 5;
 
 export class AuthService {
+  /**
+   * REFINED: Registers a new user and triggers an email verification handshake.
+   * Scenario Fix: Custom error code if Mailgun fails so Controller can notify user.
+   */
+  /**
+   * REFINED: Registers a new user and triggers a welcome email.
+   * Note: emailVerifyToken is still generated and stored so the user can
+   * manually trigger verification later via the app banner.
+   */
   public async registerUser(input: SignUpRequestDto): Promise<{
     user: SafeUser;
     tokens: AuthTokens;
@@ -46,16 +56,35 @@ export class AuthService {
       if (!existing) isUnique = true;
     }
 
+    // Still generate the token so it's ready for manual resend/verification
+    const verificationToken = crypto.randomBytes(32).toString("hex");
     const generatedName = "New Wanderer";
 
-    const fullUserData: SignUpInputDto = {
+    const fullUserData = {
       email,
       password,
       username,
       name: generatedName,
+      isEmailVerified: false,
+      emailVerifyToken: verificationToken,
+      settings: {
+        create: {},
+      },
     };
 
-    const user = await userService.createUser(fullUserData);
+    const user = await userService.createUser(fullUserData as any);
+
+    try {
+      // 🚜 CHANGE: Send professional welcome guide instead of verification link
+      await emailService.sendWelcomeEmail(user.email, user.name);
+    } catch (err: any) {
+      logger.error(
+        { err, userId: user.id },
+        "Welcome email delivery failed during signup",
+      );
+      // Throw specific error so the Controller can trigger the 'warning' UI state
+      throw createHttpError(503, "USER_CREATED_BUT_EMAIL_FAILED");
+    }
 
     const accessToken = generateAccessToken(user as unknown as User);
     const { token: refreshToken, expiresAt } =
@@ -202,6 +231,7 @@ export class AuthService {
       return { newAccessToken, newRefreshToken, newRefreshTokenExpiresAt };
     });
   }
+
   public async handleUserLogout(input: LogoutInputDto): Promise<void> {
     if (!input.incomingRefreshToken) return;
     try {
@@ -244,11 +274,22 @@ export class AuthService {
         if (!existing) isUnique = true;
       }
 
+      // Inside findOrCreateOAuthUser, replace the user creation block:
       user = await prisma.user.create({
         data: {
           email: profile.email,
           name: profile.name ?? "New User",
           username: username!,
+          isEmailVerified: true,
+          settings: {
+            create: {
+              emailMarketing: true,
+              emailUpdates: true,
+              emailSocial: true,
+              theme: "DARK", // 🌙 Dark Mode Default
+              notificationsEnabled: true,
+            },
+          },
           ...(profile.image && { profileImage: profile.image }),
         },
       });
@@ -275,6 +316,138 @@ export class AuthService {
       where: { userId, revoked: false },
       data: { revoked: true },
     });
+  }
+
+  /**
+   * Generates a reset token and sends the email.
+   * Scenario Fix 1: Stop silent return for Social Accounts; throw error instead.
+   * Scenario Fix 2: Log 'User not found' for developers while returning silently for users.
+   */
+  public async sendPasswordResetToken(email: string): Promise<void> {
+    const user = await rawPrisma.user.findUnique({ where: { email } });
+    // 🚜 Scenario Fix: Developer insight for missing email
+    if (!user) {
+      logger.info({ email }, "🔍 Forgot Password: Email not found in DB.");
+      return;
+    }
+
+    // 🚜 Scenario Fix: Detect and block social accounts from reset flow
+    if (!user.hashedPassword) {
+      logger.warn({ email }, "⚠️ Forgot Password: User is a Social Account.");
+      throw createHttpError(400, "SOCIAL_ACCOUNT_DETECTED");
+    }
+
+    const resetToken = crypto.randomBytes(32).toString("hex");
+    const expires = new Date(Date.now() + 3600000); // 1 hour
+
+    await prisma.user.update({
+      where: { id: user.id },
+      data: {
+        passwordResetToken: resetToken,
+        passwordResetExpires: expires,
+      },
+    });
+
+    await emailService.sendPasswordResetEmail(user.email, {
+      name: user.name,
+      url: `${config.socialAuth.frontendUrl}/auth/reset-password?token=${resetToken}`,
+    });
+
+    logger.info(
+      { email },
+      "📧 Forgot Password: Reset email successfully handed off to Mailgun.",
+    );
+  }
+
+  public async resetUserPassword(
+    token: string,
+    newPassword: string,
+  ): Promise<void> {
+    // 🚜 Use rawPrisma here too
+    const user = await rawPrisma.user.findFirst({
+      where: {
+        passwordResetToken: token,
+        passwordResetExpires: { gt: new Date() },
+      },
+    });
+
+    if (!user) throw createHttpError(400, "Token is invalid or has expired.");
+
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    // 🚜 Use rawPrisma for the transaction as well
+    await rawPrisma.$transaction([
+      rawPrisma.user.update({
+        where: { id: user.id },
+        data: {
+          hashedPassword,
+          passwordResetToken: null,
+          passwordResetExpires: null,
+        },
+      }),
+      rawPrisma.refreshToken.updateMany({
+        where: { userId: user.id },
+        data: { revoked: true },
+      }),
+    ]);
+  }
+  /**
+   * Scenario Fix: Log specific token attempted for developer debugging.
+   */
+  public async verifyUserEmail(token: string): Promise<void> {
+    const user = await prisma.user.findFirst({
+      where: { emailVerifyToken: token },
+    });
+
+    if (!user) {
+      // 🚜 Scenario Fix: Log the failed token for debugging
+      logger.warn(
+        { token },
+        "❌ Email Verification Failed: Token invalid or not found.",
+      );
+      throw createHttpError(400, "Invalid verification token.");
+    }
+
+    await prisma.user.update({
+      where: { id: user.id },
+      data: {
+        isEmailVerified: true,
+        emailVerifyToken: null,
+      },
+    });
+
+    logger.info({ userId: user.id }, "✅ Email verified successfully.");
+  }
+
+  /**
+   * Scenario Fix: Specific error if user tries to resend to a verified account.
+   */
+  public async resendVerificationEmail(userId: string): Promise<void> {
+    const user = await prisma.user.findUnique({ where: { id: userId } });
+
+    if (!user) throw createHttpError(404, "User not found.");
+
+    // 🚜 Scenario Fix: Prevent resend for already verified accounts
+    if (user.isEmailVerified) {
+      logger.info({ userId }, "ℹ️ Resend Blocked: Account already verified.");
+      throw createHttpError(400, "ALREADY_VERIFIED");
+    }
+
+    const newToken = crypto.randomBytes(32).toString("hex");
+
+    await prisma.user.update({
+      where: { id: userId },
+      data: { emailVerifyToken: newToken },
+    });
+
+    const verificationUrl = `${config.socialAuth.frontendUrl}/auth/verify-email?token=${newToken}`;
+
+    await emailService.sendVerificationEmail(user.email, {
+      name: user.name,
+      url: verificationUrl,
+    });
+
+    logger.info({ userId }, "📧 Fresh verification link sent.");
   }
 }
 

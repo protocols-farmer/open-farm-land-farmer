@@ -1,51 +1,49 @@
-// src/features/updates/update.routes.ts
+//src/features/updates/update.routes.ts
 import { Router } from "express";
 import { updateController } from "./update.controller.js";
 import { verifyToken } from "@/middleware/auth.middleware.js";
-import { requireRole } from "@/middleware/admin.middleware.js"; // Reusable role middleware
+import { requireRole } from "@/middleware/admin.middleware.js";
+import { isVerified } from "@/middleware/isVerified.js"; // Added isVerified
 import { validate } from "@/middleware/validate.js";
 import { createUpdateSchema, updateUpdateSchema } from "./update.validation.js";
-import { SystemRole } from "@prisma-client"; // FIX: Import the SystemRole enum
+import { SystemRole } from "@prisma-client";
 
 const router: Router = Router();
-
-// Public routes to view updates
+router.get("/latest-version", updateController.getLatestVersion);
+// --- Public Routes ---
 router.get("/", updateController.findAll);
 router.get("/:id", updateController.findOne);
 
-// --- Protected routes for admin/developer actions ---
-
-// The roles allowed to create, update, or delete updates.
-// FIX: Explicitly type the array as SystemRole[]
+// --- Protected Routes ---
 const authorizedRoles: SystemRole[] = [
   "DEVELOPER",
   "SUPER_ADMIN",
   "SYSTEM_CONTENT_CREATOR",
 ];
 
-// Create a new update
 router.post(
   "/",
   verifyToken,
-  requireRole(authorizedRoles), // Middleware handles authorization check
+  isVerified, // Security Gate
+  requireRole(authorizedRoles),
   validate(createUpdateSchema),
   updateController.create,
 );
 
-// Update an existing update
 router.patch(
   "/:id",
   verifyToken,
-  requireRole(authorizedRoles), // Middleware handles authorization check
+  isVerified, // Security Gate
+  requireRole(authorizedRoles),
   validate(updateUpdateSchema),
   updateController.update,
 );
 
-// Delete an update
 router.delete(
   "/:id",
   verifyToken,
-  requireRole(authorizedRoles), // Middleware handles authorization check
+  isVerified, // Security Gate
+  requireRole(authorizedRoles),
   updateController.remove,
 );
 

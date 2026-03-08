@@ -1,4 +1,3 @@
-//src/middleware/extractUser.ts
 import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 import { config } from "@/config/index.js";
@@ -20,7 +19,9 @@ export const extractUser = (
       ) as UserJWTPayload;
 
       req.user = decoded;
-    } catch {}
+    } catch (error) {
+      req.user = null;
+    }
   }
   next();
 };

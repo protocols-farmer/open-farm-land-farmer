@@ -1,50 +1,61 @@
-// FILE: src/lib/schemas/opportunity.schemas.ts
+//src/lib/schemas/opportunity.schemas.ts
 import { z } from "zod";
 
+/**
+ * Syncs with Backend 'OpportunityType' Prisma Enum.
+ */
 const OpportunityTypeEnum = z.enum(
   ["FULL_TIME", "PART_TIME", "CONTRACT", "INTERNSHIP"],
   {
-    required_error: "You must select an opportunity type.",
-  }
+    required_error: "Selection of an opportunity type is mandatory.",
+  },
 );
 
-// A simple regex to check for common image extensions
-const IMAGE_URL_REGEX = /\.(jpg|jpeg|png|gif|webp|svg)$/i;
-
 export const opportunitySchema = z.object({
-  // ... other fields remain the same
   title: z
     .string()
-    .min(3, "Title must be at least 3 characters long.")
+    .min(3, "Title must be at least 3 characters.")
     .max(100, "Title cannot exceed 100 characters."),
+
   companyName: z.string().min(1, "Company name is required."),
+
   location: z.string().min(1, "Location is required."),
+
   type: OpportunityTypeEnum,
+
   fullDescription: z
     .string()
-    .min(20, "Full description must be at least 20 characters long."),
+    .min(20, "A minimum of 20 characters is required for the description."),
+
   applyUrl: z
     .string()
-    .url({ message: "Please provide a valid URL for the application link." }),
+    .url({ message: "Provide a valid HTTPS application link." }),
 
-  // --- THIS IS THE MODIFIED FIELD ---
-  companyLogo: z
-    .string()
-    .url({ message: "Please provide a valid URL for the company logo." })
-    // Add the refine check here
-    .refine((url) => IMAGE_URL_REGEX.test(url), {
-      message:
-        "URL must end with a valid image extension (e.g., .jpg, .png, .gif).",
-    })
-    .optional()
-    .or(z.literal("")),
-  // ------------------------------------
+  /**
+   * 🚜 REFINED: Supports both binary File (new upload) and String (retained logo).
+   * Standard .url() check is removed here because File objects don't have URLs.
+   */
+  companyLogo: z.any().optional(),
 
   isRemote: z.boolean().optional().default(false),
-  salaryRange: z.string().optional(),
-  responsibilities: z.string().optional(),
-  qualifications: z.string().optional(),
-  tags: z.string().optional(),
+
+  salaryRange: z.string().optional().or(z.literal("")),
+
+  /**
+   * 🚜 THE POST WAY: Tags are now a strict array of strings.
+   * This allows the ReactHashTags component to control the field directly.
+   */
+  tags: z
+    .array(z.string().min(1, "Tag cannot be empty."))
+    .min(1, "At least one tag is required.")
+    .max(10, "Up to 10 tags allowed."),
+
+  /**
+   * Keep responsibilities and qualifications as strings for the basic <Input /> UI.
+   * Conversion to string[] happens in the form's onSubmit.
+   */
+  responsibilities: z.string().optional().or(z.literal("")),
+  qualifications: z.string().optional().or(z.literal("")),
 });
 
 export type OpportunityFormValues = z.infer<typeof opportunitySchema>;

@@ -32,6 +32,7 @@ export const verifyToken = asyncHandler(
 
       if (
         !decoded.id ||
+        !decoded.email ||
         !decoded.systemRole ||
         !decoded.username ||
         decoded.type !== "access"
@@ -80,7 +81,7 @@ export const verifyToken = asyncHandler(
         bannerImage: userFromDb.bannerImage || "",
         status: userFromDb.status,
         email: userFromDb.email,
-
+        isEmailVerified: userFromDb.isEmailVerified,
         bio: userFromDb.bio || "",
         title: userFromDb.title || "",
         location: userFromDb.location || "",

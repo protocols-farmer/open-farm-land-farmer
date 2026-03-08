@@ -52,10 +52,28 @@ export class UserService {
     const hashedPassword = await bcrypt.hash(password, 10);
 
     return (await this.userDelegate.create({
-      data: { email, username, hashedPassword, name },
+      data: {
+        email,
+        username,
+        hashedPassword,
+        name,
+        settings: {
+          create: {
+            emailMarketing: true,
+            emailUpdates: true,
+            emailSocial: true,
+            theme: "DARK", // 🌙 Dark Mode Default
+            notificationsEnabled: true,
+          },
+        },
+      },
+      include: { settings: true },
     })) as unknown as SafeUser;
   }
-
+  /**
+   * Scenario Fix: Decouple DB deletion from Cloudinary cleanup.
+   * If Cloudinary fails, we log the "Orphaned Asset" IDs but proceed with DB deletion.
+   */
   public async deleteUserAccount(userId: string): Promise<void> {
     const user = await this.userDelegate.findUnique({
       where: { id: userId },
@@ -63,34 +81,49 @@ export class UserService {
 
     if (!user) return;
 
-    const deletionPromises = [];
+    // 🚜 Cleanup Cloudinary Assets
+    const profileId = user.profileImagePublicId;
+    const bannerId = user.bannerImagePublicId;
 
-    if (user.profileImagePublicId) {
-      deletionPromises.push(deleteFromCloudinary(user.profileImagePublicId));
-    }
-    if (user.bannerImagePublicId) {
-      deletionPromises.push(deleteFromCloudinary(user.bannerImagePublicId));
-    }
+    if (profileId || bannerId) {
+      const cleanupResults = await Promise.allSettled([
+        profileId ? deleteFromCloudinary(profileId) : Promise.resolve(),
+        bannerId ? deleteFromCloudinary(bannerId) : Promise.resolve(),
+      ]);
 
-    if (deletionPromises.length > 0) {
-      await Promise.allSettled(deletionPromises);
+      // Log orphaned assets if cleanup failed
+      cleanupResults.forEach((res, index) => {
+        if (res.status === "rejected") {
+          const type = index === 0 ? "Profile" : "Banner";
+          const assetId = index === 0 ? profileId : bannerId;
+          logger.warn(
+            { userId, assetId, type, err: res.reason },
+            `⚠️ Orphaned Asset Alert: Failed to delete ${type} image from Cloudinary during account deletion.`,
+          );
+        }
+      });
     }
 
     try {
+      // 🚜 Crucial: Proceed with DB deletion regardless of Cloudinary outcome
       await this.userDelegate.delete({ where: { id: userId } });
       logger.info(
         { userId },
-        "✅ User and associated assets deleted successfully.",
+        "✅ User and associated assets cleaned up (see warnings for orphans).",
       );
     } catch (error) {
       logger.error(
         { err: error, userId },
-        "❌ Failed to delete user record from DB.",
+        "❌ Critical: Failed to delete user record from DB.",
       );
       throw createHttpError(500, "Could not delete user account.");
     }
   }
 
+  /**
+   * Scenario Fix: Handle Username Conflict (P2002).
+   * Throws a 409 Conflict with a helpful message for the user.
+   */
   public async updateUserProfile(
     userId: string,
     data: UserProfileUpdateData,
@@ -106,12 +139,20 @@ export class UserService {
 
       return updatedUser as unknown as SafeUser;
     } catch (e: any) {
+      // 🚜 Catch Prisma Unique Constraint error (P2002)
       if (
         e.code === "P2002" ||
         (e instanceof Prisma.PrismaClientKnownRequestError &&
           e.code === "P2002")
       ) {
-        throw createHttpError(409, "This username is already taken.");
+        logger.info(
+          { userId, target: e.meta?.target },
+          "Conflict: Username change rejected.",
+        );
+        throw createHttpError(
+          409,
+          "This username is already claimed by another wanderer.",
+        );
       }
 
       logger.error({ err: e, userId }, "❌ Profile update failed.");

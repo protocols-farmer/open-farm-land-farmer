@@ -15,7 +15,6 @@ import {
   MessageSquare,
   Briefcase,
   Book,
-  LayoutDashboard,
   FolderKanban,
   Bookmark,
   Heart,
@@ -28,6 +27,7 @@ import {
   Trophy,
   Lock,
   BookAIcon,
+  Settings,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -44,7 +44,6 @@ import {
 } from "@/components/ui/collapsible";
 import Logo from "@/components/shared/Logo";
 import { Separator } from "@/components/ui/separator";
-import { UserAccountNav } from "../header/UserAccountNav";
 
 // --- Navigation Data ---
 interface NavItem {
@@ -96,10 +95,9 @@ const workspaceSection: CollapsibleNavSection = {
     { href: "/posts/my", label: "My Posts", icon: FileCode2 },
     { href: "/saved", label: "Saved Posts", icon: Bookmark },
     { href: "/liked", label: "Liked Posts", icon: Heart },
+    { href: "/settings", label: "Settings", icon: Settings },
   ],
 };
-
-// --- Helper Components (Declared outside to prevent re-creation) ---
 
 const NavLink = ({
   href,
@@ -150,7 +148,7 @@ const CollapsibleNav = ({
 }) => {
   if (isCollapsed) {
     return (
-      <>
+      <div className="flex flex-col gap-1">
         {section.items.map((item) => (
           <NavLink
             key={item.href}
@@ -159,11 +157,11 @@ const CollapsibleNav = ({
             isCollapsed={isCollapsed}
           />
         ))}
-      </>
+      </div>
     );
   }
   return (
-    <Collapsible defaultOpen>
+    <Collapsible defaultOpen className="w-full">
       <CollapsibleTrigger
         className={cn(
           "group flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground",
@@ -171,9 +169,9 @@ const CollapsibleNav = ({
       >
         <section.icon className="h-5 w-5" />
         <span className="truncate">{section.title}</span>
-        <ChevronDown className="ml-auto h-4 w-4 transition-transform group-data-[state=open]:rotate-180" />
+        <ChevronDown className="ml-auto h-4 w-4 transition-transform duration-200 group-data-[state=open]:rotate-180" />
       </CollapsibleTrigger>
-      <CollapsibleContent className="space-y-1 py-1 pl-6">
+      <CollapsibleContent className="space-y-1 py-1 pl-4">
         {section.items.map((item) => (
           <NavLink
             key={item.href}
@@ -192,113 +190,28 @@ export default function Sidebar() {
   const pathname = usePathname();
 
   return (
-    <div className="sticky top-0">
-      <aside
-        className={cn(
-          "hidden lg:flex flex-col border-r bg-background h-screen overflow-y-auto ",
-          "transition-all duration-300 ease-in-out",
-          isCollapsed ? "w-20" : "w-64",
-        )}
-      >
-        <div className="flex h-16 shrink-0 items-center justify-center border-b px-4">
-          <Link href="/">
-            <Logo isCollapsed={isCollapsed} />
-          </Link>
-        </div>
-
-        <div className="flex-1">
-          <div className="p-2">
-            <TooltipProvider delayDuration={0}>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    asChild
-                    variant="default"
-                    className={cn(
-                      "w-full",
-                      isCollapsed && "w-12 h-12 rounded-full",
-                    )}
-                  >
-                    <Link href="/create">
-                      <Plus className={cn("h-5 w-5", !isCollapsed && "mr-2")} />
-                      <span className={cn(isCollapsed && "hidden")}>
-                        Create
-                      </span>
-                    </Link>
-                  </Button>
-                </TooltipTrigger>
-                {isCollapsed && (
-                  <TooltipContent side="right">Create New Post</TooltipContent>
-                )}
-              </Tooltip>
-            </TooltipProvider>
-          </div>
-          <Separator className="my-2" />
-          <nav className="flex flex-col gap-1 p-2">
-            {mainNav.map((item) => (
-              <NavLink
-                key={item.href}
-                {...item}
-                pathname={pathname}
-                isCollapsed={isCollapsed}
-              />
-            ))}
-            <Separator className="my-2" />
-            <CollapsibleNav
-              section={contentSection}
-              pathname={pathname}
-              isCollapsed={isCollapsed}
-            />
-            <CollapsibleNav
-              section={communitySection}
-              pathname={pathname}
-              isCollapsed={isCollapsed}
-            />
-            <Separator className="my-2" />
-            <CollapsibleNav
-              section={workspaceSection}
-              pathname={pathname}
-              isCollapsed={isCollapsed}
-            />
-          </nav>
-        </div>
-
-        <div className="mt-auto flex flex-col gap-2 p-2 border-t">
-          <div className={cn("p-2", isCollapsed && "hidden")}>
-            <div className="rounded-lg border bg-accent/50 p-4 text-center">
-              <div className="mb-2 flex justify-center">
-                <Rocket className="h-8 w-8 text-primary" />
-              </div>
-              <h3 className="font-semibold text-foreground">Go Pro</h3>
-              <p className="mt-1 text-sm text-muted-foreground">
-                This feature is not available yet but don't worry ain't that
-                much lil bro
-              </p>
-            </div>
-          </div>
-        </div>
-      </aside>
-
+    <aside
+      className={cn(
+        "hidden lg:flex flex-col border-r bg-background h-screen sticky top-0 transition-all duration-300 ease-in-out z-40",
+        isCollapsed ? "w-20" : "w-64",
+      )}
+    >
+      {/* 🚜 Refined Toggle Button: Anchored to the aside for perfect border alignment */}
       <TooltipProvider delayDuration={0}>
         <Tooltip>
           <TooltipTrigger asChild>
             <Button
               variant="outline"
               size="icon"
-              className={cn(
-                "absolute top-8 h-10 w-10 rounded-full bg-background hover:bg-muted z-50 transition-all duration-300 ease-in-out",
-                isCollapsed ? "left-14" : "left-56",
-              )}
+              className="absolute -right-4 top-10 h-8 w-8 rounded-full bg-background hover:bg-muted z-50 border shadow-sm hidden lg:flex items-center justify-center"
               onClick={() => setIsCollapsed(!isCollapsed)}
             >
               {isCollapsed ? (
-                <ChevronRight className="h-5 w-5" />
+                <ChevronRight className="h-4 w-4" />
               ) : (
-                <ChevronLeft className="h-5 w-5" />
+                <ChevronLeft className="h-4 w-4" />
               )}
-              <span className="sr-only">
-                {isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
-              </span>
+              <span className="sr-only">Toggle Sidebar</span>
             </Button>
           </TooltipTrigger>
           <TooltipContent side="right">
@@ -306,6 +219,89 @@ export default function Sidebar() {
           </TooltipContent>
         </Tooltip>
       </TooltipProvider>
-    </div>
+
+      <div className="flex h-16 shrink-0 items-center justify-center border-b px-4">
+        <Link href="/">
+          <Logo isCollapsed={isCollapsed} />
+        </Link>
+      </div>
+
+      <div className="flex-1 overflow-y-auto scrollbar-none py-4">
+        <div className="px-3 mb-4">
+          <TooltipProvider delayDuration={0}>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  asChild
+                  variant="default"
+                  className={cn(
+                    "w-full transition-all duration-300",
+                    isCollapsed ? "w-12 h-12 rounded-full p-0" : "px-4",
+                  )}
+                >
+                  <Link href="/create">
+                    <Plus className={cn("h-5 w-5", !isCollapsed && "mr-2")} />
+                    {!isCollapsed && <span className="font-bold">Create</span>}
+                  </Link>
+                </Button>
+              </TooltipTrigger>
+              {isCollapsed && (
+                <TooltipContent side="right">Create New Post</TooltipContent>
+              )}
+            </Tooltip>
+          </TooltipProvider>
+        </div>
+
+        <nav className="flex flex-col gap-1 px-3">
+          {mainNav.map((item) => (
+            <NavLink
+              key={item.href}
+              {...item}
+              pathname={pathname}
+              isCollapsed={isCollapsed}
+            />
+          ))}
+
+          <Separator className="my-4 opacity-50" />
+
+          <CollapsibleNav
+            section={contentSection}
+            pathname={pathname}
+            isCollapsed={isCollapsed}
+          />
+          <div className="mt-2" />
+          <CollapsibleNav
+            section={communitySection}
+            pathname={pathname}
+            isCollapsed={isCollapsed}
+          />
+
+          <Separator className="my-4 opacity-50" />
+
+          <CollapsibleNav
+            section={workspaceSection}
+            pathname={pathname}
+            isCollapsed={isCollapsed}
+          />
+        </nav>
+      </div>
+
+      {/* Pro Banner Section */}
+      {!isCollapsed && (
+        <div className="p-4 border-t mt-auto">
+          <div className="rounded-xl border bg-muted/40 p-4 text-center">
+            <div className="mb-3 flex justify-center">
+              <div className="bg-primary/10 p-2 rounded-lg">
+                <Rocket className="h-6 w-6 text-primary" />
+              </div>
+            </div>
+            <h3 className="text-sm font-bold text-foreground">Go Pro</h3>
+            <p className="mt-1 text-[11px] leading-tight text-muted-foreground">
+              Coming soon to the farm. Stay tuned!
+            </p>
+          </div>
+        </div>
+      )}
+    </aside>
   );
 }

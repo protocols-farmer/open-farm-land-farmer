@@ -1,6 +1,4 @@
-// =================================================================
-// FILE: src/lib/features/updates/updateApiSlice.ts
-// =================================================================
+//src/lib/features/updates/updateApiSlice.ts
 import { createApi } from "@reduxjs/toolkit/query/react";
 import { baseQueryWithReauth } from "@/lib/api/baseQueryWithReauth";
 import {
@@ -17,6 +15,14 @@ export const updateApiSlice = createApi({
   baseQuery: baseQueryWithReauth,
   tagTypes: ["Update"],
   endpoints: (builder) => ({
+    getLatestVersion: builder.query<{ version: string; id?: string }, void>({
+      query: () => "/updates/latest-version",
+      transformResponse: (response: { success: boolean; data: any }) =>
+        response.data,
+
+      providesTags: ["Update"],
+    }),
+
     getUpdates: builder.query<GetUpdatesResponse, GetUpdatesParams | void>({
       query: (params) => ({ url: "/updates", params: params || {} }),
       providesTags: (result) =>
@@ -27,17 +33,20 @@ export const updateApiSlice = createApi({
             ]
           : [{ type: "Update", id: "LIST" }],
     }),
+
     getUpdate: builder.query<UpdateDto, string>({
       query: (id) => `/updates/${id}`,
       transformResponse: (response: GetUpdateResponse) => response.data,
       providesTags: (result, error, id) => [{ type: "Update", id }],
     }),
+
     createUpdate: builder.mutation<UpdateDto, CreateUpdatePayload>({
       query: (body) => ({ url: "/updates", method: "POST", body }),
       transformResponse: (response: GetUpdateResponse) => response.data,
-      // The complex onQueryStarted block is completely gone.
-      invalidatesTags: [{ type: "Update", id: "LIST" }],
+
+      invalidatesTags: [{ type: "Update", id: "LIST" }, "Update"],
     }),
+
     updateUpdate: builder.mutation<UpdateDto, UpdateUpdatePayload>({
       query: ({ id, ...body }) => ({
         url: `/updates/${id}`,
@@ -45,20 +54,24 @@ export const updateApiSlice = createApi({
         body,
       }),
       transformResponse: (response: GetUpdateResponse) => response.data,
+
       invalidatesTags: (result, error, { id }) => [
         { type: "Update", id },
-        { type: "Update", id: "LIST" }, // <-- Add this to refresh the list page
+        { type: "Update", id: "LIST" },
+        "Update",
       ],
     }),
 
     deleteUpdate: builder.mutation<{ success: boolean }, string>({
       query: (id) => ({ url: `/updates/${id}`, method: "DELETE" }),
-      invalidatesTags: [{ type: "Update", id: "LIST" }],
+
+      invalidatesTags: [{ type: "Update", id: "LIST" }, "Update"],
     }),
   }),
 });
 
 export const {
+  useGetLatestVersionQuery,
   useGetUpdatesQuery,
   useGetUpdateQuery,
   useCreateUpdateMutation,

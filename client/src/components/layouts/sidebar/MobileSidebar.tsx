@@ -46,6 +46,7 @@ import {
   Trophy,
   Plus,
   User,
+  Settings,
 } from "lucide-react";
 
 // --- Navigation Data ---
@@ -96,6 +97,7 @@ const workspaceSection: CollapsibleNavSection = {
     { href: "/posts/my", label: "My Posts", icon: FileCode2 },
     { href: "/saved", label: "Saved Posts", icon: Bookmark },
     { href: "/liked", label: "Liked Posts", icon: Heart },
+    { href: "/settings", label: "Settings", icon: Settings },
   ],
 };
 

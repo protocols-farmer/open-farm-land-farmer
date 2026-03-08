@@ -27,18 +27,18 @@ function CallbackContent() {
           toast.success("Welcome back!", {
             description: `Successfully authenticated via ${provider}.`,
           });
-          router.push("/");
+          router.replace("/"); // Clean history on success
         })
         .catch((err) => {
           console.error("Social Auth Verification Error:", err);
           toast.error(
             err?.data?.message || "Failed to finalize social session.",
           );
-          router.push("/auth/login");
+          router.replace("/auth/login"); // Clean history on API failure
         });
     } else if (status === "error") {
       toast.error("Social authentication was cancelled or failed.");
-      router.push("/auth/login");
+      router.replace("/auth/login"); // Clean history on OAuth cancel/error
     }
   }, [searchParams, checkSocialStatus, router]);
 

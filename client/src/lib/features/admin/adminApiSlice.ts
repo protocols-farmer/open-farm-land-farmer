@@ -1,7 +1,7 @@
 // =================================================================
 // FILE: src/lib/features/admin/adminApiSlice.ts
 // =================================================================
-import { createApi } from "@reduxjs/toolkit/query/react";
+import { createApi, retry } from "@reduxjs/toolkit/query/react";
 import { baseQueryWithReauth } from "../../api/baseQueryWithReauth";
 import {
   AdminApiQuery,
@@ -16,9 +16,11 @@ import {
   GetAdminOpportunitiesResponse,
 } from "./adminTypes";
 
+const baseQueryWithRetry = retry(baseQueryWithReauth, { maxRetries: 3 });
+
 export const adminApiSlice = createApi({
   reducerPath: "adminApi",
-  baseQuery: baseQueryWithReauth,
+  baseQuery: baseQueryWithRetry,
   tagTypes: [
     "AdminStats",
     "AdminUsers",
@@ -120,7 +122,8 @@ export const adminApiSlice = createApi({
 
     getSystemConfig: builder.query<GetSystemConfigResponse, void>({
       query: () => "/admin/system-config",
-      providesTags: ["AdminStats"], // Using AdminStats as a proxy tag for simplicity
+      providesTags: ["AdminStats"],
+      keepUnusedDataFor: 300,
     }),
 
     updateSystemConfig: builder.mutation<

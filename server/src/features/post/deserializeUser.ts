@@ -36,6 +36,7 @@ export const deserializeUser = asyncHandler(
           name: true,
           username: true,
           email: true,
+          isEmailVerified: true,
           profileImage: true,
           bannerImage: true,
           systemRole: true,

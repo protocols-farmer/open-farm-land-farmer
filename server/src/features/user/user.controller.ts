@@ -1,3 +1,4 @@
+//src/features/user/user.controller.ts
 import { Request, Response } from "express";
 import { SystemRole } from "@prisma-client";
 import { asyncHandler } from "@/middleware/asyncHandler.js";
@@ -15,7 +16,7 @@ class UserController {
     const user = await userService.findUserById(req.user!.id);
     if (!user) throw createHttpError(404, "User profile not found.");
 
-    res.status(200).json({
+    return res.status(200).json({
       status: "success",
       data: { user },
     });
@@ -117,7 +118,7 @@ class UserController {
         });
       }
 
-      res.status(200).json({
+      return res.status(200).json({
         status: "success",
         message: "Profile updated successfully.",
         data: { user: updatedUser },
@@ -125,6 +126,10 @@ class UserController {
     } catch (error) {
       // 7. ROLLBACK: If DB update fails, delete the images we just uploaded to Cloudinary
       if (newlyUploadedPublicIds.length > 0) {
+        logger.warn(
+          { userId, assetIds: newlyUploadedPublicIds },
+          "🔄 Rollback: Deleting newly uploaded assets due to DB failure.",
+        );
         await Promise.allSettled(
           newlyUploadedPublicIds.map((id) => deleteFromCloudinary(id)),
         );

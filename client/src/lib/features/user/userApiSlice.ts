@@ -4,7 +4,7 @@
  * Now relies on Redux State for tokens and internal dispatch for cleanup.
  */
 
-import { createApi } from "@reduxjs/toolkit/query/react";
+import { createApi, retry } from "@reduxjs/toolkit/query/react";
 import { baseQueryWithReauth } from "../../api/baseQueryWithReauth";
 import { clearCredentials } from "../auth/authSlice";
 import { authStorage } from "@/lib/auth/authStorage";
@@ -30,18 +30,22 @@ export interface FollowerDto {
   title: string | null;
 }
 
+const baseQueryWithRetry = retry(baseQueryWithReauth, { maxRetries: 3 });
+
 export const userApiSlice = createApi({
   reducerPath: "userApi",
-  baseQuery: baseQueryWithReauth,
+  baseQuery: baseQueryWithRetry,
   tagTypes: ["Me", "User", "Followers", "Following"],
   endpoints: (builder) => ({
+    // Inside userApiSlice endpoints...
+
     getMe: builder.query<SanitizedUserDto, void>({
       query: () => "/user/me",
+
       transformResponse: (response: GetMeApiResponse) => response.data.user,
       providesTags: ["Me"],
       keepUnusedDataFor: 60,
     }),
-
     getUserByUsername: builder.query<UserProfile, string>({
       query: (username) => `/user/profile/${username}`,
       transformResponse: (response: { status: string; data: UserProfile }) =>

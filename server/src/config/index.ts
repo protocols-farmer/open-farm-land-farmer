@@ -88,6 +88,7 @@ interface Config {
       windowMs: number;
       max: number;
     };
+    emailResend: { windowMs: number; max: number }; // <--- ADD THIS
   };
   cookies: {
     refreshTokenName: string;
@@ -95,6 +96,12 @@ interface Config {
   logLevel: string;
   github: {
     pat: string;
+  };
+
+  mailgun: {
+    apiKey: string;
+    domain: string;
+    fromEmail: string;
   };
 }
 
@@ -152,6 +159,10 @@ try {
         windowMs: getEnvVariableAsInt("API_LIMIT_WINDOW_MS", false, 60000),
         max: getEnvVariableAsInt("API_LIMIT_MAX", false, 100),
       },
+      emailResend: {
+        windowMs: getEnvVariableAsInt("EMAIL_RESEND_WINDOW_MS", false, 900000),
+        max: getEnvVariableAsInt("EMAIL_RESEND_MAX", false, 3),
+      },
     },
     cookies: {
       refreshTokenName: "jid",
@@ -160,6 +171,11 @@ try {
       pat: getEnvVariable("GITHUB_PAT", true),
     },
     logLevel: getEnvVariable("LOG_LEVEL", false) || "info",
+    mailgun: {
+      apiKey: getEnvVariable("MAILGUN_API_KEY", true),
+      domain: getEnvVariable("MAILGUN_DOMAIN", true),
+      fromEmail: getEnvVariable("MAILGUN_FROM_EMAIL", true),
+    },
   };
 } catch (error) {
   console.error(

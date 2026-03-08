@@ -1,6 +1,9 @@
-// =================================================================
-// FILE: src/lib/features/opportunities/opportunity.types.ts
-// =================================================================
+/**
+ * src/lib/features/opportunities/opportunity.types.ts
+ * * Foundational types for the Opportunity (Jobs) feature.
+ * Synchronized with Prisma OpportunityType Enum.
+ */
+
 export type OpportunityTypeEnum =
   | "FULL_TIME"
   | "PART_TIME"
@@ -11,6 +14,7 @@ interface OpportunityPoster {
   name: string;
   profileImage: string | null;
 }
+
 interface OpportunityTag {
   tag: {
     id: string;
@@ -23,6 +27,7 @@ export interface OpportunityDto {
   title: string;
   companyName: string;
   companyLogo: string | null;
+  companyLogoPublicId?: string | null; // 🚜 Asset tracking for Cloudinary cleanup
   location: string;
   type: OpportunityTypeEnum;
   isRemote: boolean;
@@ -37,6 +42,7 @@ export interface OpportunityDto {
 }
 
 // --- API Payloads and Responses ---
+
 export interface GetOpportunitiesParams {
   skip?: number;
   take?: number;
@@ -53,6 +59,10 @@ export interface GetOpportunityResponse {
   data: OpportunityDto;
 }
 
+/**
+ * 🚜 Note: Create/Update payloads are usually wrapped in FormData
+ * on the frontend to support the companyLogo file upload.
+ */
 export interface CreateOpportunityPayload {
   title: string;
   companyName: string;
@@ -60,7 +70,6 @@ export interface CreateOpportunityPayload {
   type: OpportunityTypeEnum;
   fullDescription: string;
   applyUrl: string;
-  companyLogo?: string;
   isRemote?: boolean;
   salaryRange?: string;
   responsibilities?: string[];
@@ -68,7 +77,7 @@ export interface CreateOpportunityPayload {
   tags?: string[];
 }
 
-export interface UpdateOpportunityPayload
-  extends Partial<CreateOpportunityPayload> {
+export interface UpdateOpportunityPayload extends Partial<CreateOpportunityPayload> {
   id: string;
+  retainedLogoUrl?: string; // 🚜 Keeps the existing logo if a new one isn't uploaded
 }

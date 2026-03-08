@@ -1,6 +1,3 @@
-// =================================================================
-// FILE: src/types/express.d.ts
-// =================================================================
 import { SystemRole, UserStatus } from "@prisma-client";
 import { UserJWTPayload } from "../features/auth/auth.types.js";
 
@@ -14,6 +11,7 @@ export interface SanitizedUser {
   name: string;
   username: string;
   email: string;
+  isEmailVerified: boolean;
   profileImage: string | null;
   bannerImage: string | null;
   bio: string | null;
@@ -28,10 +26,6 @@ export interface SanitizedUser {
 declare global {
   namespace Express {
     interface Request {
-      /**
-       * Can be a Full User (from database check)
-       * or a Lite User (extracted directly from JWT).
-       */
       user?: SanitizedUser | UserJWTPayload | null;
     }
   }

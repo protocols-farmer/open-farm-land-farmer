@@ -1,3 +1,4 @@
+//src/features/admin/admin.routes.ts
 import { Router } from "express";
 import { adminController } from "./admin.controller.js";
 import { requireRole } from "@/middleware/admin.middleware.js";

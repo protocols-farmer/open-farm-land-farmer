@@ -1,3 +1,4 @@
+//src/components/pages/posts/ImageUploadWithCropper.tsx
 "use client";
 
 import React, { useState, useEffect, useCallback, useMemo } from "react";
@@ -93,7 +94,7 @@ export default function ImageUploadWithCropper({
   const handleCropComplete = (croppedImageBase64: string) => {
     const newFile = dataURLtoFile(
       croppedImageBase64,
-      `post-image-${Date.now()}.png`
+      `post-image-${Date.now()}.png`,
     );
     if (newFile) {
       const newFilesArray = [...value, newFile];
@@ -115,7 +116,7 @@ export default function ImageUploadWithCropper({
 
   const removeExistingFile = (idToRemove: string) => {
     const newRetainedArray = retainedImages.filter(
-      (img) => img.id !== idToRemove
+      (img) => img.id !== idToRemove,
     );
     setRetainedImages(newRetainedArray);
     // Call onChange with the current new files and the UPDATED retained images
@@ -131,7 +132,7 @@ export default function ImageUploadWithCropper({
             "border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors",
             isDragActive
               ? "border-primary bg-primary/10"
-              : "border-border hover:border-primary/50"
+              : "border-border hover:border-primary/50",
           )}
         >
           <input {...getInputProps()} />

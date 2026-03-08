@@ -1,4 +1,3 @@
-//src/features/social-auth/social-auth.service.ts
 import axios from "axios";
 import prisma from "@/db/prisma.js";
 import { config } from "@/config/index.js";
@@ -16,8 +15,8 @@ import { HttpError } from "@/utils/HttpError.js";
 export class SocialAuthService {
   /**
    * Exchanges Google's 'code' for a user profile
+   * Scenario Fix: Enhanced logging to surface callbackUrl misconfigurations.
    */
-
   async getGoogleUser(code: string): Promise<SocialProfile> {
     try {
       const tokenResponse = await axios.post(
@@ -50,16 +49,20 @@ export class SocialAuthService {
         sub: profile.sub,
       };
     } catch (error: any) {
+      // 🚜 Scenario Fix: Surface callbackUrl in logs for easier DNS/Env debugging
+      const debugInfo = {
+        code: error.code,
+        message: error.message,
+        configuredCallbackUrl: config.socialAuth.google.callbackUrl,
+      };
+
       if (
         error.code === "ECONNRESET" ||
         error.code === "ETIMEDOUT" ||
         error.code === "ENOTFOUND"
       ) {
         logger.error(
-          {
-            code: error.code,
-            message: error.message,
-          },
+          debugInfo,
           "NETWORK ERROR: Google OAuth servers are unreachable from this machine.",
         );
 
@@ -71,14 +74,20 @@ export class SocialAuthService {
 
       const googleError = error.response?.data;
       if (googleError) {
-        logger.error({ googleError }, "Google API rejected the OAuth request.");
+        logger.error(
+          { ...debugInfo, googleError },
+          "Google API rejected the OAuth request.",
+        );
         throw createHttpError(
           401,
           `Google: ${googleError.error_description || googleError.error}`,
         );
       }
 
-      logger.error({ err: error }, "Google OAuth Exchange Failed");
+      logger.error(
+        { err: error, ...debugInfo },
+        "Google OAuth Exchange Failed",
+      );
       throw createHttpError(401, "Failed to authenticate with Google.");
     }
   }
@@ -125,12 +134,6 @@ export class SocialAuthService {
           },
         );
 
-        /**
-         * We look for:
-         * 1. The primary email
-         * 2. That is verified
-         * 3. Failing that, just the first email in the list
-         */
         const primaryEmail =
           emails.find((e: any) => e.primary && e.verified) ||
           emails.find((e: any) => e.verified) ||
@@ -165,21 +168,37 @@ export class SocialAuthService {
       );
     }
   }
+
   /**
-   * Finds or creates the user in your database
+   * Scenario Fix: Log account linking for existing manual users.
    */
   async findOrCreateUser(profile: SocialProfile): Promise<SocialAuthResponse> {
     let user = await prisma.user.findUnique({
       where: { email: profile.email },
     });
 
-    if (!user) {
+    if (user) {
+      // If an existing user logs in via Social, we consider their email verified
+      if (!user.isEmailVerified) {
+        user = await prisma.user.update({
+          where: { id: user.id },
+          data: { isEmailVerified: true },
+        });
+
+        // 🚜 Scenario Fix: Explicit log for account linking
+        logger.info(
+          { userId: user.id, email: user.email },
+          `Account ${user.email} linked to Social Provider and auto-verified.`,
+        );
+      }
+    } else {
       try {
         let username = "";
         let isUnique = false;
         const basePart = profile.email
           .split("@")[0]
-          .replace(/[^a-zA-Z0-9_]/g, "");
+          .replace(/[^a-zA-Z0-9_]/g, "")
+          .substring(0, 40);
 
         while (!isUnique) {
           const randomSuffix = Math.floor(1000 + Math.random() * 9000);
@@ -190,15 +209,30 @@ export class SocialAuthService {
           if (!existing) isUnique = true;
         }
 
+        // Inside findOrCreateUser, replace the user creation block:
         user = await prisma.user.create({
           data: {
             email: profile.email,
             name: profile.name || "New Wanderer",
             username: username,
             profileImage: profile.image || null,
+            isEmailVerified: true,
+            settings: {
+              create: {
+                emailMarketing: true,
+                emailUpdates: true,
+                emailSocial: true,
+                theme: "DARK", // 🌙 Dark Mode Default
+                notificationsEnabled: true,
+              },
+            },
           },
         });
-        logger.info({ userId: user.id }, "New social user created.");
+
+        logger.info(
+          { userId: user.id },
+          "New social user created and auto-verified.",
+        );
       } catch (createError: any) {
         if (createError.code === "P2002") {
           logger.warn("Race condition hit: User created by parallel request.");

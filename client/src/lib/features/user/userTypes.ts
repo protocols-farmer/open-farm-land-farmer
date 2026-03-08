@@ -20,6 +20,7 @@ export type SanitizedUserDto = {
   name: string;
   username: string;
   email: string;
+  isEmailVerified: boolean;
   profileImage: string | null;
   bannerImage: string | null;
   bio: string | null;

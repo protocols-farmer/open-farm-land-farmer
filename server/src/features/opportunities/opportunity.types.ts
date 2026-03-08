@@ -1,7 +1,10 @@
-// src/features/opportunities/opportunity.types.ts
 import { OpportunityType } from "@prisma-client";
 
-// DTO for creating a new opportunity
+/**
+ * DTO for creating a new opportunity.
+ * Note: companyLogo and publicId are populated by the controller
+ * after the Cloudinary upload.
+ */
 export interface CreateOpportunityDto {
   title: string;
   companyName: string;
@@ -9,13 +12,20 @@ export interface CreateOpportunityDto {
   type: OpportunityType;
   fullDescription: string;
   applyUrl: string;
-  companyLogo?: string;
   isRemote?: boolean;
   salaryRange?: string;
   responsibilities?: string[];
   qualifications?: string[];
   tags?: string[];
+  // 🚜 Cloudinary Assets
+  companyLogo?: string;
+  companyLogoPublicId?: string;
 }
 
-// DTO for updating an existing opportunity (all fields are optional)
-export interface UpdateOpportunityDto extends Partial<CreateOpportunityDto> {}
+/**
+ * DTO for updating an existing opportunity.
+ * Includes 'retainedLogoUrl' to determine if we should delete the old asset.
+ */
+export interface UpdateOpportunityDto extends Partial<CreateOpportunityDto> {
+  retainedLogoUrl?: string;
+}

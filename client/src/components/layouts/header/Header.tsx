@@ -32,7 +32,7 @@ export default function Header() {
               </h1>
             ) : (
               <h1 className="text-lg font-semibold text-foreground">
-                Welcome to Open Farmland
+                Welcome to Open Farm Land
               </h1>
             )}
           </div>

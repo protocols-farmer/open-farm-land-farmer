@@ -8,6 +8,10 @@ import type {
   SignUpInputDto,
   ChangePasswordInputDto,
   LoginApiResponse,
+  ForgotPasswordInputDto, // NEW
+  ResetPasswordInputDto, // NEW
+  VerifyEmailInputDto, // NEW
+  GeneralAuthResponse, // NEW
 } from "./authTypes";
 
 export const authApiSlice = createApi({
@@ -26,13 +30,16 @@ export const authApiSlice = createApi({
       async onQueryStarted(_, { dispatch, queryFulfilled }) {
         try {
           const { data } = await queryFulfilled;
-          dispatch(setCredentials({ token: data.data.tokens.accessToken }));
+          const token = data?.data?.tokens?.accessToken;
+
+          if (token) {
+            dispatch(setCredentials({ token }));
+          }
         } catch (error) {
           // Error handled by component
         }
       },
     }),
-
     /**
      * Standard Email/Password Signup
      */
@@ -45,13 +52,17 @@ export const authApiSlice = createApi({
       async onQueryStarted(_, { dispatch, queryFulfilled }) {
         try {
           const { data } = await queryFulfilled;
-          dispatch(setCredentials({ token: data.data.tokens.accessToken }));
+
+          const token = data?.data?.tokens?.accessToken;
+
+          if (data.status === "success" && token) {
+            dispatch(setCredentials({ token }));
+          }
         } catch (error) {
           // Error handled by component
         }
       },
     }),
-
     /**
      * Logout of current session
      */
@@ -113,6 +124,52 @@ export const authApiSlice = createApi({
         body: credentials,
       }),
     }),
+
+    /**
+     * Request a password reset link
+     */
+    forgotPassword: builder.mutation<
+      GeneralAuthResponse,
+      ForgotPasswordInputDto
+    >({
+      query: (body) => ({
+        url: "/auth/forgot-password",
+        method: "POST",
+        body,
+      }),
+    }),
+
+    /**
+     * Reset password using a token from email
+     */
+    resetPassword: builder.mutation<GeneralAuthResponse, ResetPasswordInputDto>(
+      {
+        query: (body) => ({
+          url: "/auth/reset-password",
+          method: "POST",
+          body,
+        }),
+      },
+    ),
+
+    /**
+     * Verify email via token (GET)
+     * Triggered when clicking the link in the verification email
+     */
+    verifyEmail: builder.query<GeneralAuthResponse, string>({
+      query: (token) => ({
+        url: `/auth/verify-email`,
+        params: { token },
+        method: "GET",
+      }),
+    }),
+
+    resendVerification: builder.mutation<GeneralAuthResponse, void>({
+      query: () => ({
+        url: "/auth/resend-verification",
+        method: "POST",
+      }),
+    }),
   }),
 });
 
@@ -122,4 +179,8 @@ export const {
   useLogoutMutation,
   useChangePasswordMutation,
   useLogoutAllMutation,
+  useForgotPasswordMutation,
+  useResetPasswordMutation,
+  useVerifyEmailQuery,
+  useResendVerificationMutation,
 } = authApiSlice;

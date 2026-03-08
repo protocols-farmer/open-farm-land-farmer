@@ -1,3 +1,4 @@
+//src/components/pages/posts/ReactHashTags.tsx
 "use client";
 
 import React, { useState, useCallback, useRef, useEffect } from "react";
@@ -46,7 +47,7 @@ const ReactHashTags: React.FC<ReactHashTagsProps> = ({
   const checkImpossibleCombinations = useCallback(
     (currentTags: string[]): string => {
       const currentTagsSet = new Set(
-        currentTags.map((tag) => tag.toLowerCase())
+        currentTags.map((tag) => tag.toLowerCase()),
       );
       for (const combo of impossibleCombinations) {
         const lowerCombo = combo.map((tech) => tech.toLowerCase());
@@ -57,7 +58,7 @@ const ReactHashTags: React.FC<ReactHashTagsProps> = ({
       }
       return "";
     },
-    []
+    [],
   );
 
   const handleRemoveTag = useCallback(
@@ -68,7 +69,7 @@ const ReactHashTags: React.FC<ReactHashTagsProps> = ({
       // Immediately inform the parent form of the new value
       onChange(newTags);
     },
-    [tags, onChange, checkImpossibleCombinations]
+    [tags, onChange, checkImpossibleCombinations],
   );
 
   const handleAddTag = useCallback(
@@ -111,7 +112,7 @@ const ReactHashTags: React.FC<ReactHashTagsProps> = ({
       setHighlightedIndex(-1);
       inputRef.current?.focus();
     },
-    [tags, onChange, checkImpossibleCombinations, maxTags]
+    [tags, onChange, checkImpossibleCombinations, maxTags],
   );
 
   const handleClearAll = useCallback(() => {
@@ -134,7 +135,7 @@ const ReactHashTags: React.FC<ReactHashTagsProps> = ({
       const matches = allTags.filter(
         (tech) =>
           tech.toLowerCase().startsWith(lowerValue) &&
-          !tags.some((t) => t.toLowerCase() === tech.toLowerCase())
+          !tags.some((t) => t.toLowerCase() === tech.toLowerCase()),
       );
       setFilteredSuggestions(matches.slice(0, SUGGESTION_LIMIT));
     } else {
@@ -149,7 +150,7 @@ const ReactHashTags: React.FC<ReactHashTagsProps> = ({
         if (hasSuggestions) {
           event.preventDefault();
           setHighlightedIndex(
-            (prev) => (prev + 1) % filteredSuggestions.length
+            (prev) => (prev + 1) % filteredSuggestions.length,
           );
         }
         break;
@@ -157,7 +158,7 @@ const ReactHashTags: React.FC<ReactHashTagsProps> = ({
         if (hasSuggestions) {
           event.preventDefault();
           setHighlightedIndex((prev) =>
-            prev <= 0 ? filteredSuggestions.length - 1 : prev - 1
+            prev <= 0 ? filteredSuggestions.length - 1 : prev - 1,
           );
         }
         break;
@@ -262,7 +263,7 @@ const ReactHashTags: React.FC<ReactHashTagsProps> = ({
                   "px-3 py-2 text-sm cursor-pointer transition-colors duration-100 ease-in-out",
                   index === highlightedIndex
                     ? "bg-accent text-accent-foreground"
-                    : "hover:bg-accent/50"
+                    : "hover:bg-accent/50",
                 )}
                 onClick={() => handleSuggestionClick(suggestion)}
                 onMouseDown={(e) => e.preventDefault()}
@@ -294,7 +295,7 @@ const ReactHashTags: React.FC<ReactHashTagsProps> = ({
                 key={`${tag}-${index}`}
                 className={cn(
                   "inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors",
-                  "border-transparent bg-secondary text-secondary-foreground hover:bg-secondary/80"
+                  "border-transparent bg-secondary text-secondary-foreground hover:bg-secondary/80",
                 )}
               >
                 <span>{tag}</span>

@@ -3,7 +3,6 @@ import { z } from "zod";
 
 /**
  * Common Password Rules
- * Syncing these with the frontend ensures consistency.
  */
 const passwordRules = z
   .string()
@@ -37,8 +36,22 @@ export const loginSchema = z.object({
 export const changePasswordSchema = z.object({
   body: z.object({
     currentPassword: z.string().min(1, "Current password is required."),
-
     newPassword: passwordRules,
+  }),
+});
+
+// NEW: Forgot Password Schema
+export const forgotPasswordSchema = z.object({
+  body: z.object({
+    email: z.string().email("Please provide a valid email address."),
+  }),
+});
+
+// NEW: Reset Password Schema
+export const resetPasswordSchema = z.object({
+  body: z.object({
+    token: z.string().min(1, "Reset token is required."),
+    password: passwordRules,
   }),
 });
 

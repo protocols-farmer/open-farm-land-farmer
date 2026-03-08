@@ -1,9 +1,11 @@
-// src/features/opportunities/opportunity.routes.ts
+//src/features/opportunities/opportunity.routes.ts
 import { Router } from "express";
 import { opportunityController } from "./opportunity.controller.js";
 import { verifyToken } from "@/middleware/auth.middleware.js";
 import { requireRole } from "@/middleware/admin.middleware.js";
+import { isVerified } from "@/middleware/isVerified.js";
 import { validate } from "@/middleware/validate.js";
+import { uploadImage } from "@/middleware/multer.config.js"; // 🚜 Added Multer
 import {
   createOpportunitySchema,
   updateOpportunitySchema,
@@ -13,35 +15,38 @@ import { SystemRole } from "@prisma-client";
 const router: Router = Router();
 
 // --- Public Routes ---
-// Anyone can view the list of opportunities and individual opportunities.
 router.get("/", opportunityController.findAll);
 router.get("/:id", opportunityController.findOne);
 
 // --- Protected Routes ---
-// Only authorized users can create, update, or delete opportunities.
 const authorizedRoles: SystemRole[] = ["SYSTEM_CONTENT_CREATOR", "SUPER_ADMIN"];
 
 router.post(
   "/",
   verifyToken,
+  isVerified,
   requireRole(authorizedRoles),
+  uploadImage.single("companyLogo"), // 🚜 Capture the logo file
   validate(createOpportunitySchema),
-  opportunityController.create
+  opportunityController.create,
 );
 
 router.patch(
   "/:id",
   verifyToken,
+  isVerified,
   requireRole(authorizedRoles),
+  uploadImage.single("companyLogo"), // 🚜 Capture new logo file if provided
   validate(updateOpportunitySchema),
-  opportunityController.update
+  opportunityController.update,
 );
 
 router.delete(
   "/:id",
   verifyToken,
+  isVerified,
   requireRole(authorizedRoles),
-  opportunityController.remove
+  opportunityController.remove,
 );
 
 export default router;

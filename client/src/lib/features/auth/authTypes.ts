@@ -1,6 +1,4 @@
-// =================================================================
-// FILE: src/lib/features/auth/authTypes.ts
-// =================================================================
+//src/lib/features/auth/authTypes.ts
 import { SanitizedUserDto } from "../user/userTypes";
 
 // --- DTOs for API requests ---
@@ -19,16 +17,38 @@ export interface ChangePasswordInputDto {
   newPassword?: string;
 }
 
+// NEW: Forgot Password DTO
+export interface ForgotPasswordInputDto {
+  email: string;
+}
+
+// NEW: Reset Password DTO
+export interface ResetPasswordInputDto {
+  token: string;
+  password?: string;
+}
+
+// NEW: Verify Email DTO
+export interface VerifyEmailInputDto {
+  token: string;
+}
+
 // --- API Response Shapes ---
 export interface LoginApiResponse {
-  status: string;
+  status: "success" | "error" | "warning" | string;
   message: string;
   data: {
     user: SanitizedUserDto;
-    tokens: {
+    tokens?: {
       accessToken: string;
       refreshToken: string;
       refreshTokenExpiresAt: string;
     };
   };
+}
+
+export interface GeneralAuthResponse {
+  status: "success" | "error" | "social_account" | string;
+  message: string;
+  data?: any;
 }

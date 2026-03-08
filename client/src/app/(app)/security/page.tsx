@@ -10,7 +10,6 @@ export default function SecurityPage() {
     <main className="max-w-4xl mx-auto py-24 px-8">
       <div className="flex items-baseline justify-between border-b-4 border-foreground pb-4 mb-12">
         <h1 className="text-4xl font-black uppercase">Security</h1>
-        <span className="font-mono font-bold text-primary">v1.0-STABLE</span>
       </div>
 
       <article className="grid md:grid-cols-2 gap-12">

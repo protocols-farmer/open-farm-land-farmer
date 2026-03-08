@@ -16,15 +16,23 @@ const transport =
       })
     : undefined;
 
-/**
- * The application's central logger instance.
- * It's configured to be environment-aware.
- */
 export const logger = pino(
   {
     level: level,
 
-    redact: ["req.headers.authorization", "req.body.password"],
+    redact: {
+      paths: [
+        "req.headers.authorization",
+        "req.body.password",
+        "req.body.currentPassword",
+        "req.body.newPassword",
+      ],
+      remove: true,
+    },
+
+    serializers: {
+      err: pino.stdSerializers.err,
+    },
   },
   transport,
 );

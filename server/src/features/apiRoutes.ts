@@ -16,6 +16,7 @@ import followRoutes from "./follows/follows.routes.js";
 import notificationRoutes from "./notifications/notifications.routes.js";
 import githubRoutes from "./github/github.routes.js";
 import socialAuthRoutes from "./social-auth/social-auth.routes.js";
+import settingsRoutes from "./settings/settings.routes.js";
 
 const router: Router = Router();
 router.use(deserializeUser);
@@ -41,4 +42,5 @@ router.use("/admin", adminRoutes);
 router.use("/follows", followRoutes);
 router.use("/notifications", notificationRoutes);
 router.use("/github", githubRoutes);
+router.use("/settings", settingsRoutes);
 export default router;

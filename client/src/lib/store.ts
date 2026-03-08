@@ -23,6 +23,7 @@ import { adminApiSlice } from "./features/admin/adminApiSlice";
 import { notificationsApiSlice } from "./features/notifications/notificationsApiSlice";
 import { socialAuthApiSlice } from "./features/social-auth/socialAuthApiSlice";
 import { githubApiSlice } from "./features/github/githubApiSlice";
+import { settingsApiSlice } from "./features/settings/settingsApiSlice";
 /**
  * CENTRAL REDUX STORE
  * This is now the "Source of Truth" for the entire application,
@@ -51,6 +52,7 @@ export const store = configureStore({
     [guideSectionApiSlice.reducerPath]: guideSectionApiSlice.reducer,
     [notificationsApiSlice.reducerPath]: notificationsApiSlice.reducer,
     [githubApiSlice.reducerPath]: githubApiSlice.reducer,
+    [settingsApiSlice.reducerPath]: settingsApiSlice.reducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
@@ -69,6 +71,7 @@ export const store = configureStore({
       notificationsApiSlice.middleware,
       socialAuthApiSlice.middleware,
       githubApiSlice.middleware,
+      settingsApiSlice.middleware, // 🚜 ADD THIS LINE HERE
     ]),
 });
 

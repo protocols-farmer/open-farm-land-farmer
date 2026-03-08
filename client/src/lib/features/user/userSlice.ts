@@ -8,7 +8,7 @@ import type {
   UsersState,
   UpdateProfileApiResponse,
 } from "./userTypes";
-
+import { authApiSlice } from "../auth/authApiSlice";
 const initialState: UsersState = {
   currentUser: null,
 };
@@ -40,6 +40,15 @@ const userSlice = createSlice({
         (state, action: PayloadAction<UpdateProfileApiResponse>) => {
           if (action.payload.data?.user) {
             state.currentUser = action.payload.data.user;
+          }
+        },
+      )
+
+      .addMatcher(
+        authApiSlice.endpoints.verifyEmail.matchFulfilled,
+        (state) => {
+          if (state.currentUser) {
+            state.currentUser.isEmailVerified = true;
           }
         },
       );

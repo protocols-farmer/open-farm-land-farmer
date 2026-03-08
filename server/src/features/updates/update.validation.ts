@@ -4,23 +4,21 @@ import { UpdateCategory } from "@prisma-client";
 
 const updateCategoryValues = Object.values(UpdateCategory) as [
   string,
-  ...string[]
+  ...string[],
 ];
 
+// src/features/updates/update.validation.ts
 export const createUpdateSchema = z.object({
   body: z.object({
     title: z
       .string()
-      .min(3, "Title must be at least 3 characters long.")
-      .max(255),
-
-    content: z.string().min(10, "Content must be at least 10 characters long."),
-
+      .min(5, "Title must be at least 5 characters.")
+      .max(100, "Title cannot exceed 100 characters."), // 🚜 Matches Opportunity Title limit
+    content: z.string().min(20, "Content must be at least 20 characters."),
     category: z.enum(updateCategoryValues, {
       message: "Please select a valid category.",
     }),
-
-    version: z.string().optional().nullable(),
+    version: z.string().trim().optional().nullable(), // 🚜 Trim whitespace
   }),
 });
 

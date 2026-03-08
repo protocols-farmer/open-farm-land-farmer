@@ -1,4 +1,3 @@
-//src/components/pages/auth/SignUp.tsx
 "use client";
 
 import React, { useState, useMemo } from "react";
@@ -26,6 +25,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { cn, getApiErrorMessage } from "@/lib/utils";
 import { useFocusOnError } from "@/lib/hooks/useFocusOnError";
 import SocialLogin from "./SocialLogin";
+import { toast } from "sonner";
 
 const PasswordStrengthIndicator = ({ score }: { score: number }) => {
   const levels = [
@@ -60,6 +60,9 @@ const SignUpForm = () => {
   const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
+  const [signupStatus, setSignupStatus] = useState<
+    "idle" | "success" | "email_fail"
+  >("idle");
 
   const {
     register,
@@ -105,20 +108,35 @@ const SignUpForm = () => {
 
   useFocusOnError(errors, setFocus);
   const [signup, { isLoading }] = useSignupMutation();
+
   const onSubmit: SubmitHandler<SignUpFormValues> = async (data) => {
     setFormError(null);
     try {
-      await signup({
+      const response = await signup({
         email: data.email,
         password: data.password,
       }).unwrap();
 
-      window.location.assign("/profile");
+      // 🚜 Scenario: Account created but Welcome Guide failed to send
+      if (response.status === "warning") {
+        setSignupStatus("email_fail");
+        toast.error(
+          "Account created, but we couldn't send your welcome guide.",
+          {
+            duration: 8000,
+          },
+        );
+      } else {
+        setSignupStatus("success");
+        toast.success("Welcome! Check your inbox for your quick start guide.", {
+          duration: 6000,
+        });
+        window.location.assign("/profile");
+      }
     } catch (error: any) {
       setFormError(getApiErrorMessage(error));
     }
   };
-
   return (
     <div className="flex items-center justify-center min-h-screen bg-background p-4">
       <Card className="w-full max-w-md border-border shadow-lg">
@@ -148,7 +166,17 @@ const SignUpForm = () => {
                 <AlertDescription>{formError}</AlertDescription>
               </Alert>
             )}
-
+            {/* 🚜 Scenario: USER_CREATED_BUT_EMAIL_FAILED feedback */}
+            {signupStatus === "email_fail" && (
+              <Alert className="border-warning/50 bg-warning/10 text-warning-foreground animate-in fade-in zoom-in duration-300">
+                <AlertCircle className="h-4 w-4 text-warning" />
+                <AlertDescription className="text-xs font-medium leading-relaxed">
+                  Your account is ready, but our email server is currently at
+                  capacity. You can explore the platform now, but please verify
+                  your email via the dashboard banner whenever you're ready.
+                </AlertDescription>
+              </Alert>
+            )}
             <div className="space-y-1.5">
               <Label htmlFor="email">Email Address</Label>
               <Input
@@ -230,7 +258,7 @@ const SignUpForm = () => {
                       I accept the{" "}
                       <Link
                         href="/terms"
-                        className="text-primary hover:underline font-medium ml-0.5"
+                        className="text-primary hover:underline font-medium ml-0.5 underline"
                       >
                         Terms and Conditions
                       </Link>
@@ -244,17 +272,12 @@ const SignUpForm = () => {
                 </div>
               )}
             />
-
-            {/* social login */}
-            {/* <div>
-              <SocialLogin />
-            </div> */}
           </CardContent>
 
-          <CardFooter>
+          <CardFooter className="flex flex-col gap-3">
             <Button
               type="submit"
-              disabled={isSubmitting}
+              disabled={isSubmitting || signupStatus === "email_fail"}
               className="w-full mt-5"
             >
               {isSubmitting ? (
@@ -266,6 +289,16 @@ const SignUpForm = () => {
                 "Create Account"
               )}
             </Button>
+
+            {signupStatus === "email_fail" && (
+              <Button
+                variant="outline"
+                className="w-full gap-2 font-bold"
+                onClick={() => router.push("/auth/login")}
+              >
+                Proceed to Login
+              </Button>
+            )}
           </CardFooter>
         </form>
       </Card>

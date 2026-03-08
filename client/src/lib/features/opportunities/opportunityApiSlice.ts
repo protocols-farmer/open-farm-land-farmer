@@ -1,6 +1,3 @@
-// =================================================================
-// FILE: src/lib/features/opportunities/opportunityApiSlice.ts
-// =================================================================
 import { createApi } from "@reduxjs/toolkit/query/react";
 import { baseQueryWithReauth } from "@/lib/api/baseQueryWithReauth";
 import {
@@ -8,8 +5,6 @@ import {
   GetOpportunitiesParams,
   GetOpportunitiesResponse,
   GetOpportunityResponse,
-  CreateOpportunityPayload,
-  UpdateOpportunityPayload,
 } from "./opportunityTypes";
 
 export const opportunityApiSlice = createApi({
@@ -38,22 +33,25 @@ export const opportunityApiSlice = createApi({
       transformResponse: (response: GetOpportunityResponse) => response.data,
       providesTags: (result, error, id) => [{ type: "Opportunity", id }],
     }),
-    createOpportunity: builder.mutation<
-      OpportunityDto,
-      CreateOpportunityPayload
-    >({
-      query: (body) => ({ url: "/opportunities", method: "POST", body }),
+
+    createOpportunity: builder.mutation<OpportunityDto, FormData>({
+      query: (formData) => ({
+        url: "/opportunities",
+        method: "POST",
+        body: formData,
+      }),
       transformResponse: (response: GetOpportunityResponse) => response.data,
       invalidatesTags: [{ type: "Opportunity", id: "LIST" }],
     }),
+
     updateOpportunity: builder.mutation<
       OpportunityDto,
-      UpdateOpportunityPayload
+      { id: string; formData: FormData }
     >({
-      query: ({ id, ...body }) => ({
+      query: ({ id, formData }) => ({
         url: `/opportunities/${id}`,
         method: "PATCH",
-        body,
+        body: formData,
       }),
       transformResponse: (response: GetOpportunityResponse) => response.data,
       invalidatesTags: (result, error, { id }) => [
@@ -61,6 +59,7 @@ export const opportunityApiSlice = createApi({
         { type: "Opportunity", id: "LIST" },
       ],
     }),
+
     deleteOpportunity: builder.mutation<{ success: boolean }, string>({
       query: (id) => ({ url: `/opportunities/${id}`, method: "DELETE" }),
       invalidatesTags: [{ type: "Opportunity", id: "LIST" }],

@@ -156,7 +156,9 @@ export default function CreatePostPage() {
         <Card className="w-full max-w-md text-center p-8">
           <CardHeader>
             <CardTitle>Authentication Required</CardTitle>
-            <CardDescription>Log in to sow your next project.</CardDescription>
+            <CardDescription>
+              Log in to create your next project.
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <Button asChild>
@@ -179,8 +181,8 @@ export default function CreatePostPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-3xl font-black uppercase tracking-tighter">
-            Sow a New Post
+          <CardTitle className="text-3xl font-black ">
+            Create a New Post
           </CardTitle>
           <CardDescription>
             Share your project journey without the AI fluff.

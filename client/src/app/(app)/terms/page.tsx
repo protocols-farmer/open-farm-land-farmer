@@ -1,3 +1,4 @@
+//src/app/(app)/terms/page.tsx
 import { Metadata } from "next";
 
 export const metadata: Metadata = {

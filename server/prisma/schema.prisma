@@ -24,6 +24,10 @@ model User {
   username       String    @unique
   email          String    @unique
   hashedPassword String?
+  isEmailVerified      Boolean   @default(false) @map("is_email_verified")
+  emailVerifyToken     String?   @map("email_verify_token")
+  passwordResetToken   String?   @unique @map("password_reset_token")
+  passwordResetExpires DateTime? @map("password_reset_expires")
   bio            String?
   title          String?
   location       String?
@@ -88,15 +92,18 @@ model UserSettings {
   id                   String          @id @default(uuid())
   theme                ThemePreference @default(SYSTEM)
   notificationsEnabled Boolean         @default(true)
-  emailMarketing       Boolean         @default(false)
-  emailSocial          Boolean         @default(true)
+  
+  // Refined flags to match our logic
+  emailMarketing       Boolean         @default(true) // For Opportunities
+  emailUpdates         Boolean         @default(true) // For System Updates
+  emailSocial          Boolean         @default(true) // For Community/Post notifications
+  
   updatedAt            DateTime        @updatedAt
   userId               String          @unique
   user                 User            @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("user_settings")
 }
-
 model Follow {
   followerId  String
   followingId String
@@ -270,12 +277,13 @@ model Opportunity {
   id               String          @id @default(uuid())
   title            String
   companyName      String
-  companyLogo      String?
+  
+  companyLogo      String?         
+  companyLogoPublicId String?      
+
   location         String
   type             OpportunityType
   isRemote         Boolean         @default(false)
-  imageUrl      String?   // Optional URL for the update's image
-  imagePublicId String?   // Optional Cloudinary ID for deletion
   salaryRange      String?
   fullDescription  String
   responsibilities String[]
@@ -290,7 +298,6 @@ model Opportunity {
   @@index([type, isRemote, postedAt(sort: Desc)])
   @@map("opportunities")
 }
-
 model OpportunityTag {
   opportunityId String
   tagId         String

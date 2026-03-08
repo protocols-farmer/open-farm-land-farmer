@@ -1,3 +1,4 @@
+//src/components/pages/posts/UpdatePost.tsx
 "use client";
 
 import React, { useState, useCallback } from "react";
@@ -240,21 +241,9 @@ function UpdatePostForm({ postData }: UpdatePostFormProps) {
 
   return (
     <div className="container mx-auto max-w-3xl py-8">
-      <Button variant="link" asChild className="px-0 mb-6 group">
-        <Link
-          href={`/posts/${postData.id}`}
-          className="inline-flex items-center gap-2"
-        >
-          <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-1" />
-          Back to Post
-        </Link>
-      </Button>
-
       <Card>
         <CardHeader>
-          <CardTitle className="text-3xl font-black uppercase tracking-tighter">
-            Update Harvest
-          </CardTitle>
+          <CardTitle className="text-3xl font-black ">Update Post</CardTitle>
           <CardDescription>
             Refine your project journey details.
           </CardDescription>

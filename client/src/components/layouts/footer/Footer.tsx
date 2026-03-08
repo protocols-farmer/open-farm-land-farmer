@@ -2,19 +2,11 @@
 
 import React from "react";
 import Link from "next/link";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import Logo from "@/components/shared/Logo";
-import {
-  FaGithub,
-  FaTwitter,
-  FaEnvelope,
-  FaWhatsapp,
-  FaTiktok,
-} from "react-icons/fa";
+import { useGetLatestVersionQuery } from "@/lib/features/updates/updateApiSlice";
+import { FaEnvelope, FaWhatsapp, FaGithub } from "react-icons/fa";
 import { FaXTwitter } from "react-icons/fa6";
+import { ArrowUpRight, Sparkles } from "lucide-react";
 
-// Sidebar-style footer links
 const links = {
   explore: [
     { href: "/projects", label: "Projects" },
@@ -27,8 +19,8 @@ const links = {
   community: [
     { href: "/discussions", label: "Discussions" },
     { href: "/events", label: "Events" },
-    { href: "/hall-of-fame", label: "Hall of Fame" },
     { href: "/create", label: "Create Something" },
+    { href: "/contacts", label: "Contacts" },
   ],
   legal: [
     { href: "/privacy", label: "Privacy Policy" },
@@ -39,73 +31,83 @@ const links = {
 };
 
 const socialLinks = [
-  {
-    href: "https://x.com/biooids",
-    icon: FaXTwitter,
-    label: "X (Twitter)",
-  },
-  {
-    href: "https://github.com/biooids",
-    icon: FaGithub,
-    label: "GitHub",
-  },
-  {
-    href: "https://www.tiktok.com/@navi_biooid",
-    icon: FaTiktok,
-    label: "TikTok",
-  },
-  {
-    href: "mailto:intellbiooid@gmail.com",
-    icon: FaEnvelope,
-    label: "Email",
-  },
-  {
-    href: "https://wa.me/250790931024",
-    icon: FaWhatsapp,
-    label: "WhatsApp",
-  },
+  { href: "https://x.com/biooids", icon: FaXTwitter, label: "X" },
+  { href: "mailto:intellbiooid@gmail.com", icon: FaEnvelope, label: "Email" },
+  { href: "https://wa.me/250790931024", icon: FaWhatsapp, label: "WhatsApp" },
+  // { href: "https://github.com/biooids", icon: FaGithub, label: "GitHub" },
 ];
 
 export default function Footer() {
   const currentYear = new Date().getFullYear();
+  const { data: versionData } = useGetLatestVersionQuery();
+  const rawVersion = versionData?.version || "1.0.0-rc.5";
+
+  const displayVersion = rawVersion.toLowerCase().startsWith("v")
+    ? rawVersion
+    : `v${rawVersion}`;
 
   return (
-    <footer className="border-t bg-background/80 backdrop-blur-lg w-full">
-      <div className="mx-auto w-full  px-4 py-10 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
-          {/* Logo & tagline */}
-          <div>
-            <p className="mt-4 max-w-sm text-muted-foreground">
-              <strong>Open Farm Land</strong> is your creative hub to showcase
-              builds, craft guides, and connect with others. Start creating now.
-            </p>
+    <footer className="w-full border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <div className="container mx-auto px-4 py-12 md:py-16">
+        <div className="grid grid-cols-1 gap-12 lg:grid-cols-4">
+          {/* Brand Identity Section */}
+          <div className="lg:col-span-1 space-y-6">
+            <div className="space-y-4">
+              <h2 className="text-xl font-black tracking-tighter  ">
+                Open Farm Land
+              </h2>
+              <p className="text-sm leading-relaxed text-muted-foreground">
+                The creative harvest for digital craftsmen. Showcase builds,
+                share knowledge, and grow together in an open ecosystem.
+              </p>
+            </div>
+
+            <div className="flex gap-4">
+              {socialLinks.map((social) => (
+                <Link
+                  key={social.label}
+                  href={social.href}
+                  target="_blank"
+                  className="p-2 rounded-lg bg-muted/50 text-muted-foreground hover:text-primary hover:bg-primary/10 transition-all"
+                >
+                  <span className="sr-only">{social.label}</span>
+                  <social.icon className="h-5 w-5" />
+                </Link>
+              ))}
+            </div>
           </div>
 
-          {/* Link columns */}
-          <div className="grid grid-cols-2 gap-8 sm:grid-cols-3 lg:col-span-2">
+          {/* Navigation Links Grid */}
+          <div className="grid grid-cols-2 gap-8 sm:grid-cols-3 lg:col-span-3">
             <div>
-              <p className="font-semibold text-foreground">Explore</p>
-              <ul className="mt-4 space-y-2">
+              <p className="text-sm font-bold  tracking-widest text-foreground mb-6">
+                Explore
+              </p>
+              <ul className="space-y-3">
                 {links.explore.map((link) => (
                   <li key={link.href}>
                     <Link
                       href={link.href}
-                      className="text-muted-foreground transition hover:text-primary"
+                      className="text-sm text-muted-foreground transition-colors hover:text-primary flex items-center group"
                     >
                       {link.label}
+                      <ArrowUpRight className="h-3 w-3 ml-1 opacity-0 -translate-y-1 group-hover:opacity-100 group-hover:translate-y-0 transition-all" />
                     </Link>
                   </li>
                 ))}
               </ul>
             </div>
+
             <div>
-              <p className="font-semibold text-foreground">Community</p>
-              <ul className="mt-4 space-y-2">
+              <p className="text-sm font-bold  tracking-widest text-foreground mb-6">
+                Community
+              </p>
+              <ul className="space-y-3">
                 {links.community.map((link) => (
                   <li key={link.href}>
                     <Link
                       href={link.href}
-                      className="text-muted-foreground transition hover:text-primary"
+                      className="text-sm text-muted-foreground transition-colors hover:text-primary flex items-center group"
                     >
                       {link.label}
                     </Link>
@@ -113,14 +115,17 @@ export default function Footer() {
                 ))}
               </ul>
             </div>
+
             <div>
-              <p className="font-semibold text-foreground">Legal</p>
-              <ul className="mt-4 space-y-2">
+              <p className="text-sm font-bold  tracking-widest text-foreground mb-6">
+                Legal
+              </p>
+              <ul className="space-y-3">
                 {links.legal.map((link) => (
                   <li key={link.href}>
                     <Link
                       href={link.href}
-                      className="text-muted-foreground transition hover:text-primary"
+                      className="text-sm text-muted-foreground transition-colors hover:text-primary"
                     >
                       {link.label}
                     </Link>
@@ -131,27 +136,28 @@ export default function Footer() {
           </div>
         </div>
 
-        {/* Bottom Section */}
-        <div className="mt-10 border-t pt-6 sm:flex sm:items-center sm:justify-between">
-          <div className="flex space-x-4">
-            {socialLinks.map((social) => (
-              <Link
-                key={social.label}
-                href={social.href}
-                className="text-muted-foreground hover:text-primary"
-              >
-                <span className="sr-only">{social.label}</span>
-                <social.icon className="h-5 w-5" />
-              </Link>
-            ))}
+        {/* Bottom Bar */}
+        <div className="mt-16 pt-8 border-t flex flex-col md:flex-row items-center justify-between gap-6">
+          <div className="flex items-center gap-6">
+            <p className="text-xs text-muted-foreground">
+              &copy; {currentYear} Open Farm Land.
+            </p>
+            <div className="h-4 w-px bg-border hidden md:block" />
+            <p className="text-xs text-muted-foreground font-medium italic">
+              Crafted by developers, for developers.
+            </p>
           </div>
-          <span className="mt-4 block text-xs text-muted-foreground sm:mt-0">
-            Version 1.0.0-rc.5
-          </span>
-          <p className="mt-4 text-sm text-muted-foreground sm:mt-0">
-            &copy; {currentYear} Open Farm Land. Crafted by developers, for
-            developers.
-          </p>
+
+          {/* 🚜 Dynamic Version Section */}
+          <Link
+            href={versionData?.id ? `/updates/${versionData.id}` : "/updates"}
+            className="group flex items-center gap-2 px-3 py-1 rounded-full bg-muted/50 border border-border/50 hover:border-primary/30 transition-all"
+          >
+            <Sparkles className="h-3 w-3 text-primary animate-pulse" />
+            <span className="text-[10px] font-bold  tracking-tighter text-muted-foreground group-hover:text-primary transition-colors">
+              Version {displayVersion}
+            </span>
+          </Link>
         </div>
       </div>
     </footer>
