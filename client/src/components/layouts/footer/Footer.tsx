@@ -151,9 +151,8 @@ export default function Footer() {
           {/* 🚜 Dynamic Version Section */}
           <Link
             href={versionData?.id ? `/updates/${versionData.id}` : "/updates"}
-            className="group flex items-center gap-2 px-3 py-1 rounded-full bg-muted/50 border border-border/50 hover:border-primary/30 transition-all"
+            className="group flex items-center gap-2 px-3 py-1 rounded-md bg-muted/50 border border-border/50 hover:border-primary/30 transition-all"
           >
-            <Sparkles className="h-3 w-3 text-primary animate-pulse" />
             <span className="text-[10px] font-bold  tracking-tighter text-muted-foreground group-hover:text-primary transition-colors">
               Version {displayVersion}
             </span>
