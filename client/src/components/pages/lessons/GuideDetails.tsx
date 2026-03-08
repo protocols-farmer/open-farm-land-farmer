@@ -1,18 +1,20 @@
 //src/components/pages/lessons/GuideDetails.tsx
 "use client";
 
-import React, { useEffect, useState, useMemo } from "react"; // Added useMemo
+import React, { useEffect, useState, useMemo } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation"; // Added for redirection
 import { formatDistanceToNow } from "date-fns";
 import toast from "react-hot-toast";
 import DOMPurify from "dompurify";
-import "highlight.js/styles/github-dark.css"; // CRITICAL: Added for syntax highlighting
+import "highlight.js/styles/github-dark.css";
 
 // --- HOOKS & STATE MANAGEMENT ---
 import {
   useGetPostByIdQuery,
   useRecordPostViewMutation,
+  useDeletePostMutation, // Added missing mutation
 } from "@/lib/features/post/postApiSlice";
 import { useAppSelector } from "@/lib/hooks/hooks";
 import { selectCurrentUser } from "@/lib/features/user/userSlice";
@@ -49,8 +51,24 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogDescription,
 } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import {
   ExternalLink,
   Github,
@@ -59,9 +77,13 @@ import {
   ArrowLeft,
   ArrowRight,
   Terminal,
+  Edit,
+  Trash2,
+  MoreHorizontal,
 } from "lucide-react";
 
 export default function GuideDetails({ postId }: { postId: string }) {
+  const router = useRouter(); // Added router
   const {
     data: post,
     isLoading,
@@ -70,18 +92,11 @@ export default function GuideDetails({ postId }: { postId: string }) {
 
   const currentUser = useAppSelector(selectCurrentUser);
   const [recordPostView] = useRecordPostViewMutation();
+  const [deletePost, { isLoading: isDeleting }] = useDeletePostMutation(); // Added mutation hook
 
-  /**
-   * FIX 1: DERIVED IMAGE STATE
-   * We calculate the mainImage instantly from render.
-   */
   const [selectedImage, setSelectedImage] = useState<string | undefined>();
   const mainImage = selectedImage || post?.images?.[0]?.url;
 
-  /**
-   * FIX 2: MEMOIZED SANITIZATION
-   * Prevents cascading renders and preserves highlight.js classes.
-   */
   const sanitizedContent = useMemo(() => {
     const content = post?.content;
     if (!content) return "";
@@ -118,8 +133,8 @@ export default function GuideDetails({ postId }: { postId: string }) {
   if (isLoading)
     return (
       <div className="flex h-[60vh] items-center justify-center">
-        <p className="animate-pulse text-muted-foreground">
-          Preparing your guide...
+        <p className="animate-pulse text-muted-foreground font-medium">
+          Preparing guide content...
         </p>
       </div>
     );
@@ -127,17 +142,18 @@ export default function GuideDetails({ postId }: { postId: string }) {
   if (isError || !post)
     return (
       <div className="container py-20">
-        <Card className="max-w-md mx-auto border-destructive/50">
+        <Card className="max-w-md mx-auto border-destructive/20 shadow-none bg-destructive/5">
           <CardContent className="pt-6 text-center space-y-4">
-            <Terminal className="h-10 w-10 mx-auto text-destructive" />
-            <h2 className="text-xl font-bold uppercase tracking-tighter">
-              Guide Missing
+            <Terminal className="h-10 w-10 mx-auto text-destructive/50" />
+            <h2 className="text-xl font-black tracking-tighter">
+              Guide not found
             </h2>
-            <p className="text-muted-foreground text-sm">
-              This guide has returned to the soil.
+            <p className="text-muted-foreground text-sm font-medium">
+              The requested guide is unavailable or has been removed from the
+              system.
             </p>
-            <Button variant="outline" asChild>
-              <Link href="/guides">Back to Guides</Link>
+            <Button variant="outline" asChild className="rounded-full">
+              <Link href="/guides">Back to guides</Link>
             </Button>
           </CardContent>
         </Card>
@@ -149,6 +165,16 @@ export default function GuideDetails({ postId }: { postId: string }) {
   const currentStep = post.steps?.[activeStepIndex];
 
   // --- HANDLERS ---
+  const handleDelete = async () => {
+    try {
+      await deletePost(postId).unwrap();
+      toast.success("Guide deleted successfully.");
+      router.push("/guides");
+    } catch {
+      toast.error("Failed to delete the guide.");
+    }
+  };
+
   const goToNextStep = () =>
     setActiveStepIndex((prev) => Math.min(prev + 1, totalSteps - 1));
   const goToPrevStep = () =>
@@ -158,20 +184,22 @@ export default function GuideDetails({ postId }: { postId: string }) {
     setEditingStep(null);
     setIsStepDialogOpen(true);
   };
+
   const handleOpenEditStepDialog = (step: GuideStepDto) => {
     setEditingStep(step);
     setIsStepDialogOpen(true);
   };
+
   const handleDeleteStep = (stepId: string) => {
     if (
       window.confirm(
-        "Are you sure? Deleting a step will also delete all sections inside it.",
+        "Deleting a step will also remove all associated sections. Proceed?",
       )
     ) {
       toast.promise(deleteGuideStep({ stepId, postId }).unwrap(), {
         loading: "Deleting step...",
-        success: "Step deleted!",
-        error: "Failed to delete step.",
+        success: "Step removed.",
+        error: "Action failed.",
       });
       if (activeStepIndex > 0 && activeStepIndex >= totalSteps - 1)
         goToPrevStep();
@@ -185,8 +213,8 @@ export default function GuideDetails({ postId }: { postId: string }) {
     try {
       await toast.promise(promise, {
         loading: "Saving step...",
-        success: "Step saved!",
-        error: "Failed.",
+        success: "Step updated.",
+        error: "Save failed.",
       });
       setIsStepDialogOpen(false);
     } catch (err) {}
@@ -197,16 +225,18 @@ export default function GuideDetails({ postId }: { postId: string }) {
     setParentStepId(stepId);
     setIsSectionDialogOpen(true);
   };
+
   const handleOpenEditSectionDialog = (section: GuideSectionDto) => {
     setEditingSection(section);
     setParentStepId(section.stepId);
     setIsSectionDialogOpen(true);
   };
+
   const handleDeleteSection = (sectionId: string) => {
     toast.promise(deleteGuideSection({ sectionId, postId }).unwrap(), {
       loading: "Deleting section...",
-      success: "Section deleted!",
-      error: "Failed.",
+      success: "Section removed.",
+      error: "Action failed.",
     });
   };
 
@@ -221,8 +251,8 @@ export default function GuideDetails({ postId }: { postId: string }) {
     try {
       await toast.promise(promise, {
         loading: "Saving section...",
-        success: "Section saved!",
-        error: "Failed.",
+        success: "Section updated.",
+        error: "Save failed.",
       });
       setIsSectionDialogOpen(false);
     } catch (err) {}
@@ -231,7 +261,7 @@ export default function GuideDetails({ postId }: { postId: string }) {
   return (
     <section className="mx-auto max-w-7xl py-8 space-y-12 animate-in fade-in duration-500">
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-2 lg:gap-12">
-        {/* --- Image Gallery (Derived Logic) --- */}
+        {/* --- Image Gallery --- */}
         <div className="lg:sticky lg:top-24 h-fit flex flex-col gap-4">
           <div className="relative aspect-[16/10] w-full overflow-hidden rounded-2xl border bg-muted shadow-sm">
             {mainImage ? (
@@ -243,8 +273,8 @@ export default function GuideDetails({ postId }: { postId: string }) {
                 priority
               />
             ) : (
-              <div className="h-full w-full flex items-center justify-center text-muted-foreground">
-                No gallery images
+              <div className="h-full w-full flex items-center justify-center text-muted-foreground font-medium text-sm">
+                No preview images available
               </div>
             )}
           </div>
@@ -256,7 +286,7 @@ export default function GuideDetails({ postId }: { postId: string }) {
                   onClick={() => setSelectedImage(img.url)}
                   className={`relative aspect-square w-full overflow-hidden rounded-lg border-2 transition-all ${
                     mainImage === img.url
-                      ? "border-primary shadow-md"
+                      ? "border-primary"
                       : "border-transparent hover:border-primary/50"
                   }`}
                 >
@@ -275,15 +305,75 @@ export default function GuideDetails({ postId }: { postId: string }) {
         {/* --- Header & Meta --- */}
         <div className="flex flex-col space-y-6">
           <header className="space-y-4">
-            <Badge variant="secondary" className="w-fit capitalize font-bold">
+            <Badge variant="secondary" className="w-fit font-bold">
               {post.category.toLowerCase()}
             </Badge>
-            <h1 className="text-4xl font-black uppercase tracking-tighter md:text-5xl leading-none break-all">
+            <h1 className="text-4xl font-black tracking-tighter md:text-5xl leading-none">
               {post.title}
             </h1>
-            <p className="text-xl text-muted-foreground leading-relaxed">
+            <p className="text-xl text-muted-foreground leading-relaxed font-medium">
               {post.description}
             </p>
+
+            {isAuthor && (
+              <div className="flex items-center gap-2 pt-2">
+                <Button
+                  asChild
+                  variant="outline"
+                  className="flex-1 font-bold rounded-xl"
+                >
+                  <Link href={`/posts/${post.id}/update`}>
+                    <Edit className="mr-2 h-4 w-4" /> Edit guide
+                  </Link>
+                </Button>
+
+                <AlertDialog>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="rounded-xl"
+                      >
+                        <MoreHorizontal className="h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="rounded-xl">
+                      <AlertDialogTrigger asChild>
+                        <DropdownMenuItem className="text-destructive font-bold cursor-pointer">
+                          <Trash2 className="mr-2 h-4 w-4" /> Delete
+                        </DropdownMenuItem>
+                      </AlertDialogTrigger>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+
+                  <AlertDialogContent className="rounded-2xl border-border">
+                    <AlertDialogHeader>
+                      <AlertDialogTitle className="text-2xl font-black tracking-tighter">
+                        Confirm deletion
+                      </AlertDialogTitle>
+                      <AlertDialogDescription className="text-muted-foreground font-medium">
+                        This action will permanently remove the guide and all
+                        associated steps. This cannot be undone.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter className="pt-4">
+                      <AlertDialogCancel className="rounded-full font-bold">
+                        Cancel
+                      </AlertDialogCancel>
+                      <AlertDialogAction
+                        onClick={handleDelete}
+                        disabled={isDeleting}
+                        className="bg-destructive text-white hover:bg-destructive/90 rounded-full font-bold px-8"
+                      >
+                        {isDeleting ? "Deleting..." : "Confirm delete"}
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              </div>
+            )}
+
             <div className="flex items-center gap-4 pt-6 border-t">
               <Link
                 href={`/profile/${post.author.username}`}
@@ -299,7 +389,7 @@ export default function GuideDetails({ postId }: { postId: string }) {
                   <p className="font-bold text-foreground group-hover:underline decoration-primary">
                     {post.author.name}
                   </p>
-                  <p className="text-xs text-muted-foreground uppercase tracking-widest">
+                  <p className="text-xs text-muted-foreground font-bold tracking-widest uppercase">
                     Published{" "}
                     {formatDistanceToNow(new Date(post.createdAt), {
                       addSuffix: true,
@@ -309,10 +399,12 @@ export default function GuideDetails({ postId }: { postId: string }) {
               </Link>
             </div>
           </header>
+
           <PostInteractionHub post={post} />
-          <Card className="bg-muted/30">
+
+          <Card className="bg-muted/30 border-none">
             <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-black uppercase tracking-widest text-muted-foreground">
+              <CardTitle className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground/60">
                 Tags
               </CardTitle>
             </CardHeader>
@@ -321,56 +413,61 @@ export default function GuideDetails({ postId }: { postId: string }) {
                 <Badge
                   key={postTag.tag.id}
                   variant="outline"
-                  className="bg-background"
+                  className="bg-background font-bold text-[10px]"
                 >
                   # {postTag.tag.name}
                 </Badge>
               ))}
             </CardContent>
           </Card>
+
           <div className="grid grid-cols-2 gap-4">
             {post.githubLink && (
-              <Button asChild className="font-bold">
+              <Button asChild className="font-bold rounded-xl h-11">
                 <a href={post.githubLink} target="_blank" rel="noopener">
-                  <Github className="mr-2 h-4 w-4" /> Repo
+                  <Github className="mr-2 h-4 w-4" /> Source repo
                 </a>
               </Button>
             )}
             {post.externalLink && (
-              <Button variant="outline" asChild className="font-bold">
+              <Button
+                variant="outline"
+                asChild
+                className="font-bold rounded-xl h-11"
+              >
                 <a href={post.externalLink} target="_blank" rel="noopener">
-                  <ExternalLink className="mr-2 h-4 w-4" /> Demo
+                  <ExternalLink className="mr-2 h-4 w-4" /> Live demo
                 </a>
               </Button>
             )}
           </div>
         </div>
       </div>
-      <Separator />
 
-      {/* --- Memoized Main Content --- */}
+      <Separator className="opacity-50" />
+
+      {/* --- Guide Content --- */}
       <div className="mx-auto max-w-4xl px-4">
         <div
-          className="prose prose-lg prose-neutral prose-quoteless dark:prose-invert max-w-none break-words"
+          className="prose prose-lg prose-neutral dark:prose-invert max-w-none break-words font-medium text-muted-foreground/90 prose-headings:font-black prose-headings:tracking-tighter prose-headings:text-foreground"
           dangerouslySetInnerHTML={{ __html: sanitizedContent }}
         />
       </div>
-      <Separator />
+
+      <Separator className="opacity-50" />
 
       {/* --- Guide Steps Navigator --- */}
-      <main className="mx-auto max-w-4xl space-y-8">
-        <div className="text-center space-y-2">
-          <h2 className="text-3xl font-black uppercase tracking-tighter">
-            Guide Steps
-          </h2>
+      <main className="mx-auto max-w-4xl space-y-10">
+        <div className="text-center space-y-4">
+          <h2 className="text-4xl font-black tracking-tighter">Guide steps</h2>
           {isAuthor && (
             <Button
               onClick={handleOpenCreateStepDialog}
               size="sm"
               variant="outline"
-              className="font-bold"
+              className="font-bold rounded-full"
             >
-              <PlusCircle className="mr-2 h-4 w-4" /> Add New Step
+              <PlusCircle className="mr-2 h-4 w-4" /> Add new step
             </Button>
           )}
         </div>
@@ -388,36 +485,37 @@ export default function GuideDetails({ postId }: { postId: string }) {
             onDeleteSection={handleDeleteSection}
           />
         ) : (
-          <div className="flex flex-col items-center justify-center rounded-lg border-2 border-dashed bg-card p-12 text-center min-h-[30vh]">
-            <FileText className="h-12 w-12 text-muted-foreground/50" />
-            <h3 className="mt-6 text-xl font-black uppercase tracking-tighter">
-              This Guide Has No Steps Yet
+          <div className="flex flex-col items-center justify-center rounded-2xl border-2 border-dashed bg-muted/20 p-16 text-center min-h-[30vh]">
+            <FileText className="h-12 w-12 text-muted-foreground/20" />
+            <h3 className="mt-6 text-xl font-black tracking-tighter">
+              No content published yet
             </h3>
-            <p className="mt-2 text-muted-foreground">
+            <p className="mt-2 text-muted-foreground font-medium">
               {isAuthor
-                ? "Click 'Add New Step' to begin building your guide."
-                : "Check back later for content!"}
+                ? "Start building your guide by adding the first step."
+                : "The author has not added any steps to this guide yet."}
             </p>
           </div>
         )}
 
         {totalSteps > 1 && (
-          <div className="flex justify-between items-center border-t pt-6 bg-muted/20 p-4 rounded-xl">
+          <div className="flex justify-between items-center border bg-muted/10 p-5 rounded-2xl shadow-sm">
             <Button
               variant="ghost"
               onClick={goToPrevStep}
               disabled={activeStepIndex === 0}
-              className="font-bold"
+              className="font-bold hover:bg-muted rounded-xl"
             >
-              <ArrowLeft className="mr-2 h-4 w-4" /> Back
+              <ArrowLeft className="mr-2 h-4 w-4" /> Previous
             </Button>
-            <div className="text-xs font-black uppercase tracking-widest text-muted-foreground">
-              Progress: {activeStepIndex + 1} / {totalSteps}
+            <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">
+              Step {activeStepIndex + 1} of {totalSteps}
             </div>
             <Button
+              variant="ghost"
               onClick={goToNextStep}
               disabled={activeStepIndex === totalSteps - 1}
-              className="font-bold"
+              className="font-bold hover:bg-muted rounded-xl"
             >
               Next <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
@@ -425,30 +523,23 @@ export default function GuideDetails({ postId }: { postId: string }) {
         )}
       </main>
 
-      <Separator />
+      <Separator className="opacity-50" />
 
-      <div id="comments" className="max-w-4xl mx-auto w-full">
-        <Card className="border-none shadow-none bg-transparent">
-          <CardHeader className="px-0">
-            <CardTitle className="text-2xl font-black uppercase tracking-tighter">
-              Discussions ({post.commentsCount})
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="px-0">
-            <CommentSection
-              postId={post.id}
-              totalComments={post.commentsCount}
-            />
-          </CardContent>
-        </Card>
+      <div id="comments" className="max-w-4xl mx-auto w-full pb-20">
+        <header className="mb-8">
+          <h2 className="text-3xl font-black tracking-tighter">
+            Discussions ({post.commentsCount})
+          </h2>
+        </header>
+        <CommentSection postId={post.id} totalComments={post.commentsCount} />
       </div>
 
-      {/* --- Dialogs (Remained largely unchanged, but kept for context) --- */}
+      {/* Dialogs kept identical but with consistent rounded-xl classes */}
       <Dialog open={isStepDialogOpen} onOpenChange={setIsStepDialogOpen}>
-        <DialogContent className="sm:max-w-2xl grid grid-rows-[auto_1fr] max-h-[90vh] p-0">
+        <DialogContent className="sm:max-w-2xl grid grid-rows-[auto_1fr] max-h-[90vh] p-0 rounded-2xl">
           <DialogHeader className="p-6 pb-4 border-b">
-            <DialogTitle className="font-black uppercase tracking-tighter text-2xl">
-              {editingStep ? "Edit" : "Add"} Step
+            <DialogTitle className="font-black tracking-tighter text-2xl">
+              {editingStep ? "Edit step" : "Add new step"}
             </DialogTitle>
           </DialogHeader>
           <div className="overflow-y-auto p-6">
@@ -470,11 +561,12 @@ export default function GuideDetails({ postId }: { postId: string }) {
           </div>
         </DialogContent>
       </Dialog>
+
       <Dialog open={isSectionDialogOpen} onOpenChange={setIsSectionDialogOpen}>
-        <DialogContent className="sm:max-w-3xl grid grid-rows-[auto_1fr] max-h-[90vh] p-0">
+        <DialogContent className="sm:max-w-3xl grid grid-rows-[auto_1fr] max-h-[90vh] p-0 rounded-2xl">
           <DialogHeader className="p-6 pb-4 border-b">
-            <DialogTitle className="font-black uppercase tracking-tighter text-2xl">
-              {editingSection ? "Edit" : "Add"} Section
+            <DialogTitle className="font-black tracking-tighter text-2xl">
+              {editingSection ? "Edit section" : "Add new section"}
             </DialogTitle>
           </DialogHeader>
           <div className="overflow-y-auto p-6">
