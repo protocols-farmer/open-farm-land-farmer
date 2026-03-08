@@ -144,14 +144,15 @@ export default function Footer() {
             </p>
             <div className="h-4 w-px bg-border hidden md:block" />
             <p className="text-xs text-muted-foreground font-medium italic">
-              Crafted by developers, for developers.
+              Crafted by biooids under open source license, <br /> by creators
+              for creators.
             </p>
           </div>
 
           {/* 🚜 Dynamic Version Section */}
           <Link
             href={versionData?.id ? `/updates/${versionData.id}` : "/updates"}
-            className="group flex items-center gap-2 px-3 py-1 rounded-md bg-muted/50 border border-border/50 hover:border-primary/30 transition-all"
+            className="group flex items-center gap-2 px-3 py-1 rounded-full bg-muted/50 border border-border/50 hover:border-primary/30 transition-all"
           >
             <span className="text-[10px] font-bold  tracking-tighter text-muted-foreground group-hover:text-primary transition-colors">
               Version {displayVersion}
