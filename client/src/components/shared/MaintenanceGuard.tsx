@@ -72,7 +72,7 @@ export default function MaintenanceGuard({
             <h1 className="text-4xl font-black ">
               {isServerDown
                 ? "System update in progress"
-                : "System maintenance"}
+                : "System Maintenance"}
             </h1>
             <p className="text-muted-foreground font-medium text-sm leading-relaxed">
               {isServerDown
