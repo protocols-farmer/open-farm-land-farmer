@@ -1,3 +1,4 @@
+//src/components/shared/MaintenanceGuard.tsx
 "use client";
 
 import React, { useEffect } from "react";
@@ -103,7 +104,7 @@ export default function MaintenanceGuard({
           <div className="flex w-full flex-col gap-3">
             <div className="pt-8 border-t border-border/50 w-full">
               <p className="text-[10px] text-muted-foreground font-bold  mb-4">
-                Administrator access
+                Are you an Admin?
               </p>
               <Link href="/auth/login" className="w-full">
                 <Button
@@ -111,7 +112,7 @@ export default function MaintenanceGuard({
                   className="w-full rounded-full font-bold h-11 border-border/60"
                 >
                   <Shield className="mr-2 h-4 w-4" />
-                  Admin portal
+                  Admin Login
                 </Button>
               </Link>
             </div>
