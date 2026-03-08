@@ -1,4 +1,3 @@
-//src/components/layouts/AuthInitializer.tsx
 "use client";
 
 import React, { useEffect } from "react";
@@ -8,17 +7,17 @@ import {
   selectIsHydrated,
   setCredentials,
   completeHydration,
-  clearCredentials,
 } from "@/lib/features/auth/authSlice";
 import { useGetMeQuery } from "@/lib/features/user/userApiSlice";
 import { authStorage } from "@/lib/auth/authStorage";
-import { Loader2, RefreshCw } from "lucide-react";
+import { Settings } from "lucide-react";
 import VerificationBanner from "../pages/auth/VerificationBanner";
 
 /**
  * AuthInitializer
- * Manages the "Hydration" of the auth state and ensures the profile is synced.
- * Uses a "Fail-Open" strategy to ensure the app remains accessible even if sync fails.
+ * Unified with the MaintenanceGuard philosophy.
+ * 🚜 Removed "Fail-Open" logic. If the server is down, we wait for the Guard to block.
+ * We do NOT clear credentials on network errors anymore.
  */
 export default function AuthInitializer({
   children,
@@ -26,82 +25,58 @@ export default function AuthInitializer({
   children: React.ReactNode;
 }) {
   const dispatch = useAppDispatch();
-
-  // 1. Get status directly from Redux
   const isHydrated = useAppSelector(selectIsHydrated);
   const isAuthenticated = useAppSelector(selectIsAuthenticated);
 
-  // 2. Run the hydration check on mount
   useEffect(() => {
     const token = authStorage.getToken();
     if (token) {
       dispatch(setCredentials({ token }));
     } else {
-      // Signals to the UI that storage check is finished
       dispatch(completeHydration());
     }
   }, [dispatch]);
 
-  // 3. Fetch profile only if we have a token
-  const { isLoading, isError, error } = useGetMeQuery(undefined, {
+  const { isLoading } = useGetMeQuery(undefined, {
     skip: !isHydrated || !isAuthenticated,
     refetchOnMountOrArgChange: true,
   });
 
-  /**
-   * 🚜 RECOVERY EFFECT
-   * If the profile sync fails (e.g., 404 User Not Found or 500 Server Error),
-   * we clear credentials to revert to guest mode. This prevents the loading screen
-   * from holding the entire app hostage.
-   */
-  useEffect(() => {
-    if (isError) {
-      const status = (error as any)?.status;
-      // 401 errors are handled by baseQueryWithReauth.
-      // We handle other errors (500, 503, 404) here to "unblock" the UI.
-      if (status !== 401) {
-        console.warn("Auth sync failed. Reverting to guest mode.");
-        dispatch(clearCredentials());
-      }
-    }
-  }, [isError, error, dispatch]);
-
-  /**
-   * SHOW SPINNER ONLY IF:
-   * - Still reading from storage (!isHydrated)
-   * - Waiting for DB profile fetch (isAuthenticated && isLoading)
-   * NOTE: If an error occurs, the effect above clears 'isAuthenticated',
-   * which automatically resolves this loading state on the next render.
-   */
+  // 🚜 SHOW SYSTEM GUARD UI instead of a generic "Synchronizing" spinner
   if (!isHydrated || (isAuthenticated && isLoading)) {
     return (
       <div className="flex flex-col items-center justify-center h-screen w-full bg-background animate-in fade-in duration-500">
-        <Loader2 className="h-10 w-10 animate-spin text-primary mb-6" />
+        <div className="mx-auto flex w-full max-w-[420px] flex-col items-center space-y-10 text-center">
+          <div className="flex h-24 w-24 items-center justify-center rounded-3xl bg-muted border border-border/50">
+            <Settings className="h-12 w-12 animate-[spin_10s_linear_infinite] text-foreground/40" />
+          </div>
 
-        <div className="text-center space-y-2">
-          <p className="text-sm font-black tracking-tighter uppercase italic">
-            Synchronizing profile
-          </p>
-          <p className="text-[11px] text-muted-foreground animate-pulse font-medium uppercase tracking-widest">
-            Handshaking with the farm...
-          </p>
+          <div className="space-y-4 w-full">
+            <h1 className="text-4xl font-black tracking-tighter">
+              Authenticating session
+            </h1>
+            <p className="text-muted-foreground font-medium text-sm leading-relaxed">
+              The platform is verifying your security credentials with the farm.
+              This usually takes a few moments.
+            </p>
+
+            <div className="rounded-2xl border bg-muted/20 p-6 text-sm text-left w-full space-y-3">
+              <p className="font-bold tracking-widest text-[10px] uppercase text-primary">
+                Current status
+              </p>
+              <p className="text-muted-foreground leading-relaxed">
+                Handshaking with system resources and synchronizing profile
+                data...
+              </p>
+            </div>
+          </div>
         </div>
-
-        {/* 🚜 Fail-Safe: Manual escape for users on extremely slow networks */}
-        <button
-          onClick={() => dispatch(clearCredentials())}
-          className="mt-12 group flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground/50 hover:text-primary transition-all active:scale-95"
-        >
-          <RefreshCw className="h-3 w-3 transition-transform group-hover:rotate-180 duration-500" />
-          Continue as guest
-        </button>
       </div>
     );
   }
 
   return (
     <>
-      {/* VerificationBanner stays at the top level for global visibility */}
       <VerificationBanner />
       {children}
     </>
