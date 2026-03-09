@@ -113,6 +113,7 @@ model Follow {
   following User @relation("Following", fields: [followingId], references: [id], onDelete: Cascade)
 
   @@id([followerId, followingId])
+  @@index([followingId]) 
   @@map("follows")
 }
 
@@ -234,6 +235,7 @@ model PostTag {
   tag    Tag    @relation(fields: [tagId], references: [id], onDelete: Cascade)
 
   @@id([postId, tagId])
+  @@index([tagId]) 
   @@map("post_tags")
 }
 
@@ -305,6 +307,7 @@ model OpportunityTag {
   tag           Tag         @relation(fields: [tagId], references: [id], onDelete: Cascade)
 
   @@id([opportunityId, tagId])
+  @@index([tagId])
   @@map("opportunity_tags")
 }
 
@@ -335,6 +338,7 @@ model Comment {
   notifications Notification[]
 
   @@index([postId, createdAt])
+  @@index([authorId]) 
   @@map("comments")
 }
 
@@ -347,6 +351,7 @@ model PostLike {
   post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
 
   @@unique([userId, postId])
+  @@index([postId]) 
   @@map("post_likes")
 }
 
@@ -359,6 +364,7 @@ model PostSave {
   post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
 
   @@unique([userId, postId])
+  @@index([postId]) 
   @@map("post_saves")
 }
 
@@ -385,6 +391,7 @@ model CommentUserReaction {
   comment   Comment              @relation(fields: [commentId], references: [id], onDelete: Cascade)
 
   @@unique([userId, commentId])
+  @@index([commentId]) 
   @@map("comment_user_reactions")
 }
 

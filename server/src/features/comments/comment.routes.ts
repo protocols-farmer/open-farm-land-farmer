@@ -1,51 +1,56 @@
-// src/features/comment/comment.routes.ts
-
+//src/features/comments/comment.routes.ts
 import { Router } from "express";
 import { commentController } from "./comment.controller.js";
-import { verifyToken } from "../../middleware/auth.middleware.js";
+import {
+  verifyToken,
+  optionalVerifyToken,
+} from "../../middleware/auth.middleware.js"; // 🚜 UPDATED
 
 const router: Router = Router();
 
-// --- PUBLIC ROUTES ---
-// These routes do not have any middleware and can be accessed by anyone.
-router.get("/posts/:postId/comments", commentController.getCommentsForPost);
+// --- PUBLIC (USER-AWARE) ROUTES ---
+// 🚜 Applied optionalVerifyToken to allow guest access without 401
+router.get(
+  "/posts/:postId/comments",
+  optionalVerifyToken,
+  commentController.getCommentsForPost,
+);
 router.get(
   "/comments/:parentId/replies",
-  commentController.getRepliesForComment
+  optionalVerifyToken,
+  commentController.getRepliesForComment,
 );
 
 // --- PROTECTED ROUTES ---
-// The verifyToken middleware is now applied individually to each route that needs it.
-
 // Create comments and replies
 router.post(
   "/posts/:postId/comments",
   verifyToken,
-  commentController.createCommentOnPost
+  commentController.createCommentOnPost,
 );
 router.post(
   "/comments/:commentId/replies",
   verifyToken,
-  commentController.replyToComment
+  commentController.replyToComment,
 );
 
 // Update and delete a specific comment
 router.patch(
   "/comments/:commentId",
   verifyToken,
-  commentController.updateComment
+  commentController.updateComment,
 );
 router.delete(
   "/comments/:commentId",
   verifyToken,
-  commentController.deleteComment
+  commentController.deleteComment,
 );
 
 // React to a comment
 router.post(
   "/comments/:commentId/react",
   verifyToken,
-  commentController.toggleCommentReaction
+  commentController.toggleCommentReaction,
 );
 
 export default router;

@@ -28,14 +28,17 @@ export const commentApiSlice = createApi({
       GetCommentsResponse,
       GetCommentsForPostParams
     >({
-      query: ({ postId, ...params }) => ({
-        url: `/posts/${postId}/comments`,
-        params,
-      }),
-      providesTags: (result, error, { postId }) => [
-        { type: "Comment", id: `LIST-${postId}` },
-      ],
+      query: ({ postId, ...params }) => {
+        if (!postId) return { url: "" };
+        return {
+          url: `/posts/${postId}/comments`,
+          params,
+        };
+      },
+      providesTags: (result, error, { postId }) =>
+        result && postId ? [{ type: "Comment", id: `LIST-${postId}` }] : [],
     }),
+
     getRepliesForComment: builder.query<
       GetRepliesResponse,
       GetRepliesForCommentParams

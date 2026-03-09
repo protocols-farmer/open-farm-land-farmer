@@ -1,22 +1,11 @@
-// =================================================================
-// FILE: src/lib/hooks/useAuthAction.ts (NEW FILE)
-// =================================================================
+//src/lib/hooks/useAuthAction.ts
 "use client";
 
-import { useAppSelector } from "./hooks";
+import { useAppSelector, useAppDispatch } from "./hooks";
 import { selectCurrentUser } from "../features/user/userSlice";
-import { useAppDispatch } from "./hooks";
-import { openAuthModal } from "../features/ui/uiSlice";
+import { openAuthModal, InteractionType } from "../features/ui/uiSlice";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
-
-type InteractionType =
-  | "like"
-  | "save"
-  | "comment"
-  | "share"
-  | "view"
-  | "perform this action";
 
 /**
  * A custom hook to conditionally perform an action based on user authentication.
@@ -30,6 +19,7 @@ export const useAuthAction = () => {
 
   const handleAuthAction = (
     action: () => void,
+
     interactionType: InteractionType = "perform this action",
   ) => {
     if (currentUser) {

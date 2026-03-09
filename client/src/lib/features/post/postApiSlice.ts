@@ -36,6 +36,26 @@ export const postApiSlice = createApi({
         }
         return `/posts?${params.toString()}`;
       },
+
+      serializeQueryArgs: ({ endpointName, queryArgs }) => {
+        const { page, ...filters } = (queryArgs as GetPostsArgs) || {};
+        return `${endpointName}(${JSON.stringify(filters)})`;
+      },
+
+      merge: (currentCache, newItems) => {
+        if (newItems.pagination.currentPage === 1) {
+          // If it's page 1 (like after a filter change), replace everything
+          return newItems;
+        }
+        currentCache.data.push(...newItems.data);
+        currentCache.pagination = newItems.pagination;
+      },
+
+      // 🚜 ADD THIS BLOCK: Force a network request if the underlying args change (e.g., page 1 -> 2)
+      forceRefetch({ currentArg, previousArg }) {
+        return currentArg !== previousArg;
+      },
+
       providesTags: (result) =>
         result
           ? [
@@ -44,23 +64,29 @@ export const postApiSlice = createApi({
             ]
           : [{ type: "Posts", id: "LIST" }],
     }),
+
     getPostById: builder.query<PostDto, string>({
       query: (postId) => `/posts/${postId}`,
       transformResponse: (response: GetPostApiResponse) => response.data,
       providesTags: (result, error, id) => [{ type: "Post", id }],
     }),
-    // AFTER
+
+    // =================================================================
+    // GET TAGS: Fetches scoped tags based on context (POST vs OPPORTUNITY)
+    // =================================================================
     getTags: builder.query<GetTagsApiResponse, GetTagsArgs | void>({
       query: (args) => {
-        // If no arguments are provided at all, fetch all tags.
+        // If no arguments are provided, default to fetching all tags.
         if (!args) {
           return "/tags";
         }
 
-        // Create a URL parameter builder to handle multiple filters.
         const params = new URLSearchParams();
 
-        // Conditionally add each possible filter to the request URL.
+        if (args.context) {
+          params.append("context", args.context);
+        }
+
         if (args.category) {
           params.append("category", args.category);
         }
@@ -70,23 +96,25 @@ export const postApiSlice = createApi({
         if (args.savedByUserId) {
           params.append("savedByUserId", args.savedByUserId);
         }
-
         if (args.authorId) {
           params.append("authorId", args.authorId);
         }
-        // Return the final URL, e.g., "/tags?likedByUserId=123"
+
         return `/tags?${params.toString()}`;
       },
-      // This caching logic also helps keep data fresh.
-      providesTags: (result, error, args) => [
-        { type: "Tags", id: "LIST" }, // Provides a generic list tag
-        // Also keeps the specific tag for other potential uses
-        ...(result?.data.map(({ name }) => ({
-          type: "Tags" as const,
-          id: name,
-        })) || []),
-      ],
+      // Cache management: invalidated when posts are liked/saved to keep counts/visibility fresh.
+      providesTags: (result) =>
+        result
+          ? [
+              ...result.data.map(({ name }) => ({
+                type: "Tags" as const,
+                id: name,
+              })),
+              { type: "Tags", id: "LIST" },
+            ]
+          : [{ type: "Tags", id: "LIST" }],
     }),
+
     createPost: builder.mutation<CreatePostApiResponse, FormData>({
       query: (formData) => ({ url: "/posts", method: "POST", body: formData }),
       invalidatesTags: [{ type: "Posts", id: "LIST" }],

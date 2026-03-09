@@ -24,11 +24,34 @@ type UpdatePostData = Partial<Omit<CreatePostData, "images">> & {
 };
 
 export class PostService {
+  /**
+   * 🚜 TAG GUARD: Sanitizes tags to prevent paragraph-pasting.
+   * Enforces lowercase, trims, removes spaces, and caps length at 25 chars.
+   */
+  private sanitizeTags(tags: any): string[] {
+    if (!tags || !Array.isArray(tags)) return [];
+
+    const normalizedTags = tags.map((t: any) => {
+      const name = typeof t === "string" ? t : t.name ? t.name : String(t);
+
+      return name.trim().toLowerCase().substring(0, 25);
+    });
+
+    return [
+      ...new Set(
+        normalizedTags.filter(
+          (t) => t.length > 0 && !/\s/.test(t) && /^[a-z0-9-]+$/.test(t),
+        ),
+      ),
+    ].slice(0, 10);
+  }
+
   public async createPost(
     authorId: string,
     data: CreatePostData,
   ): Promise<Post> {
     const { images, tags, ...postData } = data;
+    const cleanTags = this.sanitizeTags(tags);
 
     return prisma.$transaction(async (tx) => {
       const createInput: Prisma.PostCreateInput = {
@@ -38,11 +61,11 @@ export class PostService {
         category: postData.category,
         author: { connect: { id: authorId } },
         tags: {
-          create: tags.map((tag) => ({
+          create: cleanTags.map((tagName) => ({
             tag: {
               connectOrCreate: {
-                where: { name: tag.name },
-                create: { name: tag.name },
+                where: { name: tagName },
+                create: { name: tagName },
               },
             },
           })),
@@ -50,7 +73,6 @@ export class PostService {
         ...(postData.externalLink && { externalLink: postData.externalLink }),
         ...(postData.githubLink && { githubLink: postData.githubLink }),
       };
-
       const newPost = await tx.post.create({ data: createInput });
 
       if (images && images.length > 0) {

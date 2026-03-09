@@ -1,14 +1,15 @@
+//src/components/pages/home/HeroSection.tsx
 "use client";
 
 import React from "react";
 import Link from "next/link";
 import {
-  FileCode2,
-  Pen,
-  Globe,
-  Newspaper,
-  BookOpen,
-  Trophy,
+  Pickaxe, // 🚜 Swapped FileCode2 (Projects)
+  Shovel, // 🚜 Swapped Pen (Blogs)
+  Wheat, // 🚜 Swapped Globe (Resources)
+  Milk, // 🚜 Swapped Newspaper (Articles)
+  Sprout, // 🚜 Swapped BookOpen (Guides)
+  Flower2, // 🚜 Swapped Trophy (Showcases)
   MessageSquare,
   Plus,
   ArrowUpRight,
@@ -18,12 +19,12 @@ import { useGetLatestVersionQuery } from "@/lib/features/updates/updateApiSlice"
 import { cn } from "@/lib/utils";
 
 const heroButtons = [
-  { href: "/projects", label: "Projects", icon: FileCode2 },
-  { href: "/blogs", label: "Blogs", icon: Pen },
-  { href: "/resources", label: "Resources", icon: Globe },
-  { href: "/articles", label: "Articles", icon: Newspaper },
-  { href: "/guides", label: "Guides", icon: BookOpen },
-  { href: "/showcases", label: "Showcases", icon: Trophy },
+  { href: "/projects", label: "Projects", icon: Pickaxe },
+  { href: "/blogs", label: "Blogs", icon: Shovel },
+  { href: "/resources", label: "Resources", icon: Wheat },
+  { href: "/articles", label: "Articles", icon: Milk },
+  { href: "/guides", label: "Guides", icon: Sprout },
+  { href: "/showcases", label: "Showcases", icon: Flower2 },
 ];
 
 export default function HomeHero() {

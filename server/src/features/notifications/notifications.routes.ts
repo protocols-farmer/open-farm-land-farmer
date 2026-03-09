@@ -5,11 +5,21 @@ import { verifyToken } from "@/middleware/auth.middleware.js";
 
 const router: Router = Router();
 
-router.use(verifyToken); // Must be logged in to see your own alerts
-
-router.get("/", notificationsController.getNotifications);
-router.get("/unread-count", notificationsController.getUnreadCount);
-router.patch("/:id/read", notificationsController.readNotification);
-router.patch("/read-all", notificationsController.readAllNotifications);
+router.get("/", verifyToken, notificationsController.getNotifications);
+router.get(
+  "/unread-count",
+  verifyToken,
+  notificationsController.getUnreadCount,
+);
+router.patch(
+  "/:id/read",
+  verifyToken,
+  notificationsController.readNotification,
+);
+router.patch(
+  "/read-all",
+  verifyToken,
+  notificationsController.readAllNotifications,
+);
 
 export default router;

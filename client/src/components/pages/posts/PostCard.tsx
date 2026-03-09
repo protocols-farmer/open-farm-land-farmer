@@ -1,3 +1,4 @@
+//src/components/pages/posts/PostCard.tsx
 "use client";
 
 import React, { useState } from "react";

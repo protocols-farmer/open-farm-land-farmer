@@ -46,7 +46,16 @@ export const opportunitySchema = z.object({
    * This allows the ReactHashTags component to control the field directly.
    */
   tags: z
-    .array(z.string().min(1, "Tag cannot be empty."))
+    .array(
+      z
+        .string()
+        .min(1, "Tag cannot be empty.")
+        .max(25, "Tag is too long (max 25 chars)")
+        .regex(
+          /^[a-zA-Z0-9-]+$/,
+          "Tags must be alphanumeric with hyphens only",
+        ),
+    )
     .min(1, "At least one tag is required.")
     .max(10, "Up to 10 tags allowed."),
 

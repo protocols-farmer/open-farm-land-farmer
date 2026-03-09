@@ -1,8 +1,9 @@
-//src/features/post/post.validation.ts
+// server/src/features/post/post.validation.ts
 import { z } from "zod";
 import { PostCategory } from "@prisma-client";
 
 const postCategoryValues = Object.values(PostCategory) as [string, ...string[]];
+
 const preprocessTags = (val: unknown) => {
   if (typeof val === "string") {
     try {
@@ -77,10 +78,17 @@ export const createPostSchema = z.object({
       message: "Please select a valid category.",
     }),
 
+    // 🚜 TAG GUARD: Backend reinforcement to prevent paragraph pasting
     postTags: z.preprocess(
       preprocessTags,
       z
-        .array(z.string().min(1, "Tag cannot be empty."))
+        .array(
+          z
+            .string()
+            .min(1, "Tag cannot be empty.")
+            .max(25, "Each tag must be under 25 characters.")
+            .regex(/^[a-zA-Z0-9-]+$/, "Invalid tag format."),
+        )
         .min(1, "At least one tag is required.")
         .max(10, "You can add up to 10 tags."),
     ),
@@ -103,7 +111,13 @@ export const updatePostSchema = z.object({
       .preprocess(
         preprocessTags,
         z
-          .array(z.string().min(1, "Tag cannot be empty."))
+          .array(
+            z
+              .string()
+              .min(1, "Tag cannot be empty.")
+              .max(25, "Each tag must be under 25 characters.")
+              .regex(/^[a-zA-Z0-9-]+$/, "Invalid tag format."),
+          )
           .min(1, "At least one tag is required.")
           .max(10, "You can add up to 10 tags."),
       )

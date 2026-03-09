@@ -16,7 +16,41 @@ export const opportunityApiSlice = createApi({
       GetOpportunitiesResponse,
       GetOpportunitiesParams | void
     >({
-      query: (params) => ({ url: "/opportunities", params: params || {} }),
+      query: (args) => {
+        const params = new URLSearchParams();
+        if (args) {
+          Object.entries(args).forEach(([key, value]) => {
+            if (
+              value !== undefined &&
+              value !== null &&
+              value !== "" &&
+              value !== "All"
+            ) {
+              params.append(key, String(value));
+            }
+          });
+        }
+        return `/opportunities?${params.toString()}`;
+      },
+      serializeQueryArgs: ({ endpointName, queryArgs }) => {
+        const { skip, ...filters } =
+          (queryArgs as GetOpportunitiesParams) || {};
+        return `${endpointName}(${JSON.stringify(filters)})`;
+      },
+      merge: (currentCache, newItems) => {
+        if (newItems.pagination.currentPage === 1) {
+          return newItems;
+        }
+        currentCache.data.push(...newItems.data);
+        currentCache.pagination = newItems.pagination;
+      },
+
+      // 🚜 ADD THIS BLOCK: Force network request when 'skip' or filters change
+      forceRefetch({ currentArg, previousArg }) {
+        // Using JSON.stringify ensures we catch changes deep in the object
+        return JSON.stringify(currentArg) !== JSON.stringify(previousArg);
+      },
+
       providesTags: (result) =>
         result
           ? [
@@ -28,6 +62,7 @@ export const opportunityApiSlice = createApi({
             ]
           : [{ type: "Opportunity", id: "LIST" }],
     }),
+
     getOpportunity: builder.query<OpportunityDto, string>({
       query: (id) => `/opportunities/${id}`,
       transformResponse: (response: GetOpportunityResponse) => response.data,

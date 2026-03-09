@@ -1,4 +1,3 @@
-//src/components/pages/posts/ReactHashTags.tsx
 "use client";
 
 import React, { useState, useCallback, useRef, useEffect } from "react";
@@ -6,8 +5,10 @@ import { allTags } from "./allTags";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
+import { X, AlertCircle } from "lucide-react";
 
 const SUGGESTION_LIMIT = 10;
+const MAX_TAG_LENGTH = 25; // 🚜 Guard: Maximum characters per tag
 
 const impossibleCombinations: string[][] = [
   ["React", "Angular"],
@@ -18,21 +19,17 @@ const impossibleCombinations: string[][] = [
 ];
 
 interface ReactHashTagsProps {
-  // The component is now fully controlled. It receives its value via this prop.
-  // It was named `initialTags` but it represents the *current* value from the form.
+  // The component is fully controlled via these props.
   initialTags?: string[];
   onChange: (tags: string[]) => void;
   maxTags?: number;
 }
 
 const ReactHashTags: React.FC<ReactHashTagsProps> = ({
-  initialTags: tags = [], // Use the prop directly. Default to [] if undefined.
+  initialTags: tags = [],
   onChange,
   maxTags = 10,
 }) => {
-  // REMOVED: The internal `useState` for tags is gone. This is the core fix.
-  // The component no longer manages its own state for the tags array.
-
   const [inputValue, setInputValue] = useState<string>("");
   const [filteredSuggestions, setFilteredSuggestions] = useState<string[]>([]);
   const [highlightedIndex, setHighlightedIndex] = useState<number>(-1);
@@ -40,9 +37,6 @@ const ReactHashTags: React.FC<ReactHashTagsProps> = ({
 
   const containerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
-
-  // REMOVED: All complex useEffect hooks for syncing state are no longer needed.
-  // This simplifies the component and removes the source of the bug.
 
   const checkImpossibleCombinations = useCallback(
     (currentTags: string[]): string => {
@@ -63,10 +57,8 @@ const ReactHashTags: React.FC<ReactHashTagsProps> = ({
 
   const handleRemoveTag = useCallback(
     (indexToRemove: number) => {
-      // Create the new array based on the props
       const newTags = tags.filter((_, i) => i !== indexToRemove);
       setError(checkImpossibleCombinations(newTags));
-      // Immediately inform the parent form of the new value
       onChange(newTags);
     },
     [tags, onChange, checkImpossibleCombinations],
@@ -77,6 +69,19 @@ const ReactHashTags: React.FC<ReactHashTagsProps> = ({
       const trimmedTag = tagToAdd.trim();
       if (!trimmedTag) return;
 
+      // 🚜 Guard: Prevent paragraphs/long strings
+      if (trimmedTag.length > MAX_TAG_LENGTH) {
+        setError(`Tags must be under ${MAX_TAG_LENGTH} characters.`);
+        return;
+      }
+
+      // 🚜 Guard: Prevent spaces (force slug-style tags)
+      if (/\s/.test(trimmedTag)) {
+        setError("Tags cannot contain spaces. Use hyphens instead.");
+        return;
+      }
+
+      // 🚜 Guard: The 11th Tag Warning
       if (tags.length >= maxTags) {
         setError(`Maximum of ${maxTags} tags allowed.`);
         setInputValue("");
@@ -102,7 +107,6 @@ const ReactHashTags: React.FC<ReactHashTagsProps> = ({
       if (errorMessage) {
         setError(errorMessage);
       } else {
-        // Immediately inform the parent form of the new value
         onChange(potentialNewTags);
         setError("");
       }
@@ -116,7 +120,6 @@ const ReactHashTags: React.FC<ReactHashTagsProps> = ({
   );
 
   const handleClearAll = useCallback(() => {
-    // Immediately inform the parent form of the new value
     onChange([]);
     setError("");
     setInputValue("");
@@ -226,6 +229,7 @@ const ReactHashTags: React.FC<ReactHashTagsProps> = ({
               placeholder="e.g., React, Python..."
               className="w-full h-10 "
               autoComplete="off"
+              maxLength={MAX_TAG_LENGTH} // 🚜 Visual Guard for input
               role="combobox"
               aria-expanded={filteredSuggestions.length > 0}
               aria-controls="tech-suggestions-list"
@@ -241,7 +245,7 @@ const ReactHashTags: React.FC<ReactHashTagsProps> = ({
             onClick={() => handleAddTag(inputValue)}
             disabled={!inputValue.trim() || tags.length >= maxTags}
             size="default"
-            className="shrink-0  h-10 px-4"
+            className="shrink-0 h-10 px-4"
           >
             Add
           </Button>
@@ -275,12 +279,14 @@ const ReactHashTags: React.FC<ReactHashTagsProps> = ({
         )}
       </div>
 
+      {/* 🚜 Warning Block: Triggered by Tag Limit or Input Guards */}
       {error && (
         <div
-          className="mt-2 p-3 border border-destructive/50 text-destructive text-xs rounded-md bg-destructive/10 flex items-start gap-2"
+          className="mt-2 p-3 border border-destructive/50 text-destructive text-xs rounded-md bg-destructive/10 flex items-start gap-2 animate-in fade-in slide-in-from-top-1"
           role="alert"
           aria-live="polite"
         >
+          <AlertCircle className="h-4 w-4 shrink-0" />
           <div>
             <span className="font-semibold">Warning:</span> {error}
           </div>
@@ -306,31 +312,22 @@ const ReactHashTags: React.FC<ReactHashTagsProps> = ({
                   className="ml-1.5 appearance-none inline-flex items-center justify-center text-secondary-foreground/70 hover:text-destructive hover:bg-destructive/10 focus:outline-none rounded-full w-4 h-4 transition-colors"
                 >
                   <span className="sr-only">Remove</span>
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 20 20"
-                    fill="currentColor"
-                    className="w-3 h-3"
-                  >
-                    <path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z" />
-                  </svg>
+                  <X className="w-3 h-3" />
                 </button>
               </div>
             ))}
           </div>
-          {tags.length > 0 && (
-            <div className="mt-3 flex justify-end">
-              <Button
-                type="button"
-                onClick={handleClearAll}
-                variant="ghost"
-                size="sm"
-                className="text-xs h-auto px-2 py-1 text-muted-foreground hover:text-destructive"
-              >
-                Clear All Tags
-              </Button>
-            </div>
-          )}
+          <div className="mt-3 flex justify-end">
+            <Button
+              type="button"
+              onClick={handleClearAll}
+              variant="ghost"
+              size="sm"
+              className="text-xs h-auto px-2 py-1 text-muted-foreground hover:text-destructive"
+            >
+              Clear All Tags
+            </Button>
+          </div>
         </div>
       )}
       {tags.length === 0 && !error && (

@@ -99,3 +99,58 @@ export const verifyToken = asyncHandler(
     }
   },
 );
+
+/**
+ * 🚜 OPTIONAL AUTH: The "Soft Guard"
+ * Validates the token if present to populate req.user, but allows
+ * guests (no token) to proceed without a 401 error.
+ */
+export const optionalVerifyToken = asyncHandler(
+  async (req: Request, _res: Response, next: NextFunction) => {
+    const authHeader = req.headers.authorization;
+
+    // If no token, just proceed as guest
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return next();
+    }
+
+    const token = authHeader.split(" ")[1];
+    if (!token) return next();
+
+    try {
+      const decoded = jwt.verify(
+        token,
+        config.jwt.accessSecret,
+      ) as DecodedAccessTokenPayload;
+
+      const userFromDb = await (prisma as ExtendedPrismaClient).user.findUnique(
+        {
+          where: { id: decoded.id },
+        },
+      );
+
+      if (userFromDb && userFromDb.status === "ACTIVE") {
+        req.user = {
+          id: userFromDb.id,
+          systemRole: userFromDb.systemRole,
+          username: userFromDb.username,
+          name: userFromDb.name,
+          profileImage: userFromDb.profileImage || "",
+          bannerImage: userFromDb.bannerImage || "",
+          status: userFromDb.status,
+          email: userFromDb.email,
+          isEmailVerified: userFromDb.isEmailVerified,
+          bio: userFromDb.bio || "",
+          title: userFromDb.title || "",
+          location: userFromDb.location || "",
+          joinedAt: userFromDb.joinedAt,
+          updatedAt: userFromDb.updatedAt,
+        };
+      }
+      next();
+    } catch (err) {
+      // Token exists but is invalid/expired; we still let them through as a guest
+      next();
+    }
+  },
+);

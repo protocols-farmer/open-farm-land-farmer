@@ -1,35 +1,46 @@
-//src/features/opportunities/opportunity.service.ts
+// server/src/features/opportunities/opportunity.service.ts
 
 import prisma from "@/db/prisma.js";
+import { Prisma } from "@prisma-client";
 import { createHttpError } from "@/utils/error.factory.js";
 import {
   CreateOpportunityDto,
   UpdateOpportunityDto,
+  OpportunityQueryFilters,
 } from "./opportunity.types.js";
 import { emailService } from "../email/email.service.js";
 import { config } from "@/config/index.js";
 import { logger } from "@/config/logger.js";
-import { deleteFromCloudinary } from "@/config/cloudinary.js"; // 🚜 Added
+import { deleteFromCloudinary } from "@/config/cloudinary.js";
 
 class OpportunityService {
   /**
    * Helper to ensure tags are unique, trimmed, and lowercase.
    * Prevents P2002 unique constraint errors on OpportunityTag table.
    */
+  /**
+   * 🚜 TAG GUARD: Hardened sanitization for job opportunities.
+   * Enforces lowercase, trims, rejects spaces, and hard-caps length at 25 chars.
+   */
   private sanitizeTags(tags: any): string[] {
     if (!tags || !Array.isArray(tags)) return [];
 
     const normalizedTags = tags.map((t: any) => {
-      if (typeof t === "string") return t;
-      if (typeof t === "object" && t.name) return t.name;
-      return String(t);
+      // Handle string or object {name: '...'}
+      const name =
+        typeof t === "string" ? t : t?.name ? String(t.name) : String(t);
+
+      return name.trim().toLowerCase().substring(0, 25);
     });
 
     return [
-      ...new Set(normalizedTags.map((t: string) => t.trim().toLowerCase())),
-    ].filter((t) => t.length > 0);
+      ...new Set(
+        normalizedTags.filter(
+          (t) => t.length > 0 && !/\s/.test(t) && /^[a-z0-9-]+$/.test(t),
+        ),
+      ),
+    ].slice(0, 10);
   }
-
   /**
    * Creates a new job opportunity and notifies subscribed wanderers.
    * Includes full broadcast tracking (Found, Success, Failure) in the logs.
@@ -72,7 +83,6 @@ class OpportunityService {
         select: { email: true, name: true },
       })
       .then(async (users) => {
-        // 🚜 DEV LOG: Visual feedback in terminal
         console.log(
           `🚀 OPPORTUNITY BROADCAST: Found ${users.length} eligible users.`,
         );
@@ -86,7 +96,7 @@ class OpportunityService {
 
         const opportunityUrl = `${config.socialAuth.frontendUrl}/opportunities/${newOpportunity.id}`;
         let successCount = 0;
-        let failureCount = 0; // 🚜 Track failures separately
+        let failureCount = 0;
 
         for (const user of users) {
           try {
@@ -94,14 +104,14 @@ class OpportunityService {
               title: newOpportunity.title,
               companyName: newOpportunity.companyName,
               location: newOpportunity.location,
-              type: newOpportunity.type, // 🚜 Added
-              salaryRange: newOpportunity.salaryRange, // 🚜 Added
-              tags: newOpportunity.tags.map((t) => t.tag.name), // 🚜 Added
+              type: newOpportunity.type,
+              salaryRange: newOpportunity.salaryRange,
+              tags: newOpportunity.tags.map((t) => t.tag.name),
               url: opportunityUrl,
             });
             successCount++;
           } catch (err) {
-            failureCount++; // 🚜 Increment on error
+            failureCount++;
             logger.warn(
               { err, email: user.email },
               "Failed to send opportunity alert email",
@@ -109,7 +119,6 @@ class OpportunityService {
           }
         }
 
-        // 🚜 Updated logger with the full success/fail ratio
         logger.info(
           {
             totalAudience: users.length,
@@ -129,13 +138,53 @@ class OpportunityService {
 
     return newOpportunity;
   }
+
   /**
-   * Retrieves all job opportunities with pagination.
+   * 🚜 REFINED: Retrieves all job opportunities with search and filtering.
    */
-  public async findAll(pagination: { skip: number; take: number }) {
-    const { skip, take } = pagination;
+  public async findAll(filters: OpportunityQueryFilters) {
+    const skip = Number(filters.skip) || 0;
+    const take = Number(filters.take) || 10;
+    const { q, type, isRemote, tags } = filters;
+
+    const where: Prisma.OpportunityWhereInput = {};
+
+    // 1. Fuzzy Search: Title, Company, or Description
+    if (q) {
+      where.OR = [
+        { title: { contains: q, mode: "insensitive" } },
+        { companyName: { contains: q, mode: "insensitive" } },
+        { fullDescription: { contains: q, mode: "insensitive" } },
+      ];
+    }
+
+    // 2. Strict Enum Filtering: Opportunity Type
+    if (type) {
+      where.type = type;
+    }
+
+    // 3. Remote Filtering: Boolean logic
+    if (isRemote !== undefined) {
+      where.isRemote = isRemote === "true" || isRemote === true;
+    }
+
+    // 4. Tag Filtering: Intersection via join table
+    if (tags) {
+      const tagList = tags.split(",").map((t) => t.trim().toLowerCase());
+      if (tagList.length > 0) {
+        where.tags = {
+          some: {
+            tag: {
+              name: { in: tagList, mode: "insensitive" },
+            },
+          },
+        };
+      }
+    }
+
     const [opportunities, total] = await prisma.$transaction([
       prisma.opportunity.findMany({
+        where,
         skip,
         take,
         orderBy: { postedAt: "desc" },
@@ -144,8 +193,9 @@ class OpportunityService {
           tags: { include: { tag: true } },
         },
       }),
-      prisma.opportunity.count(),
+      prisma.opportunity.count({ where }),
     ]);
+
     return { opportunities, total };
   }
 
@@ -168,12 +218,11 @@ class OpportunityService {
    * Updates an existing job opportunity.
    */
   public async update(id: string, data: UpdateOpportunityDto) {
-    const { tags, retainedLogoUrl, ...opportunityData } = data; // 🚜 Added retainedLogoUrl
+    const { tags, retainedLogoUrl, ...opportunityData } = data;
     const uniqueTags = this.sanitizeTags(tags);
 
     const currentOpportunity = await this.findOne(id);
 
-    // 🚜 Asset Cleanup: If a new logo is uploaded, delete the old one from Cloudinary
     if (
       opportunityData.companyLogoPublicId &&
       currentOpportunity.companyLogoPublicId &&
@@ -219,7 +268,6 @@ class OpportunityService {
   public async remove(id: string) {
     const opportunity = await this.findOne(id);
 
-    // 🚜 Final Wipe: Cleanup Cloudinary asset before DB deletion
     if (opportunity.companyLogoPublicId) {
       await deleteFromCloudinary(opportunity.companyLogoPublicId).catch((err) =>
         logger.error(

@@ -1,5 +1,4 @@
-//section client/src/components/pages/posts/CommentSection.tsx
-
+//src/components/pages/posts/CommentSection.tsx
 "use client";
 
 import React from "react";
@@ -48,7 +47,11 @@ const CommentSection: React.FC<CommentSectionProps> = ({
     isFetching,
     isError,
     error,
-  } = useGetCommentsForPostQuery(getCommentsParams);
+  } = useGetCommentsForPostQuery(getCommentsParams, {
+    // 🚜 THE FIX: Prevent query execution if postId is missing.
+    // Combined with the Backend 'optionalVerifyToken' fix, this stops the 401.
+    skip: !postId,
+  });
 
   const [createComment, { isLoading: isCreating, error: createError }] =
     useCreateCommentOnPostMutation();
@@ -113,13 +116,8 @@ const CommentSection: React.FC<CommentSectionProps> = ({
       )}
 
       <div className="mt-8 space-y-6 relative">
-        {/* {isFetching && (
-          <div className="absolute inset-0 bg-background/50 z-10 rounded-lg" />
-        )} */}
         {comments.length > 0 ? (
           comments.map((comment) => (
-            // --- THIS IS THE FIX ---
-            // We no longer pass the getCommentsParams prop down to the child
             <CommentItem key={comment.id} comment={comment} />
           ))
         ) : (

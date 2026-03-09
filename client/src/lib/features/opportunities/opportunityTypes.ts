@@ -1,6 +1,6 @@
 /**
  * src/lib/features/opportunities/opportunity.types.ts
- * * Foundational types for the Opportunity (Jobs) feature.
+ * Foundational types for the Opportunity (Jobs) feature.
  * Synchronized with Prisma OpportunityType Enum.
  */
 
@@ -27,7 +27,7 @@ export interface OpportunityDto {
   title: string;
   companyName: string;
   companyLogo: string | null;
-  companyLogoPublicId?: string | null; // 🚜 Asset tracking for Cloudinary cleanup
+  companyLogoPublicId?: string | null;
   location: string;
   type: OpportunityTypeEnum;
   isRemote: boolean;
@@ -43,15 +43,29 @@ export interface OpportunityDto {
 
 // --- API Payloads and Responses ---
 
+/**
+ * 🚜 REFINED: Params now support full search, filtering, and tag scoping.
+ */
 export interface GetOpportunitiesParams {
   skip?: number;
   take?: number;
+  q?: string;
+  type?: OpportunityTypeEnum | "All";
+  isRemote?: boolean | string;
+  tags?: string;
 }
+
+// src/lib/features/opportunities/opportunityTypes.ts
 
 export interface GetOpportunitiesResponse {
   success: boolean;
   data: OpportunityDto[];
   total: number;
+  pagination: {
+    totalItems: number;
+    totalPages: number;
+    currentPage: number;
+  };
 }
 
 export interface GetOpportunityResponse {
@@ -79,5 +93,5 @@ export interface CreateOpportunityPayload {
 
 export interface UpdateOpportunityPayload extends Partial<CreateOpportunityPayload> {
   id: string;
-  retainedLogoUrl?: string; // 🚜 Keeps the existing logo if a new one isn't uploaded
+  retainedLogoUrl?: string;
 }

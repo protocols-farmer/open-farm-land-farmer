@@ -2,19 +2,24 @@
 
 import { Request, Response } from "express";
 import { asyncHandler } from "@/middleware/asyncHandler.js";
-import { tagService } from "./tag.service.js";
+import { tagService, TagQueryFilters } from "./tag.service.js";
 import { PostCategory } from "@prisma-client";
 
 class TagController {
   getAllTags = asyncHandler(async (req: Request, res: Response) => {
-    const { category, authorId, likedByUserId, savedByUserId } = req.query;
+    const { context, category, authorId, likedByUserId, savedByUserId } =
+      req.query;
 
-    const tags = await tagService.getAllTags({
-      category: category as PostCategory,
-      authorId: authorId as string,
-      likedByUserId: likedByUserId as string,
-      savedByUserId: savedByUserId as string,
-    });
+    const filters: TagQueryFilters = {
+      context:
+        context === "POST" || context === "OPPORTUNITY" ? context : undefined,
+      category: category as PostCategory | undefined,
+      authorId: authorId as string | undefined,
+      likedByUserId: likedByUserId as string | undefined,
+      savedByUserId: savedByUserId as string | undefined,
+    };
+
+    const tags = await tagService.getAllTags(filters);
 
     res.status(200).json({
       status: "success",

@@ -1,3 +1,4 @@
+//src/components/pages/blogs/AllBlogs.tsx
 "use client";
 
 import PostFilterPage from "../posts/PostFilterPage";

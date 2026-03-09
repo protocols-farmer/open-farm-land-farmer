@@ -1,14 +1,17 @@
+//src/components/pages/articles/ArticleDetails.tsx
 "use client";
 
 import React, { useEffect, useState, useMemo } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation"; // 🚜 ADDED
 import { formatDistanceToNow } from "date-fns";
+import toast from "react-hot-toast"; // 🚜 ADDED
 import DOMPurify from "dompurify";
 import { cn } from "@/lib/utils";
 import "highlight.js/styles/github-dark.css";
 
-// --- REDUX & AUTH IMPORTS (Fixed missing imports) ---
+// --- REDUX & AUTH IMPORTS ---
 import { useAppSelector } from "@/lib/hooks/hooks";
 import { selectCurrentUser } from "@/lib/features/user/userSlice";
 
@@ -16,6 +19,7 @@ import { selectCurrentUser } from "@/lib/features/user/userSlice";
 import {
   useGetPostByIdQuery,
   useRecordPostViewMutation,
+  useDeletePostMutation, // 🚜 ADDED
 } from "@/lib/features/post/postApiSlice";
 
 // --- SHARED COMPONENTS ---
@@ -28,7 +32,31 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Edit, ExternalLink, Github, Terminal } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"; // 🚜 ADDED
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"; // 🚜 ADDED
+import {
+  Edit,
+  ExternalLink,
+  Github,
+  Terminal,
+  Trash2,
+  MoreHorizontal,
+} from "lucide-react"; // 🚜 UPDATED
 import { Button } from "@/components/ui/button";
 
 const slugify = (text: string) =>
@@ -77,24 +105,20 @@ const TableOfContents = ({
       </CardHeader>
       <CardContent className="px-4">
         <ul className="space-y-2 text-sm">
-          {headings.map(
-            (
-              heading: any, // Fixed implicit any
-            ) => (
-              <li key={heading.id}>
-                <a
-                  href={`#${heading.id}`}
-                  className={cn(
-                    "block py-1 text-muted-foreground transition-all hover:translate-x-1 hover:text-primary",
-                    activeId === heading.id &&
-                      "font-bold text-primary border-l-2 border-primary pl-2 ml-[-10px]",
-                  )}
-                >
-                  {heading.text}
-                </a>
-              </li>
-            ),
-          )}
+          {headings.map((heading: any) => (
+            <li key={heading.id}>
+              <a
+                href={`#${heading.id}`}
+                className={cn(
+                  "block py-1 text-muted-foreground transition-all hover:translate-x-1 hover:text-primary",
+                  activeId === heading.id &&
+                    "font-bold text-primary border-l-2 border-primary pl-2 ml-[-10px]",
+                )}
+              >
+                {heading.text}
+              </a>
+            </li>
+          ))}
         </ul>
       </CardContent>
     </Card>
@@ -102,26 +126,25 @@ const TableOfContents = ({
 };
 
 export default function ArticleDetails({ postId }: { postId: string }) {
+  const router = useRouter(); // 🚜 ADDED
   const { data: post, isLoading, isError } = useGetPostByIdQuery(postId);
   const currentUser = useAppSelector(selectCurrentUser);
   const [recordPostView] = useRecordPostViewMutation();
+  const [deletePost, { isLoading: isDeleting }] = useDeletePostMutation(); // 🚜 ADDED
 
   /**
    * FIX 1: DERIVED IMAGE LOGIC
-   * mainImage calculates instantly from render. Eliminates cascading render error.
    */
   const [selectedImage, setSelectedImage] = useState<string | undefined>();
   const mainImage = selectedImage || post?.images?.[0]?.url;
 
   /**
    * FIX 2: MEMOIZED CONTENT & HEADINGS
-   * Handles sanitization and TOC generation in one pass during render.
    */
   const { sanitizedContent, headings } = useMemo(() => {
     const content = post?.content;
     if (!content) return { sanitizedContent: "", headings: [] };
 
-    // Added ADD_ATTR: ['class'] to preserve highlight.js syntax colors
     const cleanHtml = DOMPurify.sanitize(content, {
       ADD_ATTR: ["class"],
       USE_PROFILES: { html: true },
@@ -135,7 +158,7 @@ export default function ArticleDetails({ postId }: { postId: string }) {
     const h2Elements = Array.from(tempDiv.querySelectorAll("h2"));
 
     const extractedHeadings = h2Elements.map((el) => {
-      const text = (el as HTMLElement).innerText; // Fixed cast for TS
+      const text = (el as HTMLElement).innerText;
       const id = slugify(text);
       el.id = id;
       return { id, text };
@@ -147,6 +170,18 @@ export default function ArticleDetails({ postId }: { postId: string }) {
   useEffect(() => {
     if (postId && currentUser) recordPostView(postId);
   }, [postId, currentUser, recordPostView]);
+
+  // 🚜 DELETE HANDLER
+  const handleDelete = async () => {
+    if (!post) return;
+    try {
+      await deletePost(post.id).unwrap();
+      toast.success("Article deleted successfully.");
+      router.push("/articles");
+    } catch (err) {
+      toast.error("Failed to delete the article.");
+    }
+  };
 
   if (isLoading)
     return (
@@ -192,28 +227,24 @@ export default function ArticleDetails({ postId }: { postId: string }) {
           </div>
           {post.images && post.images.length > 1 && (
             <div className="grid grid-cols-5 gap-2">
-              {post.images.map(
-                (
-                  img: any, // Fixed implicit any
-                ) => (
-                  <button
-                    key={img.id}
-                    onClick={() => setSelectedImage(img.url)}
-                    className={`relative aspect-square w-full overflow-hidden rounded-lg border-2 transition-all ${
-                      mainImage === img.url
-                        ? "border-primary shadow-md"
-                        : "border-transparent hover:border-primary/50"
-                    }`}
-                  >
-                    <Image
-                      src={img.url}
-                      alt="thumbnail"
-                      fill
-                      className="object-cover"
-                    />
-                  </button>
-                ),
-              )}
+              {post.images.map((img: any) => (
+                <button
+                  key={img.id}
+                  onClick={() => setSelectedImage(img.url)}
+                  className={`relative aspect-square w-full overflow-hidden rounded-lg border-2 transition-all ${
+                    mainImage === img.url
+                      ? "border-primary shadow-md"
+                      : "border-transparent hover:border-primary/50"
+                  }`}
+                >
+                  <Image
+                    src={img.url}
+                    alt="thumbnail"
+                    fill
+                    className="object-cover"
+                  />
+                </button>
+              ))}
             </div>
           )}
         </div>
@@ -224,19 +255,64 @@ export default function ArticleDetails({ postId }: { postId: string }) {
             <Badge variant="secondary" className="w-fit capitalize font-bold">
               {post.category.toLowerCase()}
             </Badge>
-            <h1 className="text-4xl font-black uppercase  md:text-5xl leading-none break-all">
+            <h1 className="text-4xl font-black uppercase md:text-5xl leading-none break-all">
               {post.title}
             </h1>
             <p className="text-xl text-muted-foreground leading-relaxed">
               {post.description}
             </p>
+
+            {/* 🚜 UPDATED AUTHOR ACTIONS: Added Delete Logic with Confirmation Dialog */}
             {currentUser?.id === post.author.id && (
-              <Button asChild variant="outline" className="w-full font-bold">
-                <Link href={`/posts/${post.id}/update`}>
-                  <Edit className="mr-2 h-4 w-4" /> Edit Article
-                </Link>
-              </Button>
+              <div className="flex items-center gap-2 pt-2">
+                <Button asChild variant="outline" className="flex-1 font-bold">
+                  <Link href={`/posts/${post.id}/update`}>
+                    <Edit className="mr-2 h-4 w-4" /> Edit Article
+                  </Link>
+                </Button>
+
+                <AlertDialog>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="icon">
+                        <MoreHorizontal className="h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <AlertDialogTrigger asChild>
+                        <DropdownMenuItem className="text-destructive font-semibold cursor-pointer">
+                          <Trash2 className="mr-2 h-4 w-4" /> Delete
+                        </DropdownMenuItem>
+                      </AlertDialogTrigger>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle className="font-black uppercase tracking-tighter">
+                        Are you absolutely sure?
+                      </AlertDialogTitle>
+                      <AlertDialogDescription>
+                        This will permanently remove this article harvest. This
+                        action cannot be undone.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel className="font-bold">
+                        Cancel
+                      </AlertDialogCancel>
+                      <AlertDialogAction
+                        onClick={handleDelete}
+                        className="bg-destructive text-destructive-foreground hover:bg-destructive/90 font-bold"
+                      >
+                        {isDeleting ? "Deleting..." : "Confirm Deletion"}
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              </div>
             )}
+
             <div className="flex items-center gap-4 pt-6 border-t">
               <Link
                 href={`/profile/${post.author.username}`}
@@ -272,19 +348,15 @@ export default function ArticleDetails({ postId }: { postId: string }) {
               </CardTitle>
             </CardHeader>
             <CardContent className="flex flex-wrap gap-2">
-              {post.tags.map(
-                (
-                  postTag: any, // Fixed implicit any
-                ) => (
-                  <Badge
-                    key={postTag.tag.id}
-                    variant="outline"
-                    className="bg-background"
-                  >
-                    # {postTag.tag.name}
-                  </Badge>
-                ),
-              )}
+              {post.tags.map((postTag: any) => (
+                <Badge
+                  key={postTag.tag.id}
+                  variant="outline"
+                  className="bg-background"
+                >
+                  # {postTag.tag.name}
+                </Badge>
+              ))}
             </CardContent>
           </Card>
 

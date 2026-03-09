@@ -111,6 +111,7 @@ export interface GetTagsApiResponse {
 }
 
 export interface GetTagsArgs {
+  context?: "POST" | "OPPORTUNITY"; // 🚜 Added
   category?: PostCategory;
   likedByUserId?: string; // <-- Add this
   savedByUserId?: string; //

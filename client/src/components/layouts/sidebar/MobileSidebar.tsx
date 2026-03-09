@@ -1,5 +1,4 @@
 //src/components/layouts/sidebar/MobileSidebar.tsx
-
 "use client";
 
 import React from "react";
@@ -29,24 +28,26 @@ import { UserAccountNav } from "../header/UserAccountNav";
 import {
   Menu,
   Home,
-  BookOpen,
-  FileCode2,
-  Pen,
-  Globe,
-  Newspaper,
-  Users,
+  Sprout, // 🚜 Added
+  Pickaxe, // 🚜 Added
+  Shovel, // 🚜 Added
+  Wheat, // 🚜 Added
+  Milk, // 🚜 Added
+  TreePine, // 🚜 Added
+  Combine, // 🚜 Added
+  Flower2, // 🚜 Added
+  Tractor, // 🚜 Added
+  CloudSun, // 🚜 Added
   MessageSquare,
-  Briefcase,
   Book,
-  LayoutDashboard,
-  FolderKanban,
+  LayoutGrid, // 🚜 Added
   Bookmark,
   Heart,
   ChevronDown,
-  Trophy,
   Plus,
   User,
   Settings,
+  Fence, // 🚜 Added
 } from "lucide-react";
 
 // --- Navigation Data ---
@@ -68,40 +69,40 @@ const mainNav: NavItem[] = [
 
 const contentSection: CollapsibleNavSection = {
   title: "Content",
-  icon: BookOpen,
+  icon: TreePine, // 🚜 Swapped
   items: [
-    { href: "/all", label: "All Posts", icon: FolderKanban },
-    { href: "/projects", label: "Projects", icon: FileCode2 },
-    { href: "/guides", label: "Guides", icon: BookOpen },
-    { href: "/blogs", label: "Blogs", icon: Pen },
-    { href: "/resources", label: "Resources", icon: Globe },
-    { href: "/articles", label: "Articles", icon: Newspaper },
+    { href: "/all", label: "All Posts", icon: LayoutGrid }, // 🚜 Swapped
+    { href: "/projects", label: "Projects", icon: Pickaxe }, // 🚜 Swapped
+    { href: "/guides", label: "Guides", icon: Sprout }, // 🚜 Swapped
+    { href: "/blogs", label: "Blogs", icon: Shovel }, // 🚜 Swapped
+    { href: "/resources", label: "Resources", icon: Wheat }, // 🚜 Swapped
+    { href: "/articles", label: "Articles", icon: Milk }, // 🚜 Swapped
   ],
 };
 
 const communitySection: CollapsibleNavSection = {
   title: "Community",
-  icon: Users,
+  icon: Combine, // 🚜 Swapped
   items: [
-    { href: "/showcases", label: "Showcases", icon: Trophy },
+    { href: "/showcases", label: "Showcases", icon: Flower2 }, // 🚜 Swapped
     { href: "/discussions", label: "Discussions", icon: MessageSquare },
-    { href: "/opportunities", label: "Opportunities", icon: Briefcase },
-    { href: "/updates", label: "Updates", icon: Book },
+    { href: "/opportunities", label: "Opportunities", icon: Tractor }, // 🚜 Swapped
+    { href: "/updates", label: "Updates", icon: CloudSun }, // 🚜 Swapped
   ],
 };
 
 const workspaceSection: CollapsibleNavSection = {
   title: "Workspace",
-  icon: FolderKanban,
+  icon: LayoutGrid, // 🚜 Swapped
   items: [
-    { href: "/posts/my", label: "My Posts", icon: FileCode2 },
+    { href: "/posts/my", label: "My Posts", icon: Pickaxe },
     { href: "/saved", label: "Saved Posts", icon: Bookmark },
     { href: "/liked", label: "Liked Posts", icon: Heart },
     { href: "/settings", label: "Settings", icon: Settings },
   ],
 };
 
-// --- Helper Components (Declared outside of render to prevent state reset) ---
+// --- Helper Components ---
 
 const MobileNavLink = ({
   href,

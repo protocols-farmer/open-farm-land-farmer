@@ -20,7 +20,7 @@ const githubUrlSchema = z
   .url("Please enter a valid URL.")
   .regex(
     flexibleGithubRegex,
-    "Please provide a valid GitHub profile or repository link."
+    "Please provide a valid GitHub profile or repository link.",
   )
   .or(z.literal(""))
   .nullable()
@@ -43,9 +43,18 @@ export const createPostSchema = z.object({
   category: z.enum(postCategories, {
     required_error: "You must select a post category.",
   }),
-  // Force arrays to always be arrays, even in the input
+  // 🚜 TAG GUARD: Enforce character limit and slug format per tag
   postTags: z
-    .array(z.string().min(1, "Tag cannot be empty"))
+    .array(
+      z
+        .string()
+        .min(1, "Tag cannot be empty")
+        .max(25, "Tag is too long (max 25 chars)")
+        .regex(
+          /^[a-zA-Z0-9-]+$/,
+          "Tags must be alphanumeric with hyphens only",
+        ),
+    )
     .max(10, "You can add a maximum of 10 tags.")
     .default([]),
   postImages: z

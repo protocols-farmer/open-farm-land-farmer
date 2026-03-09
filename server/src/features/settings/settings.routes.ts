@@ -7,16 +7,11 @@ import { updateSettingsSchema } from "./settings.validation.js";
 
 const router: Router = Router();
 
-/**
- * All settings routes require the user to be logged in.
- * They operate on the 'current user' based on the JWT.
- */
-router.use(verifyToken);
-
-router.get("/", settingsController.getSettings);
+router.get("/", verifyToken, settingsController.getSettings);
 
 router.patch(
   "/",
+  verifyToken,
   validate(updateSettingsSchema),
   settingsController.updateSettings,
 );

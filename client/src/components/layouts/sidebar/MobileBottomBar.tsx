@@ -1,4 +1,3 @@
-//src/components/layouts/sidebar/MobileBottomBar.tsx
 "use client";
 
 import React from "react";
@@ -7,35 +6,37 @@ import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import {
   Plus,
-  Home, // Changed from LayoutDashboard to match Sidebar's home
-  FileCode2,
-  Pen, // Changed from BookOpen to match Sidebar's Blog icon
-  Globe, // Changed from Library to match Sidebar's Resources icon
+  Home,
+  LayoutGrid, // 🚜 Swapped FolderKanban for LayoutGrid
+  Pickaxe, // 🚜 Swapped FileCode2 for Pickaxe (Projects)
+  Shovel, // 🚜 Swapped Pen for Shovel (Blogs)
 } from "lucide-react";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 
-// Updated to match Sidebar routes and icons
+// Updated to match Sidebar routes and new Farming icons
 const bottomNavItems = [
   { href: "/", label: "Home", icon: Home },
-  { href: "/projects", label: "Projects", icon: FileCode2 },
+  { href: "/all", label: "All Posts", icon: LayoutGrid },
   { href: "/create", label: "Create", icon: Plus, isCentral: true },
-  { href: "/blogs", label: "Blogs", icon: Pen }, // Matches Sidebar /blogs
-  { href: "/resources", label: "Resources", icon: Globe }, // Matches Sidebar /resources
+  { href: "/projects", label: "Projects", icon: Pickaxe },
+  { href: "/blogs", label: "Blogs", icon: Shovel },
 ];
 
 export default function MobileBottomBar() {
   const pathname = usePathname();
 
   return (
-    <div className="lg:hidden fixed bottom-0 left-0 z-50 w-full h-16 border-t bg-background/95 backdrop-blur-lg">
-      <div className="grid h-full grid-cols-5">
+    <div
+      className={cn(
+        "lg:hidden fixed bottom-0 left-0 z-50 w-full border-t bg-background/95 backdrop-blur-lg shadow-[0_-4px_24px_rgba(0,0,0,0.05)]",
+        "pb-[env(safe-area-inset-bottom)]",
+      )}
+    >
+      <div className="grid h-16 grid-cols-5">
         {bottomNavItems.map((item) => {
-          const isActive = pathname === item.href;
+          const isActive =
+            item.href === "/"
+              ? pathname === item.href
+              : pathname.startsWith(item.href);
 
           if (item.isCentral) {
             return (
@@ -43,22 +44,13 @@ export default function MobileBottomBar() {
                 key={item.label}
                 className="flex justify-center items-center"
               >
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Link
-                        href={item.href}
-                        className="relative -top-4 flex h-14 w-14 items-center justify-center rounded-full border bg-primary text-primary-foreground shadow-lg transition-transform hover:scale-105 active:scale-95"
-                      >
-                        <item.icon className="h-6 w-6" />
-                        <span className="sr-only">{item.label}</span>
-                      </Link>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>{item.label}</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
+                <Link
+                  href={item.href}
+                  className="relative -top-4 flex h-14 w-14 items-center justify-center rounded-full border border-primary/20 bg-primary text-primary-foreground shadow-lg shadow-primary/30 transition-transform active:scale-90"
+                >
+                  <item.icon className="h-6 w-6" />
+                  <span className="sr-only">{item.label}</span>
+                </Link>
               </div>
             );
           }
@@ -67,19 +59,21 @@ export default function MobileBottomBar() {
             <Link
               key={item.label}
               href={item.href}
-              className="group inline-flex flex-col items-center justify-center"
+              className="group inline-flex flex-col items-center justify-center relative active:scale-95 transition-transform"
             >
               <div className="relative flex flex-col items-center">
                 <item.icon
                   className={cn(
-                    "h-6 w-6 transition-colors group-hover:text-primary",
+                    "h-[22px] w-[22px] transition-colors duration-200",
                     isActive ? "text-primary" : "text-muted-foreground",
                   )}
                 />
-                {/* Active Indicator Dot */}
-                {isActive && (
-                  <span className="absolute -bottom-2 h-1 w-1 rounded-full bg-primary" />
-                )}
+                <span
+                  className={cn(
+                    "absolute -bottom-3 h-1 w-1 rounded-full bg-primary transition-all duration-300",
+                    isActive ? "opacity-100 scale-100" : "opacity-0 scale-0",
+                  )}
+                />
               </div>
               <span className="sr-only">{item.label}</span>
             </Link>

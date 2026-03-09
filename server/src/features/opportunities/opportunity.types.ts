@@ -1,10 +1,7 @@
+// server/src/features/opportunities/opportunity.types.ts
+
 import { OpportunityType } from "@prisma-client";
 
-/**
- * DTO for creating a new opportunity.
- * Note: companyLogo and publicId are populated by the controller
- * after the Cloudinary upload.
- */
 export interface CreateOpportunityDto {
   title: string;
   companyName: string;
@@ -17,15 +14,22 @@ export interface CreateOpportunityDto {
   responsibilities?: string[];
   qualifications?: string[];
   tags?: string[];
-  // 🚜 Cloudinary Assets
   companyLogo?: string;
   companyLogoPublicId?: string;
 }
 
-/**
- * DTO for updating an existing opportunity.
- * Includes 'retainedLogoUrl' to determine if we should delete the old asset.
- */
 export interface UpdateOpportunityDto extends Partial<CreateOpportunityDto> {
   retainedLogoUrl?: string;
+}
+
+/**
+ * 🚜 FILTER TYPE: Scoped for high-performance Prisma queries.
+ */
+export interface OpportunityQueryFilters {
+  q?: string;
+  type?: OpportunityType;
+  isRemote?: boolean | string; // Handle both direct boolean and string from query
+  tags?: string;
+  skip?: number;
+  take?: number;
 }

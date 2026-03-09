@@ -1,9 +1,11 @@
-// FILE: src/lib/features/ui/uiSlice.ts
+//src/lib/features/ui/uiSlice.ts
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { RootState } from "@/lib/store";
 
-type InteractionType =
+// 🚜 Exported and updated to include "dislike"
+export type InteractionType =
   | "like"
+  | "dislike"
   | "save"
   | "comment"
   | "share"

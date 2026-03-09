@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { PostCategory, GetPostsArgs } from "@/lib/features/post/postTypes";
 import {
@@ -33,8 +33,12 @@ import {
   Presentation,
   MessagesSquare,
   Compass,
+  Loader2, // 🚜 ADDED
+  RotateCcw, // 🚜 ADDED
 } from "lucide-react";
 import { useDebounce } from "@/lib/hooks/useDebounce";
+import { useIntersectionObserver } from "@/lib/hooks/useIntersectionObserver"; // 🚜 ADDED
+import { cn } from "@/lib/utils";
 
 interface PostFilterPageProps {
   category?: PostCategory;
@@ -112,10 +116,20 @@ export default function PostFilterPage({
   const [sortOrder, setSortOrder] = useState(
     searchParams.get("sort") || "newest",
   );
+
+  // 🚜 INFINITE SCROLL STATE
+  const [page, setPage] = useState(1);
   const debouncedSearchTerm = useDebounce(searchTerm, 500);
+
+  // Reset page when filters change
+  useEffect(() => {
+    setPage(1);
+  }, [debouncedSearchTerm, selectedCategory, selectedTags, sortOrder]);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
+
+    // const params = new URLSearchParams(searchParams.toString());
     if (debouncedSearchTerm) params.set("q", debouncedSearchTerm);
     else params.delete("q");
     if (selectedTags.size > 0)
@@ -127,7 +141,6 @@ export default function PostFilterPage({
       params.set("category", selectedCategory);
     else if (!category) params.delete("category");
 
-    router.replace(`${pathname}?${params.toString()}`);
     router.replace(`${pathname}?${params.toString()}`, { scroll: false });
   }, [
     debouncedSearchTerm,
@@ -149,7 +162,8 @@ export default function PostFilterPage({
     tags:
       selectedTags.size > 0 ? Array.from(selectedTags).join(",") : undefined,
     sort: sortOrder as GetPostsArgs["sort"],
-    limit: 50,
+    limit: 12, // 🚜 Standardized to 12 for grid math
+    page, // 🚜 Now dynamic
   };
 
   const {
@@ -157,11 +171,35 @@ export default function PostFilterPage({
     isLoading,
     isFetching,
     isError,
+    refetch, // 🚜 For the error button
   } = useGetPostsQuery(queryParams);
-  const { data: tagsResponse } = useGetTagsQuery(queryParams);
+
+  const { data: tagsResponse } = useGetTagsQuery({
+    context: "POST",
+    category: queryParams.category,
+    authorId: queryParams.authorId,
+    likedByUserId: queryParams.likedByUserId,
+    savedByUserId: queryParams.savedByUserId,
+  });
 
   const posts = postsResponse?.data || [];
   const availableTags = tagsResponse?.data.map((t) => t.name) || [];
+
+  // 🚜 INFINITE SCROLL LOGIC
+  const hasMore = postsResponse
+    ? postsResponse.pagination.currentPage < postsResponse.pagination.totalPages
+    : false;
+
+  const loadMore = () => {
+    if (hasMore && !isFetching) {
+      setPage((prev) => prev + 1);
+    }
+  };
+
+  const sentinelRef = useIntersectionObserver({
+    onIntersect: loadMore,
+    enabled: hasMore && !isError,
+  });
 
   const handleTagClick = (tag: string) => {
     setSelectedTags((prev) => {
@@ -188,26 +226,26 @@ export default function PostFilterPage({
   return (
     <section className="space-y-6">
       <div className="mb-4">
-        <h1 className="text-2xl md:text-4xl font-extrabold text-foreground flex items-center gap-2.5">
+        <h1 className="text-2xl md:text-4xl font-black tracking-tighter text-foreground flex items-center gap-2.5">
           {React.createElement(
             getCategoryIcon(selectedCategory) || DefaultPageIcon,
             { className: "text-primary h-7 w-7 md:h-9 md:w-9" },
           )}
           {title}
         </h1>
-        <p className="text-sm md:text-base text-muted-foreground mt-1">
+        <p className="text-sm md:text-base text-muted-foreground mt-1 font-medium">
           {subtitle}
         </p>
       </div>
 
-      <Card className="p-3 md:p-5 bg-background/60 backdrop-blur-md relative border-border/50 shadow-sm">
+      <Card className="p-3 md:p-5 bg-background/60 backdrop-blur-md relative border-border/50 shadow-sm rounded-2xl">
         <div className="flex flex-col gap-3">
           <div className="flex flex-col md:flex-row gap-3">
             <div className="relative flex-grow">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/50" />
               <Input
                 placeholder={searchPlaceholder}
-                className="pl-9 h-10 text-sm"
+                className="pl-9 h-11 text-sm rounded-xl border-border/40 bg-background/50"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
@@ -215,10 +253,10 @@ export default function PostFilterPage({
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7"
+                  className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 hover:bg-transparent"
                   onClick={() => setSearchTerm("")}
                 >
-                  <X className="h-3 w-3" />
+                  <X className="h-3 w-3 text-muted-foreground/30" />
                 </Button>
               )}
             </div>
@@ -229,27 +267,35 @@ export default function PostFilterPage({
                   value={selectedCategory}
                   onValueChange={(val) => setSelectedCategory(val as any)}
                 >
-                  <SelectTrigger className="h-10 text-xs md:w-[150px]">
-                    <Tags className="mr-2 h-3.5 w-3.5" />
+                  <SelectTrigger className="h-11 text-xs md:w-[150px] rounded-xl font-bold bg-background/50 border-border/40">
+                    <Tags className="mr-2 h-3.5 w-3.5 text-primary" />
                     <SelectValue placeholder="Category" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="rounded-xl">
                     {allCategories.map((cat) => (
-                      <SelectItem key={cat} value={cat}>
-                        {cat}
+                      <SelectItem
+                        key={cat}
+                        value={cat}
+                        className="text-xs font-medium"
+                      >
+                        {cat === "All" ? "All categories" : cat.toLowerCase()}
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               )}
               <Select value={sortOrder} onValueChange={setSortOrder}>
-                <SelectTrigger className="h-10 text-xs md:w-[150px]">
-                  <Calendar className="mr-2 h-3.5 w-3.5" />
+                <SelectTrigger className="h-11 text-xs md:w-[150px] rounded-xl font-bold bg-background/50 border-border/40">
+                  <Calendar className="mr-2 h-3.5 w-3.5 text-primary" />
                   <SelectValue placeholder="Sort" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="rounded-xl">
                   {sortOptions.map((opt) => (
-                    <SelectItem key={opt.value} value={opt.value}>
+                    <SelectItem
+                      key={opt.value}
+                      value={opt.value}
+                      className="text-xs font-medium"
+                    >
                       {opt.label}
                     </SelectItem>
                   ))}
@@ -258,24 +304,32 @@ export default function PostFilterPage({
             </div>
           </div>
 
-          {/* === TAGS SECTION: UI/UX FIX FOR MOBILE === */}
           {availableTags.length > 0 && (
-            <div className="flex flex-col gap-2 pt-3 border-t sm:flex-row sm:items-start">
-              <h3 className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2 mt-1 shrink-0">
-                <Tags className="h-3 w-3" /> Tags
+            <div className="flex flex-col sm:flex-row gap-4 sm:items-start pt-4 border-t border-border/40">
+              <h3 className="text-[10px] font-black  tracking-[0.2em] text-muted-foreground/40 shrink-0">
+                Trending tags
               </h3>
-              <div className="flex flex-wrap gap-1.5">
-                {availableTags.map((tag) => (
-                  <Button
-                    key={tag}
-                    variant={selectedTags.has(tag) ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => handleTagClick(tag)}
-                    className="rounded-full h-7 px-3 text-[10px] transition-all hover:bg-accent hover:text-accent-foreground border-border/50"
-                  >
-                    {tag}
-                  </Button>
-                ))}
+
+              <div
+                className={cn(
+                  "overflow-y-auto max-h-[76px] pr-1",
+                  "scrollbar-thin scrollbar-thumb-primary/20 scrollbar-track-transparent hover:scrollbar-thumb-primary/40 transition-colors",
+                )}
+                style={{ scrollbarWidth: "thin" }}
+              >
+                <div className="flex flex-wrap gap-1.5 pb-1">
+                  {availableTags.map((tag) => (
+                    <Button
+                      key={tag}
+                      variant={selectedTags.has(tag) ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => handleTagClick(tag)}
+                      className="rounded-full h-8 px-4 text-[11px] font-bold transition-all border-border/40 active:scale-95"
+                    >
+                      #{tag}
+                    </Button>
+                  ))}
+                </div>
               </div>
             </div>
           )}
@@ -284,19 +338,19 @@ export default function PostFilterPage({
 
       <div>
         <div className="mb-4 flex items-center justify-between">
-          <p className="text-sm font-medium text-muted-foreground">
-            {isFetching
-              ? "Syncing..."
-              : `${postsResponse?.pagination.totalItems ?? 0} found`}
+          <p className="text-[11px] font-bold  tracking-widest text-muted-foreground/60">
+            {isFetching && page === 1
+              ? "Syncing results..."
+              : `${postsResponse?.pagination.totalItems ?? 0} items found`}
           </p>
           {hasActiveFilters && (
             <Button
               variant="link"
               size="sm"
               onClick={clearFilters}
-              className="h-auto p-0 text-xs text-primary"
+              className="h-auto p-0 text-xs text-primary font-bold decoration-primary/30"
             >
-              Reset Filters
+              Reset filters
             </Button>
           )}
         </div>
@@ -307,26 +361,79 @@ export default function PostFilterPage({
               <PostCardSkeleton key={i} />
             ))}
           </div>
-        ) : isError ? (
-          <div className="flex flex-col items-center justify-center p-12 border border-dashed rounded-xl bg-muted/20">
-            <ServerCrash className="h-10 w-10 text-destructive/50" />
-            <h3 className="mt-4 font-bold">Connection Error</h3>
-            <p className="text-xs text-muted-foreground mt-1">
-              Failed to fetch data.
+        ) : isError && page === 1 ? (
+          <div className="flex flex-col items-center justify-center p-12 border border-dashed rounded-2xl bg-muted/20">
+            <ServerCrash className="h-10 w-10 text-destructive/30" />
+            <h3 className="mt-4 font-black tracking-tighter">
+              Connection error
+            </h3>
+            <p className="text-xs text-muted-foreground mt-1 font-medium">
+              Failed to fetch data from the farm.
             </p>
+            <Button
+              onClick={() => refetch()}
+              variant="outline"
+              size="sm"
+              className="mt-4 gap-2 rounded-xl font-bold text-xs"
+            >
+              <RotateCcw className="h-3 w-3" /> Retry
+            </Button>
           </div>
         ) : posts.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-            {posts.map((post) => (
-              <PostCard key={post.id} post={post} />
-            ))}
-          </div>
+          <>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+              {posts.map((post) => (
+                <PostCard key={post.id} post={post} />
+              ))}
+            </div>
+
+            {/* 🚜 INFINITE SCROLL FOOTER */}
+            <div
+              ref={sentinelRef}
+              className="py-10 flex flex-col items-center justify-center min-h-[100px]"
+            >
+              {isFetching && hasMore && (
+                <div className="flex flex-col items-center gap-2 animate-in fade-in zoom-in duration-300">
+                  <Loader2 className="h-6 w-6 text-primary animate-spin" />
+                  <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/40">
+                    Loading more...
+                  </span>
+                </div>
+              )}
+              {isError && page > 1 && (
+                <div className="flex flex-col items-center gap-3 animate-in slide-in-from-bottom-2 duration-300">
+                  <span className="text-xs font-bold text-destructive/60">
+                    Failed to load more posts
+                  </span>
+                  <Button
+                    onClick={() => refetch()}
+                    variant="outline"
+                    size="sm"
+                    className="rounded-full px-6 border-destructive/20 text-destructive/70 hover:bg-destructive/5 font-black text-[10px] uppercase tracking-wider"
+                  >
+                    <RotateCcw className="mr-2 h-3 w-3" /> Refetch
+                  </Button>
+                </div>
+              )}
+              {!hasMore && posts.length > 0 && (
+                <div className="flex items-center gap-4 w-full">
+                  <div className="h-[1px] flex-1 bg-border/30" />
+                  <span className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground/20">
+                    End of the line
+                  </span>
+                  <div className="h-[1px] flex-1 bg-border/30" />
+                </div>
+              )}
+            </div>
+          </>
         ) : (
-          <div className="flex flex-col items-center justify-center p-16 border-2 border-dashed rounded-2xl bg-muted/10">
-            <Frown className="h-12 w-12 text-muted-foreground/40" />
-            <h3 className="mt-4 text-lg font-bold">No results</h3>
-            <p className="text-sm text-muted-foreground">
-              Try removing some filters.
+          <div className="flex flex-col items-center justify-center p-16 border-2 border-dashed rounded-3xl bg-muted/10">
+            <Frown className="h-12 w-12 text-muted-foreground/20" />
+            <h3 className="mt-4 text-lg font-black tracking-tighter">
+              No results
+            </h3>
+            <p className="text-sm text-muted-foreground font-medium">
+              Try adjusting your filters or search terms.
             </p>
           </div>
         )}

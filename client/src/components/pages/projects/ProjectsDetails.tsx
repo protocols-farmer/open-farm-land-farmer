@@ -3,14 +3,17 @@
 import React, { useState, useMemo, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation"; // 🚜 ADDED
 import { formatDistanceToNow } from "date-fns";
+import toast from "react-hot-toast"; // 🚜 ADDED
 import DOMPurify from "dompurify";
-import "highlight.js/styles/github-dark.css"; // ADD THIS LINE AT THE TOP
+import "highlight.js/styles/github-dark.css";
 
 // --- HOOKS & API ---
 import {
   useGetPostByIdQuery,
   useRecordPostViewMutation,
+  useDeletePostMutation, // 🚜 ADDED
 } from "@/lib/features/post/postApiSlice";
 import { useAppSelector } from "@/lib/hooks/hooks";
 import { selectCurrentUser } from "@/lib/features/user/userSlice";
@@ -18,7 +21,7 @@ import { selectCurrentUser } from "@/lib/features/user/userSlice";
 // --- MODULAR COMPONENTS ---
 import ProjectJourneyTab from "./ProjectJourneyTab";
 import ProjectInteractionHub from "./ProjectInteractionHub";
-import GitHubPulseCard from "./GitHubPulseCard"; // NEW: The high-pulse component
+import GitHubPulseCard from "./GitHubPulseCard";
 import CommentSection from "../posts/CommentSection";
 
 // --- UI COMPONENTS ---
@@ -27,7 +30,31 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Github, ExternalLink, Edit, Loader2 } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"; // 🚜 ADDED
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"; // 🚜 ADDED
+import {
+  Github,
+  ExternalLink,
+  Edit,
+  Loader2,
+  Trash2,
+  MoreHorizontal,
+} from "lucide-react"; // 🚜 UPDATED
 
 /**
  * 1. MAIN EXPORT (Fetching & Error Handling)
@@ -68,32 +95,43 @@ export default function ProjectsDetails({ postId }: { postId: string }) {
 }
 
 /**
- * 2. INTERNAL VIEW (Fixed: No cascading renders, Integrated GitHub Pulse)
+ * 2. INTERNAL VIEW
  */
 interface ProjectDetailViewProps {
-  post: any; // Ideally use PostDto from your types
+  post: any;
   currentUser: any;
 }
 
 function ProjectDetailView({ post, currentUser }: ProjectDetailViewProps) {
-  // FIX: Instead of useEffect, we initialize state directly from props
-  // If the user clicks a thumbnail, this local state updates normally.
+  const router = useRouter(); // 🚜 ADDED
+  const [deletePost, { isLoading: isDeleting }] = useDeletePostMutation(); // 🚜 ADDED
+
   const [selectedImage, setSelectedImage] = useState<string | undefined>(
     post.images?.[0]?.url,
   );
 
-  // FIX: Use useMemo for heavy sanitization instead of useEffect + setState
   const sanitizedContent = useMemo(
     () =>
       post.content
         ? DOMPurify.sanitize(post.content, {
-            ADD_ATTR: ["class"], // This ensures hljs classes aren't stripped
+            ADD_ATTR: ["class"],
           })
         : "",
     [post.content],
   );
 
   const isAuthor = currentUser?.id === post.authorId;
+
+  // 🚜 DELETE HANDLER
+  const handleDelete = async () => {
+    try {
+      await deletePost(post.id).unwrap();
+      toast.success("Project deleted successfully.");
+      router.push("/projects");
+    } catch (err) {
+      toast.error("Failed to delete the project.");
+    }
+  };
 
   return (
     <section className="space-y-12">
@@ -165,12 +203,53 @@ function ProjectDetailView({ post, currentUser }: ProjectDetailViewProps) {
             </h1>
             <p className="text-lg text-muted-foreground">{post.description}</p>
 
+            {/* 🚜 UPDATED: Author Actions with Delete functionality */}
             {isAuthor && (
-              <Button asChild variant="outline" className="w-full">
-                <Link href={`/posts/${post.id}/update`}>
-                  <Edit className="mr-2 h-4 w-4" /> Edit Project
-                </Link>
-              </Button>
+              <div className="flex items-center gap-2 pt-2">
+                <Button asChild variant="outline" className="flex-1">
+                  <Link href={`/posts/${post.id}/update`}>
+                    <Edit className="mr-2 h-4 w-4" /> Edit Project
+                  </Link>
+                </Button>
+
+                <AlertDialog>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="icon">
+                        <MoreHorizontal className="h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <AlertDialogTrigger asChild>
+                        <DropdownMenuItem className="text-destructive font-semibold cursor-pointer">
+                          <Trash2 className="mr-2 h-4 w-4" /> Delete Project
+                        </DropdownMenuItem>
+                      </AlertDialogTrigger>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>
+                        Are you absolutely sure?
+                      </AlertDialogTitle>
+                      <AlertDialogDescription>
+                        This will permanently remove this project. This action
+                        cannot be undone.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction
+                        onClick={handleDelete}
+                        className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                      >
+                        {isDeleting ? "Deleting..." : "Confirm Deletion"}
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              </div>
             )}
           </header>
 
@@ -241,13 +320,11 @@ function ProjectDetailView({ post, currentUser }: ProjectDetailViewProps) {
               <CardTitle>About the Project</CardTitle>
             </CardHeader>
             <CardContent
-              className="prose prose-neutral prose-quoteless dark:prose-invert max-w-none break-words"
+              className="prose prose-neutral prose-quoteless dark:prose-invert max-w-none break-all "
               dangerouslySetInnerHTML={{ __html: sanitizedContent }}
             />
           </Card>
 
-          {/* === GITHUB PULSE INTEGRATION === */}
-          {/* We replace the old AuthorProfileCard with our new Pulse Insight logic */}
           {post.githubLink && (
             <div className="space-y-4">
               <h3 className="text-xl font-bold">Repository Insights</h3>

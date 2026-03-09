@@ -65,7 +65,25 @@ export const opportunitySchema = z.object({
     .preprocess(preprocessArray, z.array(z.string()))
     .optional(),
   qualifications: z.preprocess(preprocessArray, z.array(z.string())).optional(),
-  tags: z.preprocess(preprocessArray, z.array(z.string())).optional(),
+
+  // 🚜 REFINED: Hardened tag validation for backend
+  tags: z
+    .preprocess(
+      preprocessArray,
+      z
+        .array(
+          z
+            .string()
+            .min(1, "Tag cannot be empty.")
+            .max(25, "Each tag must be under 25 characters.")
+            .regex(
+              /^[a-zA-Z0-9-]+$/,
+              "Tags must be alphanumeric with hyphens only",
+            ),
+        )
+        .max(10, "You can add up to 10 tags."),
+    )
+    .optional(),
 });
 
 export const createOpportunitySchema = z.object({

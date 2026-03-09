@@ -1,18 +1,20 @@
-//src/components/pages/resources/ResourceDetails.tsx
-
+//src/components/pages/showcases/ShowcaseDetails.tsx
 "use client";
 
-import React, { useState, useEffect, useMemo } from "react"; // Added useMemo
+import React, { useState, useEffect, useMemo } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation"; // 🚜 ADDED
 import { formatDistanceToNow } from "date-fns";
+import toast from "react-hot-toast"; // 🚜 ADDED
 import DOMPurify from "dompurify";
-import "highlight.js/styles/github-dark.css"; // Added for syntax highlighting
+import "highlight.js/styles/github-dark.css";
 
 // --- HOOKS & STATE MANAGEMENT ---
 import {
   useGetPostByIdQuery,
   useRecordPostViewMutation,
+  useDeletePostMutation, // 🚜 ADDED
 } from "@/lib/features/post/postApiSlice";
 import { useAppSelector } from "@/lib/hooks/hooks";
 import { selectCurrentUser } from "@/lib/features/user/userSlice";
@@ -29,7 +31,31 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { ExternalLink, Github, Edit, Terminal } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"; // 🚜 ADDED
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"; // 🚜 ADDED
+import {
+  ExternalLink,
+  Github,
+  Edit,
+  Terminal,
+  Trash2,
+  MoreHorizontal,
+} from "lucide-react"; // 🚜 UPDATED
 
 const PageSkeleton = () => (
   <section className="mx-auto max-w-7xl py-8 space-y-12 animate-pulse">
@@ -64,20 +90,20 @@ const PageSkeleton = () => (
 );
 
 export default function ShowcaseDetails({ postId }: { postId: string }) {
+  const router = useRouter(); // 🚜 ADDED
   const { data: post, isLoading, isError } = useGetPostByIdQuery(postId);
   const currentUser = useAppSelector(selectCurrentUser);
   const [recordPostView] = useRecordPostViewMutation();
+  const [deletePost, { isLoading: isDeleting }] = useDeletePostMutation(); // 🚜 ADDED
 
   /**
    * FIX 1: DERIVED IMAGE STATE
-   * mainImage calculates instantly from render. No useEffect sync needed.
    */
   const [selectedImage, setSelectedImage] = useState<string | undefined>();
   const mainImage = selectedImage || post?.images?.[0]?.url;
 
   /**
    * FIX 2: MEMOIZED SANITIZATION
-   * Removes cascading renders and whitelists 'class' for code colors.
    */
   const sanitizedContent = useMemo(() => {
     const content = post?.content;
@@ -92,6 +118,18 @@ export default function ShowcaseDetails({ postId }: { postId: string }) {
       recordPostView(postId);
     }
   }, [postId, currentUser, recordPostView]);
+
+  // 🚜 DELETE HANDLER
+  const handleDelete = async () => {
+    if (!post) return;
+    try {
+      await deletePost(post.id).unwrap();
+      toast.success("Showcase deleted successfully.");
+      router.push("/showcases");
+    } catch (err) {
+      toast.error("Failed to delete the showcase.");
+    }
+  };
 
   if (isLoading) return <PageSkeleton />;
 
@@ -166,13 +204,58 @@ export default function ShowcaseDetails({ postId }: { postId: string }) {
             <p className="text-xl text-muted-foreground leading-relaxed">
               {post.description}
             </p>
+
+            {/* 🚜 UPDATED AUTHOR ACTIONS: Added Delete Logic with Confirmation Dialog */}
             {currentUser?.id === post.author.id && (
-              <Button asChild variant="outline" className="w-full font-bold">
-                <Link href={`/posts/${post.id}/update`}>
-                  <Edit className="mr-2 h-4 w-4" /> Edit Showcase
-                </Link>
-              </Button>
+              <div className="flex items-center gap-2 pt-2">
+                <Button asChild variant="outline" className="flex-1 font-bold">
+                  <Link href={`/posts/${post.id}/update`}>
+                    <Edit className="mr-2 h-4 w-4" /> Edit Showcase
+                  </Link>
+                </Button>
+
+                <AlertDialog>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="icon">
+                        <MoreHorizontal className="h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <AlertDialogTrigger asChild>
+                        <DropdownMenuItem className="text-destructive font-semibold cursor-pointer">
+                          <Trash2 className="mr-2 h-4 w-4" /> Delete
+                        </DropdownMenuItem>
+                      </AlertDialogTrigger>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle className="font-black uppercase tracking-tighter">
+                        Are you absolutely sure?
+                      </AlertDialogTitle>
+                      <AlertDialogDescription>
+                        This will permanently remove this showcase harvest. This
+                        action cannot be undone.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel className="font-bold">
+                        Cancel
+                      </AlertDialogCancel>
+                      <AlertDialogAction
+                        onClick={handleDelete}
+                        className="bg-destructive text-destructive-foreground hover:bg-destructive/90 font-bold"
+                      >
+                        {isDeleting ? "Deleting..." : "Confirm Deletion"}
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              </div>
             )}
+
             <div className="flex items-center gap-4 pt-6 border-t">
               <Link
                 href={`/profile/${post.author.username}`}

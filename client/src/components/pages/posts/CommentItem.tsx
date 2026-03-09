@@ -23,6 +23,7 @@ import {
 import { ProcessedCommentAPI } from "@/lib/features/comment/commentTypes";
 import { useAppDispatch, useAppSelector } from "@/lib/hooks/hooks";
 import { selectCurrentUser } from "@/lib/features/user/userSlice";
+import { useAuthAction } from "@/lib/hooks/useAuthAction"; // 🚜 ADDED: Auth Guard Hook
 import {
   toggleReplies,
   selectIsRepliesExpanded,
@@ -60,6 +61,8 @@ interface CommentItemProps {
 export default function CommentItem({ comment }: CommentItemProps) {
   const dispatch = useAppDispatch();
   const currentUser = useAppSelector(selectCurrentUser);
+  const handleAuthAction = useAuthAction(); // 🚜 INITIALIZED: Login Trigger
+
   const showReplies = useAppSelector((state) =>
     selectIsRepliesExpanded(state, comment.id),
   );
@@ -67,7 +70,6 @@ export default function CommentItem({ comment }: CommentItemProps) {
   const [isReplying, setIsReplying] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
 
-  // FIX: Track which specific button initiated the reaction
   const [pendingReaction, setPendingReaction] = useState<
     "LIKED" | "DISLIKED" | null
   >(null);
@@ -83,24 +85,27 @@ export default function CommentItem({ comment }: CommentItemProps) {
   const timeAgo = formatDistanceToNow(parseISO(comment.createdAt), {
     addSuffix: true,
   });
-  const canReply = currentUser && comment.level < MAX_REPLY_LEVEL;
 
+  // 🚜 UPDATED: We check currentUser inside the action handler now
+  const canReply = comment.level < MAX_REPLY_LEVEL;
   const handleToggleReaction = async (reaction: "LIKED" | "DISLIKED") => {
-    if (!currentUser) return;
+    const actionType = reaction === "LIKED" ? "like" : "dislike";
 
-    setPendingReaction(reaction);
-    try {
-      await toggleReaction({
-        commentId: comment.id,
-        reaction,
-        postId: comment.postId,
-        parentId: comment.parentId,
-      }).unwrap();
-    } catch (err) {
-      console.error("Reaction failed:", err);
-    } finally {
-      setPendingReaction(null);
-    }
+    handleAuthAction(async () => {
+      setPendingReaction(reaction);
+      try {
+        await toggleReaction({
+          commentId: comment.id,
+          reaction,
+          postId: comment.postId,
+          parentId: comment.parentId,
+        }).unwrap();
+      } catch (err) {
+        console.error("Reaction failed:", err);
+      } finally {
+        setPendingReaction(null);
+      }
+    }, actionType); // 🚜 No more red squiggly lines!
   };
 
   const handleUpdate = async (text: string) => {
@@ -140,6 +145,13 @@ export default function CommentItem({ comment }: CommentItemProps) {
 
   const handleToggleReplies = () => {
     dispatch(toggleReplies(comment.id));
+  };
+
+  // 🚜 ADDED: Guarded reply input toggle
+  const handleInitiateReply = () => {
+    handleAuthAction(() => {
+      setIsReplying(!isReplying);
+    }, "comment");
   };
 
   const processedText = useMemo(() => {
@@ -288,7 +300,7 @@ export default function CommentItem({ comment }: CommentItemProps) {
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => setIsReplying(!isReplying)}
+              onClick={handleInitiateReply}
               className="px-2"
             >
               <MessageSquare className="h-4 w-4 mr-1.5" />{" "}

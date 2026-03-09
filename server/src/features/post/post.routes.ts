@@ -12,13 +12,14 @@ import { uploadImage } from "@/middleware/multer.config.js";
 
 const router: Router = Router();
 
+// --- PUBLIC ROUTES ---
 router.get("/", postController.getAllPosts);
 router.get("/:id", postController.getPost);
 
-router.use(verifyToken);
-
+// --- PROTECTED ROUTES (verifyToken applied individually) ---
 router.post(
   "/",
+  verifyToken, // 🚜 Individual Guard
   uploadImage.array("postImages", 5),
   validate(createPostSchema),
   postController.createPost,
@@ -26,21 +27,22 @@ router.post(
 
 router.patch(
   "/:id",
+  verifyToken, // 🚜 Individual Guard
   uploadImage.array("postImages", 5),
   validate(updatePostSchema),
   postController.updatePost,
 );
 
-router.delete("/:id", postController.deletePost);
+router.delete("/:id", verifyToken, postController.deletePost);
 
-router.post("/:id/like", postController.likePost);
-router.delete("/:id/like", postController.unlikePost);
+router.post("/:id/like", verifyToken, postController.likePost);
+router.delete("/:id/like", verifyToken, postController.unlikePost);
 
-router.post("/:id/save", postController.savePost);
-router.delete("/:id/save", postController.unsavePost);
+router.post("/:id/save", verifyToken, postController.savePost);
+router.delete("/:id/save", verifyToken, postController.unsavePost);
 
-router.post("/:id/share", postController.sharePost);
+router.post("/:id/share", verifyToken, postController.sharePost);
 
-router.post("/:id/view", postController.recordPostView);
+router.post("/:id/view", verifyToken, postController.recordPostView);
 
 export default router;

@@ -1,10 +1,11 @@
-//src/features/opportunities/opportunity.controller.ts
+// server/src/features/opportunities/opportunity.controller.ts
 import { Request, Response } from "express";
 import { asyncHandler } from "@/middleware/asyncHandler.js";
 import { createHttpError } from "@/utils/error.factory.js";
 import { opportunityService } from "./opportunity.service.js";
 import { uploadToCloudinary } from "@/config/cloudinary.js";
 import { logger } from "@/config/logger.js";
+import { OpportunityType } from "@prisma-client";
 
 class OpportunityController {
   /**
@@ -73,19 +74,31 @@ class OpportunityController {
     res.status(201).json({ success: true, data: newOpportunity });
   });
 
-  /**
-   * Retrieves all job opportunities with pagination.
-   */
   findAll = asyncHandler(async (req: Request, res: Response) => {
     const skip = req.query.skip ? parseInt(req.query.skip as string) : 0;
-    const take = req.query.take ? parseInt(req.query.take as string) : 10;
-    const { opportunities, total } = await opportunityService.findAll({
+    const take = req.query.take ? parseInt(req.query.take as string) : 12; // 🚜 Defaulting to 12 for grid math
+
+    const filters = {
       skip,
       take,
-    });
-    res.status(200).json({ success: true, data: opportunities, total });
-  });
+      q: req.query.q as string,
+      type: req.query.type as OpportunityType,
+      isRemote: req.query.isRemote as string,
+      tags: req.query.tags as string,
+    };
 
+    const { opportunities, total } = await opportunityService.findAll(filters);
+
+    res.status(200).json({
+      success: true,
+      data: opportunities,
+      pagination: {
+        totalItems: total,
+        totalPages: Math.ceil(total / take),
+        currentPage: Math.floor(skip / take) + 1,
+      },
+    });
+  });
   /**
    * Retrieves a single opportunity by ID.
    */
