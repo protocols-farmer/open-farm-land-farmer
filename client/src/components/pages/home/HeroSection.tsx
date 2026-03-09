@@ -37,45 +37,44 @@ export default function HomeHero() {
 
   return (
     <section className="relative w-full pt-16 pb-12 overflow-hidden">
-      {/* 🚜 Subtle background glow for depth */}
-      <div className="absolute top-0 left-1/4 w-64 h-64 bg-primary/5 rounded-full blur-[100px] -z-10" />
+      <div className="absolute top-0 left-1/4 w-64 h-64 bg-primary/5  blur-[100px] -z-10" />
 
       <div className="container mx-auto px-4">
         <div className="flex flex-col items-start gap-8 lg:flex-row lg:items-end lg:justify-between">
           <div className="max-w-2xl space-y-4">
-            {/* 🚜 Live Version Badge */}
             <Link
               href={versionData?.id ? `/updates/${versionData.id}` : "/updates"}
-              className="inline-flex items-center gap-2.5 rounded-full border bg-muted/40 px-3 py-1 text-xs font-bold transition-all hover:bg-muted/60"
+              className="inline-flex items-center gap-2.5  border bg-muted/40 px-3 py-1 mb-6 text-xs  transition-all hover:bg-muted/60"
             >
-              <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
-              </span>
+              {/* <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full  bg-primary opacity-75"></span>
+                <span className="relative inline-flex  h-2 w-2 bg-primary"></span>
+              </span> */}
               <span className="text-muted-foreground ">
-                Version {displayVersion}
+                Version : {displayVersion}
               </span>
             </Link>
 
-            <h1 className="text-5xl font-black md:text-6xl lg:text-5xl xl:text-7xl tracking-tighter text-foreground leading-[0.9]">
+            <h1 className="font-mobalys text-5xl md:text-6xl lg:text-5xl xl:text-7xl text-foreground leading-[0.9]">
               {" "}
               Open Farm Land
             </h1>
 
-            <p className="text-lg text-muted-foreground leading-relaxed">
-              This is a platform for sharing your <strong>ideas</strong>,
-              <strong> project journey</strong>, <strong>blogs</strong>,
-              <strong> resources</strong>, <strong>articles</strong> and more,
-              you name it!
+            <p className=" text-muted-foreground leading-relaxed">
+              This is a platform for sharing your ideas, project journey, blogs,
+              resources, articles and more, you name it!
             </p>
 
-            <div className="inline-block p-3 px-4 rounded-xl bg-accent/30 border border-border/50">
-              <p className="text-xs text-muted-foreground font-medium italic">
-                <span className="font-bold not-italic text-foreground mr-1">
-                  #Rule 1:
-                </span>
+            <div className="flex flex-col gap-2 p-3 px-4  bg-accent/30 border border-border/50">
+              <p className="text-xs text-muted-foreground font-medium ">
+                <span className=" text-foreground mr-1">Rule 1:</span>
                 We encourage you guys not to use AI. Get your hands dirty use it
                 as a tool, but don't rely on it fully.
+              </p>
+              <p className="text-xs text-muted-foreground font-medium ">
+                <span className=" text-foreground mr-1">Rule 2:</span>
+                Respect the community and its members. Be kind, constructive,
+                and open to feedback. We are here to learn and grow together!
               </p>
             </div>
           </div>
@@ -83,18 +82,18 @@ export default function HomeHero() {
           <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row">
             <Button
               size="lg"
-              className="h-12 px-8 font-bold shadow-md hover:shadow-primary/10 transition-all active:scale-95"
+              className="h-12 px-8  shadow-md hover:shadow-primary/10 transition-all active:scale-95 rounded-none"
               asChild
             >
               <Link href="/create">
                 <Plus className="mr-2 h-5 w-5 stroke-[3]" />
-                Sow a Project
+                Create a Project
               </Link>
             </Button>
             <Button
               size="lg"
               variant="outline"
-              className="h-12 px-8 font-semibold hover:bg-accent transition-all active:scale-95"
+              className="h-12 px-8 font-semibold hover:bg-accent transition-all active:scale-95 rounded-none"
               asChild
             >
               <Link href="/discussions">
@@ -105,22 +104,21 @@ export default function HomeHero() {
           </div>
         </div>
 
-        {/* 🚜 Improved Grid Interaction */}
         <div className="mt-12 grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-6">
           {heroButtons.map(({ href, label, icon: Icon }) => (
             <Link
               key={href}
               href={href}
-              className="group flex flex-col justify-between rounded-2xl border bg-card p-5 transition-all duration-300 hover:bg-accent hover:border-primary/40 hover:-translate-y-1 shadow-sm hover:shadow-md"
+              className="group flex flex-col justify-between  border bg-card p-5 transition-all duration-300 hover:bg-accent hover:border-primary/40 hover:-translate-y-1 shadow-sm hover:shadow-md"
             >
               <div className="flex items-center justify-between">
-                <div className="p-2 rounded-lg bg-muted group-hover:bg-primary/10 transition-colors">
+                <div className="p-2  bg-muted group-hover:bg-primary/10 transition-colors">
                   <Icon className="h-5 w-5 text-muted-foreground group-hover:text-primary" />
                 </div>
                 <ArrowUpRight className="h-4 w-4 text-muted-foreground/30 opacity-0 group-hover:opacity-100 group-hover:text-primary transition-all" />
               </div>
               <div className="mt-5">
-                <p className="text-sm font-bold tracking-tight uppercase opacity-80 group-hover:opacity-100">
+                <p className="text-sm  tracking-tight opacity-80 group-hover:opacity-100">
                   {label}
                 </p>
               </div>

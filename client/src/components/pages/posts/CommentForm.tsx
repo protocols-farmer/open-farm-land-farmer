@@ -80,6 +80,7 @@ export default function CommentForm({
             size="sm"
             onClick={onCancel}
             disabled={isLoading}
+            className="rounded-none"
           >
             <X className="mr-1.5 h-4 w-4" /> Cancel
           </Button>
@@ -88,6 +89,7 @@ export default function CommentForm({
           type="submit"
           size={compact ? "sm" : "default"}
           disabled={isLoading || !text.trim()}
+          className="rounded-none"
         >
           {isLoading ? (
             <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />

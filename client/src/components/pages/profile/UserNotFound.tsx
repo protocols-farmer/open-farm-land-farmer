@@ -16,7 +16,7 @@ export default function UserNotFound({ username }: UserNotFoundProps) {
     <div className="container mx-auto py-20 flex justify-center">
       <Card className="w-full max-w-lg border-dashed border-2">
         <CardContent className="flex flex-col items-center justify-center p-12 text-center">
-          <div className="h-20 w-20 rounded-full bg-muted flex items-center justify-center mb-6">
+          <div className="h-20 w-20  bg-muted flex items-center justify-center mb-6">
             <UserX className="h-10 w-10 text-muted-foreground" />
           </div>
 

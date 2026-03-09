@@ -43,6 +43,7 @@ export default function RepliesList({ parentId, postId }: RepliesListProps) {
           size="sm"
           onClick={() => setPage(page + 1)}
           disabled={isLoading}
+          className="rounded-none"
         >
           {isLoading ? "Loading..." : "Load More Replies"}
         </Button>

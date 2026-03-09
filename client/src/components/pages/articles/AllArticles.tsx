@@ -3,14 +3,14 @@
 "use client";
 
 import PostFilterPage from "../posts/PostFilterPage";
-import { Library } from "lucide-react";
+import { Milk } from "lucide-react";
 
 export default function AllArticles() {
   return (
     <PostFilterPage
       title="Articles"
       subtitle="A collection of insightful articles and research papers."
-      icon={Library}
+      icon={Milk}
       searchPlaceholder="Search articles..."
       category="ARTICLE" // This is the only required change for a new page
     />

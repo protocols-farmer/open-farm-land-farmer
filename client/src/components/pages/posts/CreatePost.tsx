@@ -161,7 +161,7 @@ export default function CreatePostPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Button asChild>
+            <Button asChild className="rounded-none">
               <Link href="/auth/login">Log In</Link>
             </Button>
           </CardContent>
@@ -172,7 +172,7 @@ export default function CreatePostPage() {
 
   return (
     <div className="container mx-auto max-w-3xl py-8">
-      <Button variant="link" asChild className="px-0 mb-6 group">
+      <Button variant="link" asChild className="px-0 mb-6 group rounded-none">
         <Link href="/" className="inline-flex items-center gap-2">
           <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-1" />
           Back to Home
@@ -363,7 +363,7 @@ export default function CreatePostPage() {
               type="submit"
               size="lg"
               disabled={isLoading}
-              className="w-full font-bold"
+              className="w-full font-bold rounded-none"
             >
               {isLoading ? (
                 <>

@@ -49,7 +49,7 @@ function ThemeToggler() {
           <Moon className="absolute h-[1.2rem] w-[1.2rem] scale-0 rotate-90 transition-all dark:scale-100 dark:rotate-0" />
 
           {isLoading && (
-            <span className="absolute inset-0 flex items-center justify-center bg-background/60 backdrop-blur-[1px] rounded-md">
+            <span className="absolute inset-0 flex items-center justify-center bg-background/60 backdrop-blur-[1px] ">
               <Loader2 className="h-3 w-3 animate-spin text-primary" />
             </span>
           )}
@@ -57,10 +57,7 @@ function ThemeToggler() {
         </Button>
       </DropdownMenuTrigger>
 
-      <DropdownMenuContent
-        align="end"
-        className="font-bold uppercase tracking-tighter"
-      >
+      <DropdownMenuContent align="end" className="font-bold  tracking-tighter">
         <DropdownMenuItem
           onClick={() => handleThemeChange("light")}
           className="cursor-pointer"

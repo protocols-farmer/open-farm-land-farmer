@@ -1,3 +1,4 @@
+//src/components/layouts/footer/Footer.tsx
 "use client";
 
 import React from "react";
@@ -68,7 +69,7 @@ export default function Footer() {
                   key={social.label}
                   href={social.href}
                   target="_blank"
-                  className="p-2 rounded-lg bg-muted/50 text-muted-foreground hover:text-primary hover:bg-primary/10 transition-all"
+                  className="p-2  bg-muted/50 text-muted-foreground hover:text-primary hover:bg-primary/10 transition-all"
                 >
                   <span className="sr-only">{social.label}</span>
                   <social.icon className="h-5 w-5" />
@@ -143,7 +144,7 @@ export default function Footer() {
               &copy; {currentYear} Open Farm Land.
             </p>
             <div className="h-4 w-px bg-border hidden md:block" />
-            <p className="text-xs text-muted-foreground font-medium italic">
+            <p className="text-xs text-muted-foreground font-medium ">
               Crafted by biooids under open source license, <br /> by creators
               for creators.
             </p>
@@ -152,7 +153,7 @@ export default function Footer() {
           {/* 🚜 Dynamic Version Section */}
           <Link
             href={versionData?.id ? `/updates/${versionData.id}` : "/updates"}
-            className="group flex items-center gap-2 px-3 py-1 rounded-full bg-muted/50 border border-border/50 hover:border-primary/30 transition-all"
+            className="group flex items-center gap-2 px-3 py-1  bg-muted/50 border border-border/50 hover:border-primary/30 transition-all"
           >
             <span className="text-[10px] font-bold  tracking-tighter text-muted-foreground group-hover:text-primary transition-colors">
               Version {displayVersion}

@@ -129,7 +129,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({
 
       {pagination && pagination.totalPages > 1 && (
         <div className="mt-8 flex justify-center items-center gap-4">
-          <Button asChild variant="outline" size="sm">
+          <Button asChild variant="outline" size="sm" className="rounded-none">
             <Link
               href={`?cpage=${page - 1}`}
               scroll={false}
@@ -141,7 +141,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({
           <span className="text-sm text-muted-foreground">
             Page {pagination.currentPage} of {pagination.totalPages}
           </span>
-          <Button asChild variant="outline" size="sm">
+          <Button asChild variant="outline" size="sm" className="rounded-none">
             <Link
               href={`?cpage=${page + 1}`}
               scroll={false}

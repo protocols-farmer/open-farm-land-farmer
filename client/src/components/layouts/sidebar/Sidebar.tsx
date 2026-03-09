@@ -5,12 +5,12 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   Home,
-  Sprout, // 🚜 Added for Growth/Guides
-  Tractor, // 🚜 Added for Opportunities/Work
-  Wheat, // 🚜 Added for Resources
-  Fence, // 🚜 Added for Admin/Privacy
-  Shovel, // 🚜 Added for Blogs/Tools
-  Flower2, // 🚜 Added for Showcases
+  Sprout,
+  Tractor,
+  Wheat,
+  Fence,
+  Shovel,
+  Flower2,
   MessageSquare,
   Book,
   FolderKanban,
@@ -25,12 +25,14 @@ import {
   Lock,
   BookAIcon,
   Settings,
-  LayoutGrid, // 🚜 Added for "All Posts"
-  CloudSun, // 🚜 Added for Updates/Weather
-  Pickaxe, // 🚜 Added for Projects
-  Milk, // 🚜 Added for Articles/Fresh Content
-  Combine, // 🚜 Added for Community
-  TreePine, // 🚜 Added for Content Section
+  LayoutGrid,
+  CloudSun,
+  Pickaxe,
+  Milk,
+  Combine,
+  TreePine,
+  Sparkles,
+  Crown,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -62,32 +64,32 @@ interface CollapsibleNavSection {
 
 const mainNav: NavItem[] = [
   { href: "/", label: "Home", icon: Home },
-  { href: "/admin", label: "Admin", icon: Fence }, // 🚜 Swapped Lock for Fence (Property boundary)
+  { href: "/admin", label: "Admin", icon: Fence },
   { href: "/profile", label: "Profile", icon: User },
   { href: "/about", label: "About", icon: BookAIcon },
 ];
 
 const contentSection: CollapsibleNavSection = {
   title: "Content",
-  icon: TreePine, // 🚜 Swapped BookOpen for TreePine (Orchard)
+  icon: TreePine,
   items: [
-    { href: "/all", label: "All Posts", icon: LayoutGrid }, // 🚜 Swapped FolderKanban for LayoutGrid
-    { href: "/projects", label: "Projects", icon: Pickaxe }, // 🚜 Swapped FileCode2 for Pickaxe (Heavy lifting)
-    { href: "/guides", label: "Guides", icon: Sprout }, // 🚜 Swapped BookOpen for Sprout (Growth)
-    { href: "/blogs", label: "Blogs", icon: Shovel }, // 🚜 Swapped Pen for Shovel (Digging deep)
-    { href: "/resources", label: "Resources", icon: Wheat }, // 🚜 Swapped Globe for Wheat (Harvest)
-    { href: "/articles", label: "Articles", icon: Milk }, // 🚜 Swapped Newspaper for Milk (Fresh delivery)
+    { href: "/all", label: "All Posts", icon: LayoutGrid },
+    { href: "/projects", label: "Projects", icon: Pickaxe },
+    { href: "/guides", label: "Guides", icon: Sprout },
+    { href: "/blogs", label: "Blogs", icon: Shovel },
+    { href: "/resources", label: "Resources", icon: Wheat },
+    { href: "/articles", label: "Articles", icon: Milk },
   ],
 };
 
 const communitySection: CollapsibleNavSection = {
   title: "Community",
-  icon: Combine, // 🚜 Swapped Users for Combine (Harvesting together)
+  icon: Combine,
   items: [
-    { href: "/showcases", label: "Showcases", icon: Flower2 }, // 🚜 Swapped Trophy for Flower2 (Best in show)
+    { href: "/showcases", label: "Showcases", icon: Flower2 },
     { href: "/discussions", label: "Discussions", icon: MessageSquare },
-    { href: "/opportunities", label: "Opportunities", icon: Tractor }, // 🚜 Swapped Briefcase for Tractor (Field work)
-    { href: "/updates", label: "Updates", icon: CloudSun }, // 🚜 Swapped Book for CloudSun (Forecasts)
+    { href: "/opportunities", label: "Opportunities", icon: Tractor },
+    { href: "/updates", label: "Updates", icon: CloudSun },
   ],
 };
 
@@ -117,14 +119,14 @@ const NavLink = ({
           <Link
             href={href}
             className={cn(
-              "group/navlink relative flex items-center gap-3 rounded-lg px-3 py-2.5 text-muted-foreground transition-all duration-200 ease-in-out hover:bg-accent hover:text-foreground",
-              isCollapsed && "justify-center rounded-full w-12 h-12",
+              "group/navlink relative flex items-center gap-3  px-3 py-2.5 text-muted-foreground transition-all duration-200 ease-in-out hover:bg-accent hover:text-foreground",
+              isCollapsed && "justify-center  w-12 h-12",
               isActive && "bg-accent font-semibold text-foreground",
             )}
           >
             <div
               className={cn(
-                "absolute left-0 h-0 w-1 bg-primary transition-all duration-300 rounded-r-full",
+                "absolute left-0 h-0 w-1 bg-primary transition-all duration-300 -full",
                 isActive ? "h-6" : "group-hover/navlink:h-4",
               )}
             />
@@ -167,7 +169,7 @@ const CollapsibleNav = ({
     <Collapsible defaultOpen className="w-full">
       <CollapsibleTrigger
         className={cn(
-          "group/trigger flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground",
+          "group/trigger flex w-full items-center gap-3  px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground",
         )}
       >
         <section.icon className="h-5 w-5" />
@@ -205,7 +207,7 @@ export default function Sidebar() {
             <Button
               variant="outline"
               size="icon"
-              className="absolute -right-4 top-1/2 -translate-y-1/2 h-8 w-8 rounded-full bg-background hover:bg-muted z-50 border shadow-sm hidden lg:flex items-center justify-center transition-transform active:scale-95"
+              className="rounded-none absolute -right-4 top-1/2 -translate-y-1/2 h-8 w-8  bg-background hover:bg-muted z-50 border shadow-sm hidden lg:flex items-center justify-center transition-transform active:scale-95"
               onClick={() => setIsCollapsed(!isCollapsed)}
             >
               {isCollapsed ? (
@@ -232,7 +234,7 @@ export default function Sidebar() {
         className={cn(
           "flex-1 overflow-y-auto py-4 px-3",
           "[&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent",
-          "[&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-transparent",
+          "[&::-webkit-scrollbar-thumb]: [&::-webkit-scrollbar-thumb]:bg-transparent",
           "group-hover:[&::-webkit-scrollbar-thumb]:bg-primary/20 hover:[&::-webkit-scrollbar-thumb]:bg-primary/40 transition-colors",
         )}
       >
@@ -244,8 +246,8 @@ export default function Sidebar() {
                   asChild
                   variant="default"
                   className={cn(
-                    "w-full transition-all duration-300",
-                    isCollapsed ? "w-12 h-12 rounded-full p-0 mx-auto" : "px-4",
+                    "w-full transition-all duration-300 rounded-none",
+                    isCollapsed ? "w-12 h-12  p-0 mx-auto" : "px-4",
                   )}
                 >
                   <Link href="/create">
@@ -298,10 +300,10 @@ export default function Sidebar() {
       {/* Pro Banner Section */}
       {!isCollapsed && (
         <div className="p-4 border-t mt-auto shrink-0">
-          <div className="rounded-xl border bg-muted/40 p-4 text-center">
+          <div className=" border bg-muted/40 p-4 text-center">
             <div className="mb-3 flex justify-center">
-              <div className="bg-primary/10 p-2 rounded-lg">
-                <Rocket className="h-6 w-6 text-primary" />
+              <div className="bg-primary/10 p-2 ">
+                <Crown className="h-6 w-6 text-primary" />
               </div>
             </div>
             <h3 className="text-sm font-bold text-foreground">Go Pro</h3>

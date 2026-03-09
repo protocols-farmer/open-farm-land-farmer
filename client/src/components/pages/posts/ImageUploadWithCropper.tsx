@@ -129,7 +129,7 @@ export default function ImageUploadWithCropper({
         <div
           {...getRootProps()}
           className={cn(
-            "border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors",
+            "border-2 border-dashed  p-8 text-center cursor-pointer transition-colors",
             isDragActive
               ? "border-primary bg-primary/10"
               : "border-border hover:border-primary/50",
@@ -167,13 +167,13 @@ export default function ImageUploadWithCropper({
                 src={image.url}
                 alt="Existing image"
                 fill
-                className="object-cover rounded-md border"
+                className="object-cover  border"
               />
               <Button
                 type="button"
                 variant="destructive"
                 size="icon"
-                className="absolute top-1 right-1 h-6 w-6 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                className="rounded-none absolute top-1 right-1 h-6 w-6  opacity-0 group-hover:opacity-100 transition-opacity"
                 onClick={() => removeExistingFile(image.id)}
               >
                 <X className="h-4 w-4" />
@@ -188,13 +188,13 @@ export default function ImageUploadWithCropper({
                 src={src}
                 alt={`Preview ${index + 1}`}
                 fill
-                className="object-cover rounded-md border"
+                className="object-cover  border"
               />
               <Button
                 type="button"
                 variant="destructive"
                 size="icon"
-                className="absolute top-1 right-1 h-6 w-6 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                className="rounded-none absolute top-1 right-1 h-6 w-6  opacity-0 group-hover:opacity-100 transition-opacity"
                 onClick={() => removeNewFile(index)}
               >
                 <X className="h-4 w-4" />

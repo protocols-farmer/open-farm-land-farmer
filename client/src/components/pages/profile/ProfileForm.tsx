@@ -238,12 +238,15 @@ export default function ProfileForm({
     <>
       <Card className="overflow-hidden border-none shadow-md">
         <form onSubmit={handleSubmit(onTextSubmit)}>
-          <CardHeader>
-            <CardTitle>Edit Profile</CardTitle>
-            <CardDescription>
-              Update your public identity and social links.
-            </CardDescription>
-          </CardHeader>
+          <div className="bg-muted/30 border-b pt-6 pb-6">
+            {" "}
+            <CardHeader>
+              <CardTitle>Edit Profile</CardTitle>
+              <CardDescription>
+                Update your public identity and social links.
+              </CardDescription>
+            </CardHeader>
+          </div>
 
           <CardContent className="p-0 relative">
             {/* --- Banner Section with Mobile-Friendly Camera Icon --- */}
@@ -268,7 +271,7 @@ export default function ProfileForm({
                 <Button
                   type="button"
                   size="sm"
-                  className="rounded-full shadow-lg border-2 border-background bg-primary/90 hover:bg-primary"
+                  className="rounded-none shadow-lg border-2 border-background bg-primary/90 hover:bg-primary"
                   onClick={() => bannerInputRef.current?.click()}
                   disabled={isUpdating}
                 >
@@ -306,7 +309,7 @@ export default function ProfileForm({
                 <Button
                   type="button"
                   size="icon"
-                  className="absolute bottom-0 right-0 h-10 w-10 rounded-full border-4 border-background shadow-lg bg-primary hover:bg-primary/90 z-20"
+                  className=" rounded-none absolute bottom-0 right-0 h-10 w-10  border-4 border-background shadow-lg bg-primary hover:bg-primary/90 z-20"
                   onClick={() => avatarInputRef.current?.click()}
                   disabled={isUpdating}
                 >
@@ -326,8 +329,8 @@ export default function ProfileForm({
           <CardContent className="p-6 space-y-6">
             {/* Upload Progress */}
             {uploadState.isUploading && (
-              <div className="space-y-2 bg-primary/5 p-4 rounded-lg border border-primary/10 animate-pulse">
-                <div className="flex justify-between text-xs font-bold uppercase tracking-wider text-primary">
+              <div className="space-y-2 bg-primary/5 p-4  border border-primary/10 animate-pulse">
+                <div className="flex justify-between text-xs font-bold  tracking-wider text-primary">
                   <span>Uploading {uploadState.fileName}...</span>
                   <span>{uploadState.progress}%</span>
                 </div>
@@ -452,13 +455,14 @@ export default function ProfileForm({
               variant="ghost"
               onClick={onFinishedEditing}
               disabled={isUpdating}
+              className="rounded-none"
             >
               Cancel
             </Button>
             <Button
               type="submit"
               disabled={isUpdating || !isDirty}
-              className="min-w-[140px]"
+              className="min-w-[140px] rounded-none"
             >
               {isUpdating ? (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />

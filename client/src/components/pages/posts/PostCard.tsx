@@ -214,7 +214,7 @@ export default function PostCard({ post }: PostCardProps) {
               variant="ghost"
               size="sm"
               className={cn(
-                "h-8 px-2 gap-1.5",
+                "h-8 px-2 gap-1.5 rounded-none",
                 post.isLikedByCurrentUser && "text-red-500",
               )}
               onClick={handleToggleLike}
@@ -237,7 +237,7 @@ export default function PostCard({ post }: PostCardProps) {
               variant="ghost"
               size="sm"
               className={cn(
-                "h-8 px-2 gap-1.5",
+                "h-8 px-2 gap-1.5 rounded-none",
                 post.isSavedByCurrentUser && "text-primary",
               )}
               onClick={handleToggleSave}
@@ -260,7 +260,7 @@ export default function PostCard({ post }: PostCardProps) {
           <Button
             variant="ghost"
             size="sm"
-            className="h-8 px-2"
+            className="h-8 px-2 rounded-none"
             onClick={handleOpenShareDialog}
           >
             <Share2 className="h-3.5 w-3.5" />
@@ -317,7 +317,7 @@ export default function PostCard({ post }: PostCardProps) {
           <Button
             size="sm"
             variant="outline"
-            className="w-full h-8 text-xs hover:bg-accent hover:text-accent-foreground group/btn"
+            className="rounded-none w-full h-8 text-xs hover:bg-accent hover:text-accent-foreground group/btn"
             onClick={() => router.push(href)}
           >
             {smartActionText}
@@ -342,7 +342,11 @@ export default function PostCard({ post }: PostCardProps) {
               readOnly
               className="flex-1 h-9 text-sm"
             />
-            <Button size="sm" className="px-3" onClick={handleShareAndCopy}>
+            <Button
+              size="sm"
+              className="px-3 rounded-none"
+              onClick={handleShareAndCopy}
+            >
               {linkCopied ? (
                 <Check className="h-4 w-4" />
               ) : (
@@ -352,7 +356,12 @@ export default function PostCard({ post }: PostCardProps) {
           </div>
           <DialogFooter className="sm:justify-start">
             <DialogClose asChild>
-              <Button type="button" variant="secondary" size="sm">
+              <Button
+                type="button"
+                variant="secondary"
+                size="sm"
+                className="rounded-none"
+              >
                 Close
               </Button>
             </DialogClose>

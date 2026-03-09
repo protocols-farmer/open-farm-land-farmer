@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils";
 
 export default function Logo({ isCollapsed }: { isCollapsed?: boolean }) {
   return (
-    <div className="inline-flex items-center gap-2 text-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm">
+    <div className=" inline-flex items-center gap-2 text-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm">
       {/* Change the 'src' prop to a string path */}
       <Image
         src="/open.png" // This path points to public/logo.png

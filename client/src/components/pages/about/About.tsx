@@ -1,3 +1,4 @@
+//src/components/pages/about/About.tsx
 "use client";
 
 import React, { useState } from "react";
@@ -33,20 +34,20 @@ export default function About() {
       </section>
 
       {/* Creator Section */}
-      <section className="bg-card border rounded-2xl p-8 md:p-12 relative overflow-hidden">
+      <section className="bg-card border  p-8 md:p-12 relative overflow-hidden">
         <div className="relative z-10 flex flex-col md:flex-row items-center gap-10">
           {/* Optimized Profile Image Container */}
           <div className="relative shrink-0 w-40 h-40">
-            <div className="absolute inset-0 bg-primary/20 blur-2xl rounded-full" />
+            <div className="absolute inset-0 bg-primary/20 blur-2xl " />
 
             {imageLoading && !imageError && (
-              <div className="absolute inset-0 flex items-center justify-center bg-muted rounded-2xl">
+              <div className="absolute inset-0 flex items-center justify-center bg-muted ">
                 <Loader2 className="h-6 w-6 animate-spin text-primary" />
               </div>
             )}
 
             {imageError ? (
-              <div className="absolute inset-0 flex flex-col items-center justify-center bg-muted rounded-2xl border-2 border-dashed">
+              <div className="absolute inset-0 flex flex-col items-center justify-center bg-muted  border-2 border-dashed">
                 <AlertCircle className="h-6 w-6 text-destructive mb-2" />
                 <span className="text-[10px]  font-bold text-muted-foreground">
                   Error
@@ -59,7 +60,7 @@ export default function About() {
                 fill
                 sizes="160px"
                 className={cn(
-                  "relative object-cover rounded-2xl border-2 border-primary grayscale hover:grayscale-0 transition-all duration-500",
+                  "relative object-cover  border-2 border-primary grayscale hover:grayscale-0 transition-all duration-500",
                   imageLoading ? "opacity-0" : "opacity-100",
                 )}
                 onLoadingComplete={() => setImageLoading(false)}
@@ -97,7 +98,7 @@ export default function About() {
                 </Link>
               </Button> */}
 
-              <div className="inline-flex items-center text-xs font-mono text-primary/60 px-4 py-2 border border-primary/20 rounded-full bg-primary/5">
+              <div className="inline-flex items-center text-xs font-mono text-primary/60 px-4 py-2 border border-primary/20  bg-primary/5">
                 <MessageSquare className="mr-2 h-3 w-3 animate-pulse" />
                 Chat functionality coming soon
               </div>

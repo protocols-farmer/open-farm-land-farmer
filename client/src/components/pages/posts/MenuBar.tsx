@@ -1,4 +1,3 @@
-
 //src/components/pages/posts/MenuBar.tsx
 "use client";
 
@@ -51,12 +50,12 @@ function IconButton({ onClick, isActive, Icon, label }: IconButtonProps) {
       type="button"
       onClick={onClick}
       className={cn(
-        "p-2 rounded-md transition-colors duration-200",
+        "p-2  transition-colors duration-200",
         "hover:bg-accent hover:text-accent-foreground",
         "focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-background",
         isActive
           ? "bg-primary text-primary-foreground"
-          : "bg-transparent text-foreground"
+          : "bg-transparent text-foreground",
       )}
       title={label}
       aria-label={label}
@@ -70,7 +69,7 @@ function IconButton({ onClick, isActive, Icon, label }: IconButtonProps) {
 // --- Improved Color Picker ---
 function ColorPicker({ editor }: { editor: Editor }) {
   return (
-    <div className="flex items-center rounded-md p-1 hover:bg-accent">
+    <div className="flex items-center  p-1 hover:bg-accent">
       <label htmlFor="color-picker" className="cursor-pointer">
         <Paintbrush className="w-5 h-5 text-foreground" />
       </label>
@@ -124,7 +123,7 @@ function MenuBar({ editor }: { editor: Editor | null }) {
   }
 
   return (
-    <div className="flex flex-wrap items-center gap-1 p-2 border rounded-lg bg-card">
+    <div className="flex flex-wrap items-center gap-1 p-2 border  bg-card">
       {/* --- Text Style Group --- */}
       <div className="flex items-center gap-1">
         <IconButton

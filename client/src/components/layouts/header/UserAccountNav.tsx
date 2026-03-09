@@ -60,12 +60,12 @@ export function UserAccountNav() {
 
   // --- THE FLICKER GUARD ---
   if (!isHydrated) {
-    return <div className="h-9 w-20 rounded-md bg-muted animate-pulse" />;
+    return <div className="h-9 w-20  bg-muted animate-pulse" />;
   }
 
   if (!currentUser) {
     return (
-      <Button asChild variant="default" size="sm">
+      <Button asChild variant="default" size="sm" className="rounded-none">
         <Link href="/auth/login">Log In</Link>
       </Button>
     );
@@ -76,7 +76,7 @@ export function UserAccountNav() {
       <DropdownMenuTrigger asChild>
         <Button
           variant="ghost"
-          className="relative h-9 w-9 rounded-full ring-offset-background transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+          className="rounded-none relative h-9 w-9  ring-offset-background transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
         >
           <Avatar className="h-9 w-9" key={avatarUrl}>
             <AvatarImage

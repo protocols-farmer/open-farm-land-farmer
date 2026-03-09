@@ -90,18 +90,18 @@ const getPostAction = (post: { id: string; category: PostCategory }) => {
 
 const PageSkeleton = () => (
   <div className="container mx-auto max-w-3xl py-8 animate-pulse">
-    <div className="h-8 bg-secondary rounded w-1/4 mb-6" />
+    <div className="h-8 bg-secondary  w-1/4 mb-6" />
     <Card>
       <CardHeader>
-        <div className="h-10 bg-secondary rounded w-3/4" />
-        <div className="h-6 bg-secondary rounded w-1/2 mt-2" />
+        <div className="h-10 bg-secondary  w-3/4" />
+        <div className="h-6 bg-secondary  w-1/2 mt-2" />
       </CardHeader>
       <Separator className="mb-6" />
       <CardContent className="space-y-8">
         {[...Array(6)].map((_, i) => (
           <div key={i} className="space-y-2">
-            <div className="h-6 bg-secondary rounded w-1/6" />
-            <div className="h-10 bg-secondary rounded" />
+            <div className="h-6 bg-secondary  w-1/6" />
+            <div className="h-10 bg-secondary " />
           </div>
         ))}
       </CardContent>
@@ -130,7 +130,7 @@ export default function UpdatePostPage() {
           <AlertTitle>Error Fetching Post</AlertTitle>
           <AlertDescription>
             Post not found.
-            <Button variant="link" asChild className="block mt-2">
+            <Button variant="link" asChild className="block mt-2 rounded-none">
               <Link href="/">Return Home</Link>
             </Button>
           </AlertDescription>
@@ -392,7 +392,7 @@ function UpdatePostForm({ postData }: UpdatePostFormProps) {
               type="submit"
               size="lg"
               disabled={isUpdating}
-              className="w-full font-bold"
+              className="w-full font-bold rounded-none"
             >
               {isUpdating ? (
                 <>

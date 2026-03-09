@@ -90,9 +90,9 @@ export default function ProfileCompletionBanner({
 
   if (completionData.score >= 100) {
     return (
-      <div className="bg-green-500/10 border-2 border-green-500/20 rounded-3xl p-6 mb-10 flex items-center justify-between animate-in zoom-in duration-500">
+      <div className="bg-green-500/10 border-2 border-green-500/20  p-6 mb-10 flex items-center justify-between animate-in zoom-in duration-500">
         <div className="flex items-center gap-4">
-          <div className="bg-green-500 p-2 rounded-full shadow-lg shadow-green-500/20">
+          <div className="bg-green-500 p-2  shadow-lg shadow-green-500/20">
             <PartyPopper className="h-6 w-6 text-white" />
           </div>
           <div>
@@ -109,9 +109,9 @@ export default function ProfileCompletionBanner({
   }
 
   return (
-    <div className="relative overflow-hidden rounded-3xl border-2 border-primary/20 p-6 mb-10 group shadow-sm">
+    <div className="relative overflow-hidden  border-2 border-primary/20 p-6 mb-10 group shadow-sm">
       {/* Visual Decoration */}
-      <div className="absolute -right-12 -top-12 h-40 w-40 bg-primary/5 rounded-full blur-3xl group-hover:bg-primary/10 transition-all duration-700" />
+      <div className="absolute -right-12 -top-12 h-40 w-40 bg-primary/5  blur-3xl group-hover:bg-primary/10 transition-all duration-700" />
 
       <div className="flex flex-col md:flex-row items-center gap-8 relative z-10">
         {/* Progress Wheel */}
@@ -164,9 +164,9 @@ export default function ProfileCompletionBanner({
               {completionData.remaining.map((item) => (
                 <div
                   key={item.label}
-                  className="px-2.5 py-1 rounded-full bg-primary/5 border border-primary/10 text-[10px] font-bold text-muted-foreground flex items-center gap-1.5 uppercase tracking-wider"
+                  className="px-2.5 py-1  bg-primary/5 border border-primary/10 text-[10px] font-bold text-muted-foreground flex items-center gap-1.5 uppercase tracking-wider"
                 >
-                  <div className="h-1 w-1 rounded-full bg-primary/40" />
+                  <div className="h-1 w-1  bg-primary/40" />
                   {item.label}
                 </div>
               ))}
@@ -178,7 +178,7 @@ export default function ProfileCompletionBanner({
         <Button
           onClick={onEdit}
           size="lg"
-          className="rounded-full px-8 font-bold shadow-xl  hover:scale-105 transition-transform shrink-0"
+          className=" rounded-none px-8 font-bold shadow-xl  hover:scale-105 transition-transform shrink-0"
         >
           Customize
           <ArrowRight className="ml-2 h-4 w-4" />

@@ -17,7 +17,7 @@ export default function Header() {
   const isHydrated = useAppSelector(selectIsHydrated); // Added
 
   return (
-    <header className="w-full rounded-xl border bg-background/60 shadow-sm backdrop-blur-lg">
+    <header className="w-full  border bg-background/60 shadow-sm backdrop-blur-lg">
       <div className="flex h-16 items-center justify-between px-4">
         {/* === Left Side === */}
         <div className="flex items-center gap-4">
@@ -46,7 +46,7 @@ export default function Header() {
           {isHydrated ? (
             <UserNav />
           ) : (
-            <div className="h-9 w-9 rounded-full bg-muted animate-pulse" />
+            <div className="h-9 w-9  bg-muted animate-pulse" />
           )}
         </div>
       </div>

@@ -116,7 +116,7 @@ const MobileNavLink = ({
       <Link
         href={href}
         className={cn(
-          "flex items-center gap-4 rounded-lg px-3 py-2.5 text-muted-foreground transition-all hover:text-primary",
+          "flex items-center gap-4  px-3 py-2.5 text-muted-foreground transition-all hover:text-primary",
           isActive && "bg-muted font-semibold text-primary",
         )}
       >
@@ -135,7 +135,7 @@ const CollapsibleNav = ({
   pathname: string;
 }) => (
   <Collapsible defaultOpen className="w-full">
-    <CollapsibleTrigger className="group flex w-full items-center justify-between rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-primary">
+    <CollapsibleTrigger className="group flex w-full items-center justify-between  px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-primary">
       <div className="flex items-center gap-4">
         <section.icon className="h-5 w-5" />
         <span className="text-base">{section.title}</span>
@@ -157,7 +157,7 @@ export default function MobileSidebar() {
     <div className="lg:hidden">
       <Sheet>
         <SheetTrigger asChild>
-          <Button variant="ghost" size="icon">
+          <Button variant="ghost" size="icon" className="rounded-none">
             <Menu className="h-6 w-6" />
             <span className="sr-only">Toggle navigation menu</span>
           </Button>
@@ -178,7 +178,11 @@ export default function MobileSidebar() {
           <div className="flex-1 overflow-y-auto">
             <nav className="flex flex-col gap-1 p-4">
               <SheetClose asChild>
-                <Button asChild variant="default" className="w-full mb-2">
+                <Button
+                  asChild
+                  variant="default"
+                  className="w-full mb-2 rounded-none"
+                >
                   <Link href="/create">
                     <Plus className="mr-2 h-5 w-5" />
                     Create Post

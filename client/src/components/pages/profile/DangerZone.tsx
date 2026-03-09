@@ -58,7 +58,7 @@ export default function DangerZone() {
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
-        <div className="flex flex-col sm:flex-row justify-between items-center p-4 border border-dashed rounded-lg">
+        <div className="flex flex-col sm:flex-row justify-between items-center p-4 border border-dashed ">
           <div>
             <h4 className="font-medium">Log Out</h4>
             <p className="text-sm text-muted-foreground">
@@ -68,12 +68,12 @@ export default function DangerZone() {
           <Button
             onClick={handleLogout}
             variant="outline"
-            className="w-full mt-2 sm:mt-0 sm:w-auto"
+            className="rounded-none w-full mt-2 sm:mt-0 sm:w-auto"
           >
             <LogOut className="mr-2 h-4 w-4" /> Logout
           </Button>
         </div>
-        <div className="flex flex-col sm:flex-row justify-between items-center p-4 border border-dashed rounded-lg border-destructive bg-destructive/5">
+        <div className="flex flex-col sm:flex-row justify-between items-center p-4 border border-dashed  border-destructive bg-destructive/5">
           <div>
             <h4 className="font-medium text-destructive">Delete Account</h4>
             <p className="text-sm text-muted-foreground">
@@ -85,7 +85,7 @@ export default function DangerZone() {
               <Button
                 variant="destructive"
                 disabled={isDeletingAccount}
-                className="w-full mt-2 sm:mt-0 sm:w-auto"
+                className="rounded-none w-full mt-2 sm:mt-0 sm:w-auto"
               >
                 <Trash2 className="mr-2 h-4 w-4" /> Delete My Account
               </Button>

@@ -1,3 +1,4 @@
+//src/components/pages/posts/PostFilterPage.tsx
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
@@ -34,7 +35,14 @@ import {
   MessagesSquare,
   Compass,
   Loader2, // 🚜 ADDED
-  RotateCcw, // 🚜 ADDED
+  RotateCcw,
+  Shovel,
+  Pickaxe,
+  Wheat,
+  Milk,
+  Flower2,
+  MessageSquare,
+  Sprout, // 🚜 ADDED
 } from "lucide-react";
 import { useDebounce } from "@/lib/hooks/useDebounce";
 import { useIntersectionObserver } from "@/lib/hooks/useIntersectionObserver"; // 🚜 ADDED
@@ -53,7 +61,7 @@ interface PostFilterPageProps {
 
 const PostCardSkeleton = () => (
   <div className="flex flex-col space-y-3">
-    <Skeleton className="h-[180px] w-full rounded-xl" />
+    <Skeleton className="h-[180px] w-full " />
     <div className="space-y-2">
       <Skeleton className="h-4 w-3/4" />
       <Skeleton className="h-3 w-1/2" />
@@ -81,13 +89,13 @@ const allCategories: ("All" | PostCategory)[] = [
 
 const getCategoryIcon = (category: PostCategory | "All") => {
   const iconMap: Partial<Record<PostCategory, React.ElementType>> = {
-    PROJECT: FolderGit2,
-    BLOG: Newspaper,
-    RESOURCE: BookCopy,
-    ARTICLE: FileText,
-    SHOWCASE: Presentation,
-    DISCUSSION: MessagesSquare,
-    GUIDE: Compass,
+    PROJECT: Pickaxe,
+    BLOG: Shovel,
+    RESOURCE: Wheat,
+    ARTICLE: Milk,
+    SHOWCASE: Flower2,
+    DISCUSSION: MessageSquare,
+    GUIDE: Sprout,
   };
   return iconMap[category as PostCategory];
 };
@@ -238,14 +246,14 @@ export default function PostFilterPage({
         </p>
       </div>
 
-      <Card className="p-3 md:p-5 bg-background/60 backdrop-blur-md relative border-border/50 shadow-sm rounded-2xl">
+      <Card className="p-3 md:p-5 bg-background/60 backdrop-blur-md relative border-border/50 shadow-sm ">
         <div className="flex flex-col gap-3">
           <div className="flex flex-col md:flex-row gap-3">
             <div className="relative flex-grow">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/50" />
               <Input
                 placeholder={searchPlaceholder}
-                className="pl-9 h-11 text-sm rounded-xl border-border/40 bg-background/50"
+                className="pl-9 h-11 text-sm  border-border/40 bg-background/50"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
@@ -253,7 +261,7 @@ export default function PostFilterPage({
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 hover:bg-transparent"
+                  className="rounded-none absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 hover:bg-transparent"
                   onClick={() => setSearchTerm("")}
                 >
                   <X className="h-3 w-3 text-muted-foreground/30" />
@@ -267,11 +275,11 @@ export default function PostFilterPage({
                   value={selectedCategory}
                   onValueChange={(val) => setSelectedCategory(val as any)}
                 >
-                  <SelectTrigger className="h-11 text-xs md:w-[150px] rounded-xl font-bold bg-background/50 border-border/40">
+                  <SelectTrigger className="h-11 text-xs md:w-[150px]  font-bold bg-background/50 border-border/40">
                     <Tags className="mr-2 h-3.5 w-3.5 text-primary" />
                     <SelectValue placeholder="Category" />
                   </SelectTrigger>
-                  <SelectContent className="rounded-xl">
+                  <SelectContent className="">
                     {allCategories.map((cat) => (
                       <SelectItem
                         key={cat}
@@ -285,11 +293,11 @@ export default function PostFilterPage({
                 </Select>
               )}
               <Select value={sortOrder} onValueChange={setSortOrder}>
-                <SelectTrigger className="h-11 text-xs md:w-[150px] rounded-xl font-bold bg-background/50 border-border/40">
+                <SelectTrigger className="h-11 text-xs md:w-[150px]  font-bold bg-background/50 border-border/40">
                   <Calendar className="mr-2 h-3.5 w-3.5 text-primary" />
                   <SelectValue placeholder="Sort" />
                 </SelectTrigger>
-                <SelectContent className="rounded-xl">
+                <SelectContent className="">
                   {sortOptions.map((opt) => (
                     <SelectItem
                       key={opt.value}
@@ -324,7 +332,7 @@ export default function PostFilterPage({
                       variant={selectedTags.has(tag) ? "default" : "outline"}
                       size="sm"
                       onClick={() => handleTagClick(tag)}
-                      className="rounded-full h-8 px-4 text-[11px] font-bold transition-all border-border/40 active:scale-95"
+                      className="rounded-none h-8 px-4 text-[11px] font-bold transition-all border-border/40 active:scale-95"
                     >
                       #{tag}
                     </Button>
@@ -348,7 +356,7 @@ export default function PostFilterPage({
               variant="link"
               size="sm"
               onClick={clearFilters}
-              className="h-auto p-0 text-xs text-primary font-bold decoration-primary/30"
+              className="rounded-none h-auto p-0 text-xs text-primary font-bold decoration-primary/30"
             >
               Reset filters
             </Button>
@@ -362,7 +370,7 @@ export default function PostFilterPage({
             ))}
           </div>
         ) : isError && page === 1 ? (
-          <div className="flex flex-col items-center justify-center p-12 border border-dashed rounded-2xl bg-muted/20">
+          <div className="flex flex-col items-center justify-center p-12 border border-dashed  bg-muted/20">
             <ServerCrash className="h-10 w-10 text-destructive/30" />
             <h3 className="mt-4 font-black tracking-tighter">
               Connection error
@@ -374,7 +382,7 @@ export default function PostFilterPage({
               onClick={() => refetch()}
               variant="outline"
               size="sm"
-              className="mt-4 gap-2 rounded-xl font-bold text-xs"
+              className="mt-4 gap-2 rounded-none font-bold text-xs"
             >
               <RotateCcw className="h-3 w-3" /> Retry
             </Button>
@@ -395,7 +403,7 @@ export default function PostFilterPage({
               {isFetching && hasMore && (
                 <div className="flex flex-col items-center gap-2 animate-in fade-in zoom-in duration-300">
                   <Loader2 className="h-6 w-6 text-primary animate-spin" />
-                  <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/40">
+                  <span className="text-[10px] font-black  tracking-widest text-muted-foreground/40">
                     Loading more...
                   </span>
                 </div>
@@ -409,7 +417,7 @@ export default function PostFilterPage({
                     onClick={() => refetch()}
                     variant="outline"
                     size="sm"
-                    className="rounded-full px-6 border-destructive/20 text-destructive/70 hover:bg-destructive/5 font-black text-[10px] uppercase tracking-wider"
+                    className="rounded-none px-6 border-destructive/20 text-destructive/70 hover:bg-destructive/5 font-black text-[10px]  tracking-wider"
                   >
                     <RotateCcw className="mr-2 h-3 w-3" /> Refetch
                   </Button>
@@ -418,7 +426,7 @@ export default function PostFilterPage({
               {!hasMore && posts.length > 0 && (
                 <div className="flex items-center gap-4 w-full">
                   <div className="h-[1px] flex-1 bg-border/30" />
-                  <span className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground/20">
+                  <span className="text-[10px] font-black  tracking-[0.3em] text-muted-foreground/20">
                     End of the line
                   </span>
                   <div className="h-[1px] flex-1 bg-border/30" />
@@ -427,7 +435,7 @@ export default function PostFilterPage({
             </div>
           </>
         ) : (
-          <div className="flex flex-col items-center justify-center p-16 border-2 border-dashed rounded-3xl bg-muted/10">
+          <div className="flex flex-col items-center justify-center p-16 border-2 border-dashed  bg-muted/10">
             <Frown className="h-12 w-12 text-muted-foreground/20" />
             <h3 className="mt-4 text-lg font-black tracking-tighter">
               No results

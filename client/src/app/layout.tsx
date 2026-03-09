@@ -9,11 +9,18 @@ import { AuthModal } from "@/components/layouts/AuthModal";
 import { Toaster } from "react-hot-toast";
 import Background from "@/components/pages/home/Background";
 import MaintenanceGuard from "@/components/shared/MaintenanceGuard";
+import localFont from "next/font/local";
 
 const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
+});
+
+const mobalys = localFont({
+  src: "./fonts/Mobalys-Regular.ttf", // Make sure this matches the file you moved
+  variable: "--font-mobalys",
+  display: "swap",
 });
 
 // --- SEO CONSTANTS ---
@@ -123,7 +130,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen font-sans selection:bg-primary/30`}
+        className={`${geistSans.variable} ${geistMono.variable} ${mobalys.variable} antialiased min-h-screen font-sans selection:bg-primary/30`}
       >
         <Background />
         <ReduxProvider>

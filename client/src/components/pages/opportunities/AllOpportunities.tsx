@@ -37,7 +37,7 @@ export default function AllOpportunitiesPage() {
           <Button
             asChild
             size="lg"
-            className="rounded-full font-black uppercase tracking-tighter h-14 px-8 shadow-2xl shadow-primary/40 hover:scale-105 active:scale-95 transition-all"
+            className="rounded-none font-black uppercase tracking-tighter h-14 px-8 shadow-2xl shadow-primary/40 hover:scale-105 active:scale-95 transition-all"
           >
             <Link href="/opportunities/create" onClick={handleCreateClick}>
               <PlusCircle className="mr-2 h-5 w-5" />

@@ -211,7 +211,7 @@ const ReactHashTags: React.FC<ReactHashTagsProps> = ({
   return (
     <div
       ref={containerRef}
-      className="p-3 bg-card text-card-foreground rounded-lg border space-y-3 w-full shadow-sm"
+      className="p-3 bg-card text-card-foreground  border space-y-3 w-full shadow-sm"
     >
       <div className="relative">
         <label htmlFor="tech-input" className="sr-only">
@@ -245,7 +245,7 @@ const ReactHashTags: React.FC<ReactHashTagsProps> = ({
             onClick={() => handleAddTag(inputValue)}
             disabled={!inputValue.trim() || tags.length >= maxTags}
             size="default"
-            className="shrink-0 h-10 px-4"
+            className="rounded-none shrink-0 h-10 px-4"
           >
             Add
           </Button>
@@ -255,7 +255,7 @@ const ReactHashTags: React.FC<ReactHashTagsProps> = ({
           <ul
             id="tech-suggestions-list"
             role="listbox"
-            className="absolute mt-1 w-full bg-popover border border-border rounded-md shadow-lg max-h-60 overflow-y-auto z-20 text-popover-foreground"
+            className="absolute mt-1 w-full bg-popover border border-border  shadow-lg max-h-60 overflow-y-auto z-20 text-popover-foreground"
           >
             {filteredSuggestions.map((suggestion, index) => (
               <li
@@ -282,7 +282,7 @@ const ReactHashTags: React.FC<ReactHashTagsProps> = ({
       {/* 🚜 Warning Block: Triggered by Tag Limit or Input Guards */}
       {error && (
         <div
-          className="mt-2 p-3 border border-destructive/50 text-destructive text-xs rounded-md bg-destructive/10 flex items-start gap-2 animate-in fade-in slide-in-from-top-1"
+          className="mt-2 p-3 border border-destructive/50 text-destructive text-xs  bg-destructive/10 flex items-start gap-2 animate-in fade-in slide-in-from-top-1"
           role="alert"
           aria-live="polite"
         >
@@ -300,7 +300,7 @@ const ReactHashTags: React.FC<ReactHashTagsProps> = ({
               <div
                 key={`${tag}-${index}`}
                 className={cn(
-                  "inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors",
+                  "inline-flex items-center  border px-2.5 py-0.5 text-xs font-semibold transition-colors",
                   "border-transparent bg-secondary text-secondary-foreground hover:bg-secondary/80",
                 )}
               >
@@ -309,7 +309,7 @@ const ReactHashTags: React.FC<ReactHashTagsProps> = ({
                   type="button"
                   onClick={() => handleRemoveTag(index)}
                   aria-label={`Remove tag ${tag}`}
-                  className="ml-1.5 appearance-none inline-flex items-center justify-center text-secondary-foreground/70 hover:text-destructive hover:bg-destructive/10 focus:outline-none rounded-full w-4 h-4 transition-colors"
+                  className="ml-1.5 appearance-none inline-flex items-center justify-center text-secondary-foreground/70 hover:text-destructive hover:bg-destructive/10 focus:outline-none  w-4 h-4 transition-colors"
                 >
                   <span className="sr-only">Remove</span>
                   <X className="w-3 h-3" />
@@ -323,7 +323,7 @@ const ReactHashTags: React.FC<ReactHashTagsProps> = ({
               onClick={handleClearAll}
               variant="ghost"
               size="sm"
-              className="text-xs h-auto px-2 py-1 text-muted-foreground hover:text-destructive"
+              className="text-xs rounded-none h-auto px-2 py-1 text-muted-foreground hover:text-destructive"
             >
               Clear All Tags
             </Button>

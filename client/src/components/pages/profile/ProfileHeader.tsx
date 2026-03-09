@@ -37,7 +37,7 @@ export default function ProfileHeader({ user, onEdit }: ProfileHeaderProps) {
   return (
     <section className="relative">
       {/* Banner */}
-      <div className="relative h-48 w-full bg-slate-900 rounded-3xl overflow-hidden md:h-72 shadow-inner">
+      <div className="relative h-48 w-full bg-slate-900  overflow-hidden md:h-72 shadow-inner">
         {user.bannerImage ? (
           <Image
             src={user.bannerImage}
@@ -70,7 +70,7 @@ export default function ProfileHeader({ user, onEdit }: ProfileHeaderProps) {
             <Button
               variant="outline"
               asChild
-              className="rounded-full px-6 h-11 font-semibold shadow-sm"
+              className=" rounded-none px-6 h-11 font-semibold shadow-sm"
             >
               <Link href="/posts/my">
                 <LayoutGrid className="mr-2 h-4 w-4" /> My Posts
@@ -80,7 +80,7 @@ export default function ProfileHeader({ user, onEdit }: ProfileHeaderProps) {
             {/* Your existing Edit button */}
             <Button
               onClick={onEdit}
-              className="rounded-full px-8 h-11 font-semibold shadow-md"
+              className="rounded-none px-8 h-11 font-semibold shadow-md"
             >
               <Edit3 className="mr-2 h-4 w-4" /> Edit Profile
             </Button>
@@ -95,7 +95,7 @@ export default function ProfileHeader({ user, onEdit }: ProfileHeaderProps) {
             <div className="flex items-center gap-2 text-primary font-bold text-lg">
               <span>@{user.username}</span>
               {user.title && (
-                <span className="text-xs bg-primary/10 px-2 py-0.5 rounded-full uppercase tracking-wider">
+                <span className="text-xs bg-primary/10 px-2 py-0.5  uppercase tracking-wider">
                   {user.title}
                 </span>
               )}
@@ -136,7 +136,7 @@ export default function ProfileHeader({ user, onEdit }: ProfileHeaderProps) {
               <Button
                 variant="ghost"
                 size="icon"
-                className="rounded-full hover:bg-primary/10"
+                className="rounded-none hover:bg-primary/10"
                 asChild
               >
                 <Link href={user.githubUrl} target="_blank">
@@ -148,7 +148,7 @@ export default function ProfileHeader({ user, onEdit }: ProfileHeaderProps) {
               <Button
                 variant="ghost"
                 size="icon"
-                className="rounded-full hover:bg-primary/10"
+                className="rounded-none hover:bg-primary/10"
                 asChild
               >
                 <Link href={user.twitterUrl} target="_blank">
@@ -160,7 +160,7 @@ export default function ProfileHeader({ user, onEdit }: ProfileHeaderProps) {
               <Button
                 variant="ghost"
                 size="icon"
-                className="rounded-full hover:bg-primary/10"
+                className="rounded-none hover:bg-primary/10"
                 asChild
               >
                 <Link href={user.websiteUrl} target="_blank">

@@ -125,7 +125,7 @@ function RichTextEditor({
     return null; // Or a loading indicator
   }
   return (
-    <div className="flex flex-col h-full w-full rounded-lg border">
+    <div className="flex flex-col h-full w-full  border">
       {/* The MenuBar wrapper. It will never shrink vertically. 
         It will grow taller if its content wraps. */}
       <div className="flex-shrink-0 border-b">

@@ -117,7 +117,7 @@ export default function ChangePasswordForm() {
               <button
                 type="button"
                 onClick={() => setShowCurrent(!showCurrent)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                className="absolute  right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
               >
                 {showCurrent ? <EyeOff size={16} /> : <Eye size={16} />}
               </button>
@@ -176,7 +176,7 @@ export default function ChangePasswordForm() {
             <Button
               type="submit"
               disabled={isLoading}
-              className="gap-2 font-bold px-6"
+              className="gap-2 rounded-none font-bold px-6"
             >
               {isLoading ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
