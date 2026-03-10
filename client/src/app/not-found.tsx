@@ -7,7 +7,6 @@ export default function NotFound() {
   return (
     <main className="flex min-h-screen w-full flex-col items-center justify-center bg-background px-4 text-center">
       <div className="max-w-md">
-        {/* Creative SVG or Icon */}
         <div className="mb-6 text-primary">
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -39,23 +38,19 @@ export default function NotFound() {
           </svg>
         </div>
 
-        {/* Status Code */}
         <p className="text-6xl font-bold tracking-tighter text-primary sm:text-8xl">
           404
         </p>
 
-        {/* Main Message */}
         <h1 className="mt-4 text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
           Digital Dead End
         </h1>
 
-        {/* Helper Text */}
         <p className="mt-4 text-base text-muted-foreground">
           Oops! It seems you've followed a broken link or the page you're
           looking for has been moved.
         </p>
 
-        {/* Call to Action Buttons */}
         <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
           <Button asChild size="lg">
             <Link href="/">

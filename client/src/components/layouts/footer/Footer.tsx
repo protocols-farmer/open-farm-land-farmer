@@ -51,7 +51,6 @@ export default function Footer() {
     <footer className="w-full border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container mx-auto px-4 py-12 md:py-16">
         <div className="grid grid-cols-1 gap-12 lg:grid-cols-4">
-          {/* Brand Identity Section */}
           <div className="lg:col-span-1 space-y-6">
             <div className="space-y-4">
               <h2 className="text-xl font-black tracking-tighter  ">
@@ -78,7 +77,6 @@ export default function Footer() {
             </div>
           </div>
 
-          {/* Navigation Links Grid */}
           <div className="grid grid-cols-2 gap-8 sm:grid-cols-3 lg:col-span-3">
             <div>
               <p className="text-sm font-bold  tracking-widest text-foreground mb-6">
@@ -137,7 +135,6 @@ export default function Footer() {
           </div>
         </div>
 
-        {/* Bottom Bar */}
         <div className="mt-16 pt-8 border-t flex flex-col md:flex-row items-center justify-between gap-6">
           <div className="flex items-center gap-6">
             <p className="text-xs text-muted-foreground">
@@ -150,7 +147,6 @@ export default function Footer() {
             </p>
           </div>
 
-          {/* 🚜 Dynamic Version Section */}
           <Link
             href={versionData?.id ? `/updates/${versionData.id}` : "/updates"}
             className="group flex items-center gap-2 px-3 py-1  bg-muted/50 border border-border/50 hover:border-primary/30 transition-all"

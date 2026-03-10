@@ -18,7 +18,6 @@ export default function AdminLayout({
   const currentUser = useAppSelector(selectCurrentUser);
   const isHydrated = useAppSelector(selectIsHydrated);
 
-  // 1. WHILE HYDRATING
   if (!isHydrated) {
     return (
       <div className="flex h-screen w-full items-center justify-center">
@@ -27,7 +26,6 @@ export default function AdminLayout({
     );
   }
 
-  // 2. LOGGED OUT: Show Centered Auth Card
   if (!currentUser) {
     return (
       <div className="flex min-h-[80vh] w-full flex-col items-center justify-center p-4">
@@ -41,7 +39,6 @@ export default function AdminLayout({
     );
   }
 
-  // 3. WRONG ROLE: Show Centered Access Denied
   const isAuthorized =
     currentUser.systemRole === SystemRole.SUPER_ADMIN ||
     currentUser.systemRole === SystemRole.DEVELOPER;
@@ -56,7 +53,6 @@ export default function AdminLayout({
     );
   }
 
-  // 4. AUTHORIZED: Show Admin UI
   return (
     <div className="flex min-h-screen bg-muted/40">
       <AdminSidebar userRole={currentUser.systemRole as SystemRole} />

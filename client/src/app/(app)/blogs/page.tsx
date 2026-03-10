@@ -1,3 +1,4 @@
+//src/app/(app)/blogs/page.tsx
 import AllBlogs from "@/components/pages/blogs/AllBlogs";
 
 function page() {

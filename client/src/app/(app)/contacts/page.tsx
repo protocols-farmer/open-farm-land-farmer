@@ -19,7 +19,6 @@ export default function ContactPage() {
       </header>
 
       <div className="grid gap-8 md:grid-cols-2">
-        {/* Email Contact */}
         <div className="group p-8 rounded-2xl border bg-card hover:border-primary/40 transition-all duration-300">
           <div className="flex items-center gap-4 mb-6">
             <div className="p-3 rounded-xl bg-primary/10 text-primary">
@@ -38,7 +37,6 @@ export default function ContactPage() {
           </p>
         </div>
 
-        {/* Phone Contact */}
         <div className="group p-8 rounded-2xl border bg-card hover:border-primary/40 transition-all duration-300">
           <div className="flex items-center gap-4 mb-6">
             <div className="p-3 rounded-xl bg-primary/10 text-primary">

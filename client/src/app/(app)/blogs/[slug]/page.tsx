@@ -1,3 +1,4 @@
+//src/app/(app)/blogs/[slug]/page.tsx
 import BlogDetails from "@/components/pages/blogs/BlogDetails";
 
 async function BlogDetailsPage({

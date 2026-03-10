@@ -7,7 +7,6 @@ export const metadata: Metadata = {
   title: "Update Details",
 };
 
-// This is the corrected page component for your [slug] folder
 export default async function UpdateDetailsPage({
   params,
 }: {

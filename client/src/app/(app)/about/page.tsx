@@ -1,3 +1,5 @@
+//src/app/(app)/about/page.tsx
+
 import About from "@/components/pages/about/About";
 import { Metadata } from "next";
 

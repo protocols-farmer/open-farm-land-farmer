@@ -1,7 +1,6 @@
 // src/app/opportunities/[id]/page.tsx
 import OpportunityDetailsPage from "@/components/pages/opportunities/OpportunityDetails";
 
-// Metadata can be generated dynamically here if needed
 export const metadata = {
   title: "Opportunity Details",
 };

@@ -13,7 +13,6 @@ export default function SettingsPage() {
   return (
     <div className="container mx-auto py-10 px-4 animate-in fade-in slide-in-from-bottom-4 duration-700">
       <div className="max-w-3xl mx-auto space-y-8">
-        {/* Page Header */}
         <div className="space-y-2">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-primary/10 rounded-lg">
@@ -30,7 +29,6 @@ export default function SettingsPage() {
 
         <Separator className="bg-primary/10" />
 
-        {/* Settings Content */}
         <div className="grid gap-10">
           <section className="space-y-4">
             <div className="flex items-center gap-2 text-primary">
@@ -41,11 +39,8 @@ export default function SettingsPage() {
             </div>
             <EmailSettingsForm />
           </section>
-
-          {/* You can easily drop other sections here later (Theme, Password, etc.) */}
         </div>
 
-        {/* Footer info */}
         <p className="text-xs text-center text-muted-foreground pt-10">
           All changes are saved automatically to your Guild profile.
         </p>

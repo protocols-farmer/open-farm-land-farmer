@@ -15,11 +15,11 @@ export default function AppLayout({
 }) {
   return (
     <div className="flex min-h-screen">
-      {sidebar} {/* Renders the @sidebar slot */}
+      {sidebar}
       <div className="flex flex-1 flex-col">
-        {header} {/* Renders the @header slot */}
+        {header}
         <main className="flex-1 p-4 md:p-6 lg:p-8">{children}</main>
-        {footer} {/* Renders the @footer slot */}
+        {footer}
       </div>
       <MobileBottomBar />
     </div>

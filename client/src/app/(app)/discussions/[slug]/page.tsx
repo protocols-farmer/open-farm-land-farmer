@@ -1,3 +1,4 @@
+//src/app/(app)/discussions/[slug]/page.tsx
 import DiscussionDetails from "@/components/pages/discussions/DiscussionDetails";
 
 async function page({ params }: { params: Promise<{ slug: string }> }) {

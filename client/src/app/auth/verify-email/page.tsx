@@ -1,3 +1,4 @@
+//src/app/auth/verify-email/page.tsx
 "use client";
 
 import React, { useEffect, useRef, Suspense } from "react";
@@ -32,7 +33,6 @@ function VerifyEmailContent() {
     if (token) hasAttempted.current = true;
   }, [token]);
 
-  // 1. Missing Token Scenario
   if (!token) {
     return (
       <Card className="w-full max-w-md mx-auto text-center border-border shadow-lg">
@@ -58,7 +58,6 @@ function VerifyEmailContent() {
     );
   }
 
-  // Determine specific error context
   const errorMessage = (error as any)?.data?.message || "";
   const isExpired = errorMessage.toLowerCase().includes("expired");
 

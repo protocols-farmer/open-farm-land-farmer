@@ -1,3 +1,4 @@
+//src/app/(app)/create/page.tsx
 import CreatePost from "@/components/pages/posts/CreatePost";
 
 function page() {

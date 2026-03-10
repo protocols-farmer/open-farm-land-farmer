@@ -18,23 +18,21 @@ const geistMono = Geist_Mono({
 });
 
 const mobalys = localFont({
-  src: "./fonts/Mobalys-Regular.ttf", // Make sure this matches the file you moved
+  src: "./fonts/Mobalys-Regular.ttf",
   variable: "--font-mobalys",
   display: "swap",
 });
 
-// --- SEO CONSTANTS ---
 const siteConfig = {
   name: "Open Farm Land",
   description:
     "Open Farm Land is a platform to share your ideas, project journeys, blogs, and resources. No we don't recommend using AI-generated fluff. We believe in human creativity and documentation.",
-  url: "https://open-farm-land-farmer.vercel.app", // Update this when you have a custom domain
+  url: "https://open-farm-land-farmer.vercel.app",
   ogImage:
-    "https://res.cloudinary.com/dhr9zmb3i/image/upload/v1772941596/open-farm-land_kfo5ui.png", // Ensure you create this file in /public
+    "https://res.cloudinary.com/dhr9zmb3i/image/upload/v1772941596/open-farm-land_kfo5ui.png",
   author: "Biooids",
 };
 
-// --- VIEWPORT CONFIG ---
 export const viewport: Viewport = {
   themeColor: [
     { media: "(prefers-color-scheme: light)", color: "#ffffff" },
@@ -42,10 +40,9 @@ export const viewport: Viewport = {
   ],
   width: "device-width",
   initialScale: 1,
-  maximumScale: 5, // Good for accessibility
+  maximumScale: 5,
 };
 
-// --- METADATA (SEO JUNK) ---
 export const metadata: Metadata = {
   metadataBase: new URL(siteConfig.url),
   title: {
@@ -65,7 +62,6 @@ export const metadata: Metadata = {
   authors: [{ name: siteConfig.author }],
   creator: siteConfig.author,
 
-  // OpenGraph (Facebook, LinkedIn, Discord)
   openGraph: {
     type: "website",
     locale: "en_US",
@@ -83,23 +79,20 @@ export const metadata: Metadata = {
     ],
   },
 
-  // Twitter (X)
   twitter: {
     card: "summary_large_image",
     title: siteConfig.name,
     description: siteConfig.description,
     images: [siteConfig.ogImage],
-    creator: "@biooids", // Update with your actual X handle
+    creator: "@biooids",
   },
 
-  // Icons (Place these in /public)
   icons: {
     icon: "/favicon/favicon.ico",
     shortcut: "/favicon/favicon-16x16.png",
     apple: "/favicon/apple-touch-icon.png",
   },
 
-  // Robots & Crawlers
   robots: {
     index: true,
     follow: true,
@@ -117,8 +110,8 @@ export const metadata: Metadata = {
   //   google: "your-google-verification-code",
   // },
   other: {
-    "ai-content": "none", // Custom meta tag to indicate no AI-generated content
-    "robots-content": "noarchive", // Prevents Google from showing a "Cached" version (keeps content fresh)
+    "ai-content": "none",
+    "robots-content": "noarchive",
   },
 };
 

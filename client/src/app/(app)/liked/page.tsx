@@ -1,3 +1,4 @@
+//src/app/(app)/liked/page.tsx
 import AllLiked from "@/components/pages/liked/AllLiked";
 
 function page() {

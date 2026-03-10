@@ -50,21 +50,18 @@ export default function ForgotPasswordPage() {
     try {
       const response = await forgotPassword(data).unwrap();
 
-      // Handle potential success-but-social-account scenario if backend sends 200 with status
       if (response.status === "social_account") {
         setSocialError(true);
       } else {
         setIsSubmitted(true);
       }
     } catch (err: any) {
-      // 🚜 Scenario: Social Account Detected (Backend 400 with status: 'social_account')
       if (
         err?.data?.status === "social_account" ||
         err?.data?.message === "SOCIAL_ACCOUNT_DETECTED"
       ) {
         setSocialError(true);
       } else {
-        // We show success even if user isn't found to prevent email enumeration (General Security)
         setIsSubmitted(true);
       }
     }

@@ -1,3 +1,4 @@
+//src/app/(app)/showcases/[slug]/page.tsx
 import ShowcaseDetails from "@/components/pages/showcases/ShowcaseDetails";
 
 async function ShowcaseDetailsPage({

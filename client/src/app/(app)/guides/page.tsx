@@ -1,3 +1,4 @@
+//src/app/(app)/guides/page.tsx
 import AllGuides from "@/components/pages/lessons/AllGuides";
 
 function page() {

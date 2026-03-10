@@ -1,3 +1,4 @@
+//src/app/(app)/guides/[slug]/page.tsx
 import GuideDetails from "@/components/pages/lessons/GuideDetails";
 
 async function GuideDetailsPage({
