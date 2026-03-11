@@ -1,3 +1,4 @@
+//src/components/pages/updates/UpdateDetails.tsx
 "use client";
 
 import React, { useMemo } from "react";

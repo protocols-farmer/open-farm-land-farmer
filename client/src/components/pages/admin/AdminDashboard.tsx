@@ -1,3 +1,4 @@
+//src/components/pages/admin/AdminDashboard.tsx
 "use client";
 
 import React from "react";
@@ -51,7 +52,7 @@ const AdminStatsCard = ({
 
 export default function AdminDashboard() {
   const { data: response, isLoading, isError } = useGetDashboardStatsQuery();
-  // Get the user from Redux directly inside the component
+
   const currentUser = useAppSelector(selectCurrentUser);
   const stats = response?.data;
 

@@ -1,4 +1,4 @@
-// src/components/pages/admin/comments/CommentManagement.tsx
+//src/components/pages/admin/comments/CommentManagement.tsx
 "use client";
 
 import React, { useState } from "react";
@@ -7,7 +7,7 @@ import {
   useDeleteCommentMutation,
 } from "@/lib/features/admin/adminApiSlice";
 import { AdminCommentRow } from "@/lib/features/admin/adminTypes";
-import { PostCategory } from "@/lib/features/post/postTypes"; // FIX: Import PostCategory from the correct source
+import { PostCategory } from "@/lib/features/post/postTypes";
 import { useDebounce } from "@/lib/hooks/useDebounce";
 import {
   Table,
@@ -42,9 +42,8 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import PaginationControls from "@/components/shared/PaginationControls";
-import { useGetPostByIdQuery } from "@/lib/features/post/postApiSlice"; // Import hook to get post details
+import { useGetPostByIdQuery } from "@/lib/features/post/postApiSlice";
 
-// Helper function to get the post path
 const getPostPath = (category: PostCategory, postId: string) => {
   const categoryToPathMap: Partial<Record<PostCategory, string>> = {
     PROJECT: "projects",
@@ -58,11 +57,10 @@ const getPostPath = (category: PostCategory, postId: string) => {
   return `/${categoryToPathMap[category] || "posts"}/${postId}`;
 };
 
-// Row Actions Component
 function CommentActions({ comment }: { comment: AdminCommentRow }) {
   const [deleteComment, { isLoading }] = useDeleteCommentMutation();
   const [isAlertOpen, setIsAlertOpen] = useState(false);
-  // Fetch the parent post's details to get its category
+
   const { data: post } = useGetPostByIdQuery(comment.post.id, {
     skip: !comment.post.id,
   });
@@ -76,7 +74,6 @@ function CommentActions({ comment }: { comment: AdminCommentRow }) {
     }
   };
 
-  // Construct the link only if we have the post details
   const viewLink = post
     ? `${getPostPath(post.category, post.id)}#comment-${comment.id}`
     : "#";
@@ -127,7 +124,6 @@ function CommentActions({ comment }: { comment: AdminCommentRow }) {
   );
 }
 
-// Main Component
 export default function CommentManagement() {
   const [page, setPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");

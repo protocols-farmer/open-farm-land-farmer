@@ -1,18 +1,12 @@
+//src/components/layouts/sidebar/MobileBottomBar.tsx
 "use client";
 
 import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
-import {
-  Plus,
-  Home,
-  LayoutGrid, // 🚜 Swapped FolderKanban for LayoutGrid
-  Pickaxe, // 🚜 Swapped FileCode2 for Pickaxe (Projects)
-  Shovel, // 🚜 Swapped Pen for Shovel (Blogs)
-} from "lucide-react";
+import { Plus, Home, LayoutGrid, Pickaxe, Shovel } from "lucide-react";
 
-// Updated to match Sidebar routes and new Farming icons
 const bottomNavItems = [
   { href: "/", label: "Home", icon: Home },
   { href: "/all", label: "All Posts", icon: LayoutGrid },

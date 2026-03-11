@@ -4,22 +4,20 @@
 import React, { useEffect, useState, useMemo } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/navigation"; // 🚜 ADDED
+import { useRouter } from "next/navigation";
 import { formatDistanceToNow } from "date-fns";
-import toast from "react-hot-toast"; // 🚜 ADDED
+import toast from "react-hot-toast";
 import DOMPurify from "dompurify";
 import "highlight.js/styles/github-dark.css";
 
-// --- HOOKS & API ---
 import {
   useGetPostByIdQuery,
   useRecordPostViewMutation,
-  useDeletePostMutation, // 🚜 ADDED
+  useDeletePostMutation,
 } from "@/lib/features/post/postApiSlice";
 import { useAppSelector } from "@/lib/hooks/hooks";
 import { selectCurrentUser } from "@/lib/features/user/userSlice";
 
-// --- UI COMPONENTS ---
 import PostInteractionHub from "../../shared/PostInteractionHub";
 import CommentSection from "../posts/CommentSection";
 import { Badge } from "@/components/ui/badge";
@@ -39,13 +37,13 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@/components/ui/alert-dialog"; // 🚜 ADDED
+} from "@/components/ui/alert-dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"; // 🚜 ADDED
+} from "@/components/ui/dropdown-menu";
 import {
   Edit,
   ExternalLink,
@@ -53,7 +51,7 @@ import {
   Terminal,
   Trash2,
   MoreHorizontal,
-} from "lucide-react"; // 🚜 UPDATED
+} from "lucide-react";
 
 const PageSkeleton = () => (
   <section className="mx-auto max-w-7xl py-8 space-y-12 animate-pulse">
@@ -88,7 +86,7 @@ const PageSkeleton = () => (
 );
 
 export default function DiscussionDetails({ postId }: { postId: string }) {
-  const router = useRouter(); // 🚜 ADDED
+  const router = useRouter();
   const {
     data: post,
     isLoading,
@@ -97,7 +95,7 @@ export default function DiscussionDetails({ postId }: { postId: string }) {
 
   const currentUser = useAppSelector(selectCurrentUser);
   const [recordPostView] = useRecordPostViewMutation();
-  const [deletePost, { isLoading: isDeleting }] = useDeletePostMutation(); // 🚜 ADDED
+  const [deletePost, { isLoading: isDeleting }] = useDeletePostMutation();
 
   /**
    * FIX 1: DERIVED IMAGE STATE
@@ -124,7 +122,6 @@ export default function DiscussionDetails({ postId }: { postId: string }) {
     if (postId && currentUser) recordPostView(postId);
   }, [postId, currentUser, recordPostView]);
 
-  // 🚜 DELETE HANDLER
   const handleDelete = async () => {
     if (!post) return;
     try {

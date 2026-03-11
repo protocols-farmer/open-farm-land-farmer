@@ -4,12 +4,12 @@
 import React from "react";
 import Link from "next/link";
 import {
-  Pickaxe, // 🚜 Swapped FileCode2 (Projects)
-  Shovel, // 🚜 Swapped Pen (Blogs)
-  Wheat, // 🚜 Swapped Globe (Resources)
-  Milk, // 🚜 Swapped Newspaper (Articles)
-  Sprout, // 🚜 Swapped BookOpen (Guides)
-  Flower2, // 🚜 Swapped Trophy (Showcases)
+  Pickaxe,
+  Shovel,
+  Wheat,
+  Milk,
+  Sprout,
+  Flower2,
   MessageSquare,
   Plus,
   ArrowUpRight,

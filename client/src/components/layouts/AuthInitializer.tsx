@@ -1,3 +1,4 @@
+//src/components/layouts/AuthInitializer.tsx
 "use client";
 
 import React, { useEffect } from "react";
@@ -13,12 +14,6 @@ import { authStorage } from "@/lib/auth/authStorage";
 import { Settings } from "lucide-react";
 import VerificationBanner from "../pages/auth/VerificationBanner";
 
-/**
- * AuthInitializer
- * Unified with the MaintenanceGuard philosophy.
- * 🚜 Removed "Fail-Open" logic. If the server is down, we wait for the Guard to block.
- * We do NOT clear credentials on network errors anymore.
- */
 export default function AuthInitializer({
   children,
 }: {
@@ -42,7 +37,6 @@ export default function AuthInitializer({
     refetchOnMountOrArgChange: true,
   });
 
-  // 🚜 SHOW SYSTEM GUARD UI instead of a generic "Synchronizing" spinner
   if (!isHydrated || (isAuthenticated && isLoading)) {
     return (
       <div className="flex flex-col items-center justify-center h-screen w-full bg-background animate-in fade-in duration-500">

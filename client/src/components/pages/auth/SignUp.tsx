@@ -1,3 +1,4 @@
+//src/components/pages/auth/SignUp.tsx
 "use client";
 
 import React, { useState, useMemo } from "react";
@@ -117,7 +118,6 @@ const SignUpForm = () => {
         password: data.password,
       }).unwrap();
 
-      // 🚜 Scenario: Account created but Welcome Guide failed to send
       if (response.status === "warning") {
         setSignupStatus("email_fail");
         toast.error(

@@ -1,4 +1,4 @@
-// src/components/pages/admin/users/UserManagement.tsx
+//src/components/pages/admin/users/UserManagement.tsx
 "use client";
 
 import React, { useState } from "react";
@@ -44,9 +44,8 @@ import { selectCurrentUser } from "@/lib/features/user/userSlice";
 import ManagementPageLayout from "../layouts/ManagementPageLayout";
 import { Input } from "@/components/ui/input";
 import PaginationControls from "@/components/shared/PaginationControls";
-import Link from "next/link"; // Import Link
+import Link from "next/link";
 
-// Row Actions Component
 function UserActions({ user }: { user: AdminUserRow }) {
   const [deleteUser, { isLoading: isDeleting }] = useDeleteUserMutation();
   const [isAlertOpen, setIsAlertOpen] = useState(false);
@@ -112,7 +111,6 @@ function UserActions({ user }: { user: AdminUserRow }) {
   );
 }
 
-// Main Component
 export default function UserManagement() {
   const [page, setPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");

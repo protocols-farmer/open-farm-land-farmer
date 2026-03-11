@@ -4,29 +4,25 @@
 import React, { useEffect, useState, useMemo } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/navigation"; // 🚜 ADDED
+import { useRouter } from "next/navigation";
 import { formatDistanceToNow } from "date-fns";
-import toast from "react-hot-toast"; // 🚜 ADDED
+import toast from "react-hot-toast";
 import DOMPurify from "dompurify";
 import { cn } from "@/lib/utils";
 import "highlight.js/styles/github-dark.css";
 
-// --- REDUX & AUTH IMPORTS ---
 import { useAppSelector } from "@/lib/hooks/hooks";
 import { selectCurrentUser } from "@/lib/features/user/userSlice";
 
-// --- API HOOKS ---
 import {
   useGetPostByIdQuery,
   useRecordPostViewMutation,
-  useDeletePostMutation, // 🚜 ADDED
+  useDeletePostMutation,
 } from "@/lib/features/post/postApiSlice";
 
-// --- SHARED COMPONENTS ---
 import PostInteractionHub from "../../shared/PostInteractionHub";
 import CommentSection from "../posts/CommentSection";
 
-// --- UI COMPONENTS ---
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -42,13 +38,13 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@/components/ui/alert-dialog"; // 🚜 ADDED
+} from "@/components/ui/alert-dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"; // 🚜 ADDED
+} from "@/components/ui/dropdown-menu";
 import {
   Edit,
   ExternalLink,
@@ -56,7 +52,7 @@ import {
   Terminal,
   Trash2,
   MoreHorizontal,
-} from "lucide-react"; // 🚜 UPDATED
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const slugify = (text: string) =>
@@ -65,7 +61,6 @@ const slugify = (text: string) =>
     .replace(/\s+/g, "-")
     .replace(/[^\w-]+/g, "");
 
-// --- Table of Contents Sub-component ---
 const TableOfContents = ({
   headings,
 }: {
@@ -126,11 +121,11 @@ const TableOfContents = ({
 };
 
 export default function ArticleDetails({ postId }: { postId: string }) {
-  const router = useRouter(); // 🚜 ADDED
+  const router = useRouter();
   const { data: post, isLoading, isError } = useGetPostByIdQuery(postId);
   const currentUser = useAppSelector(selectCurrentUser);
   const [recordPostView] = useRecordPostViewMutation();
-  const [deletePost, { isLoading: isDeleting }] = useDeletePostMutation(); // 🚜 ADDED
+  const [deletePost, { isLoading: isDeleting }] = useDeletePostMutation();
 
   /**
    * FIX 1: DERIVED IMAGE LOGIC
@@ -171,7 +166,6 @@ export default function ArticleDetails({ postId }: { postId: string }) {
     if (postId && currentUser) recordPostView(postId);
   }, [postId, currentUser, recordPostView]);
 
-  // 🚜 DELETE HANDLER
   const handleDelete = async () => {
     if (!post) return;
     try {

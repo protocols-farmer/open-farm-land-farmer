@@ -14,7 +14,6 @@ export default function About() {
 
   return (
     <main className="max-w-4xl mx-auto py-24 px-8">
-      {/* Brand Header */}
       <section className="mb-24 text-center">
         <div className="flex justify-center mb-8 h-20 relative">
           <Image
@@ -33,10 +32,8 @@ export default function About() {
         </p>
       </section>
 
-      {/* Creator Section */}
       <section className="bg-card border  p-8 md:p-12 relative overflow-hidden">
         <div className="relative z-10 flex flex-col md:flex-row items-center gap-10">
-          {/* Optimized Profile Image Container */}
           <div className="relative shrink-0 w-40 h-40">
             <div className="absolute inset-0 bg-primary/20 blur-2xl " />
 

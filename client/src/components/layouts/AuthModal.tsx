@@ -1,3 +1,4 @@
+//src/components/layouts/AuthModal.tsx
 "use client";
 
 import {
@@ -33,7 +34,6 @@ export function AuthModal() {
     <Dialog open={isAuthModalOpen} onOpenChange={handleClose}>
       <DialogContent className="sm:max-w-xs">
         <DialogHeader className="text-center items-center pt-2">
-          {/* 🚜 Icon with branding color */}
           <div className="bg-primary/10 p-3 rounded-full mb-2">
             <Lock className="h-6 w-6 text-primary" />
           </div>
@@ -41,7 +41,6 @@ export function AuthModal() {
             Authentication Required
           </DialogTitle>
           <DialogDescription className="text-xs px-2 leading-relaxed text-muted-foreground">
-            {/* 🚜 Dynamically handles: "like", "dislike", "comment", etc. */}
             Please log in or create an account to {interactionType}.
           </DialogDescription>
         </DialogHeader>

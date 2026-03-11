@@ -56,7 +56,6 @@ import ManagementPageLayout from "../layouts/ManagementPageLayout";
 import { Input } from "@/components/ui/input";
 import PaginationControls from "@/components/shared/PaginationControls";
 
-// Helper to color-code opportunity types
 const getTypeStyles = (type: OpportunityType) => {
   const styles: Record<OpportunityType, string> = {
     [OpportunityType.FULL_TIME]:

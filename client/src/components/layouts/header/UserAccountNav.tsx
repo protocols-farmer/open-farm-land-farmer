@@ -7,7 +7,7 @@ import { LogOut, Settings, User, Bookmark, Loader2 } from "lucide-react";
 
 import { useAppSelector, useAppDispatch } from "@/lib/hooks/hooks";
 import { selectCurrentUser } from "@/lib/features/user/userSlice";
-import { selectIsHydrated } from "@/lib/features/auth/authSlice"; // Added
+import { selectIsHydrated } from "@/lib/features/auth/authSlice";
 import { useLogoutMutation } from "@/lib/features/auth/authApiSlice";
 import { clearCredentials } from "@/lib/features/auth/authSlice";
 import { cn } from "@/lib/utils";
@@ -35,7 +35,7 @@ const getInitials = (name: string | null | undefined): string => {
 export function UserAccountNav() {
   const dispatch = useAppDispatch();
   const currentUser = useAppSelector(selectCurrentUser);
-  const isHydrated = useAppSelector(selectIsHydrated); // Added
+  const isHydrated = useAppSelector(selectIsHydrated);
   const [logout, { isLoading: isLoggingOut }] = useLogoutMutation();
   const [isImageLoading, setIsImageLoading] = useState(true);
 
@@ -58,7 +58,6 @@ export function UserAccountNav() {
     }
   };
 
-  // --- THE FLICKER GUARD ---
   if (!isHydrated) {
     return <div className="h-9 w-20  bg-muted animate-pulse" />;
   }

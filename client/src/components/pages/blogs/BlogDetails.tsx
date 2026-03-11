@@ -1,3 +1,4 @@
+//src/components/pages/blogs/BlogDetails.tsx
 "use client";
 
 import React, { useState, useEffect, useMemo } from "react";
@@ -60,14 +61,9 @@ export default function BlogDetails({ postId }: { postId: string }) {
   const [recordPostView] = useRecordPostViewMutation();
   const [deletePost, { isLoading: isDeleting }] = useDeletePostMutation();
 
-  // FIX 1: Use derived state for the main image.
-  // Instead of an effect that syncs state, we store the USER'S selection.
-  // If the user hasn't selected anything, we default to the first image from the post data.
   const [selectedImage, setSelectedImage] = useState<string | undefined>();
   const mainImage = selectedImage || post?.images?.[0]?.url;
 
-  // FIX 2: Align useMemo dependency with the internal access pattern.
-  // React Compiler expects the dependency array to match how the value is used.
   const sanitizedContent = useMemo(() => {
     const content = post?.content;
     if (!content) return "";
@@ -79,9 +75,6 @@ export default function BlogDetails({ postId }: { postId: string }) {
   useEffect(() => {
     if (postId && currentUser) recordPostView(postId);
   }, [postId, currentUser, recordPostView]);
-
-  // REMOVED: The useEffect that was calling setMainImage synchronously has been deleted.
-  // The logic is now handled by the 'mainImage' constant above.
 
   const handleDelete = async () => {
     if (!post) return;

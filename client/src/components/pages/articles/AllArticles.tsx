@@ -12,7 +12,7 @@ export default function AllArticles() {
       subtitle="A collection of insightful articles and research papers."
       icon={Milk}
       searchPlaceholder="Search articles..."
-      category="ARTICLE" // This is the only required change for a new page
+      category="ARTICLE"
     />
   );
 }

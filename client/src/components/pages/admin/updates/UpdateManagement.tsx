@@ -56,7 +56,6 @@ import ManagementPageLayout from "../layouts/ManagementPageLayout";
 import { Input } from "@/components/ui/input";
 import PaginationControls from "@/components/shared/PaginationControls";
 
-// Logic for Category Badge styling
 const getCategoryStyles = (category: UpdateCategory) => {
   const styles: Record<UpdateCategory, string> = {
     [UpdateCategory.PLATFORM]:

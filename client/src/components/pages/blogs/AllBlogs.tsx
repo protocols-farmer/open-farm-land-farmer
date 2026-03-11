@@ -11,7 +11,7 @@ export default function AllBlogs() {
       subtitle="A collection of insightful blogs and articles."
       icon={Shovel}
       searchPlaceholder="Search blogs..."
-      category="BLOG" // This is the only required change for a new page
+      category="BLOG"
     />
   );
 }

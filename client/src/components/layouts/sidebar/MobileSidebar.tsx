@@ -28,29 +28,28 @@ import { UserAccountNav } from "../header/UserAccountNav";
 import {
   Menu,
   Home,
-  Sprout, // 🚜 Added
-  Pickaxe, // 🚜 Added
-  Shovel, // 🚜 Added
-  Wheat, // 🚜 Added
-  Milk, // 🚜 Added
-  TreePine, // 🚜 Added
-  Combine, // 🚜 Added
-  Flower2, // 🚜 Added
-  Tractor, // 🚜 Added
-  CloudSun, // 🚜 Added
+  Sprout,
+  Pickaxe,
+  Shovel,
+  Wheat,
+  Milk,
+  TreePine,
+  Combine,
+  Flower2,
+  Tractor,
+  CloudSun,
   MessageSquare,
   Book,
-  LayoutGrid, // 🚜 Added
+  LayoutGrid,
   Bookmark,
   Heart,
   ChevronDown,
   Plus,
   User,
   Settings,
-  Fence, // 🚜 Added
+  Fence,
 } from "lucide-react";
 
-// --- Navigation Data ---
 interface NavItem {
   href: string;
   label: string;
@@ -69,31 +68,31 @@ const mainNav: NavItem[] = [
 
 const contentSection: CollapsibleNavSection = {
   title: "Content",
-  icon: TreePine, // 🚜 Swapped
+  icon: TreePine,
   items: [
-    { href: "/all", label: "All Posts", icon: LayoutGrid }, // 🚜 Swapped
-    { href: "/projects", label: "Projects", icon: Pickaxe }, // 🚜 Swapped
-    { href: "/guides", label: "Guides", icon: Sprout }, // 🚜 Swapped
-    { href: "/blogs", label: "Blogs", icon: Shovel }, // 🚜 Swapped
-    { href: "/resources", label: "Resources", icon: Wheat }, // 🚜 Swapped
-    { href: "/articles", label: "Articles", icon: Milk }, // 🚜 Swapped
+    { href: "/all", label: "All Posts", icon: LayoutGrid },
+    { href: "/projects", label: "Projects", icon: Pickaxe },
+    { href: "/guides", label: "Guides", icon: Sprout },
+    { href: "/blogs", label: "Blogs", icon: Shovel },
+    { href: "/resources", label: "Resources", icon: Wheat },
+    { href: "/articles", label: "Articles", icon: Milk },
   ],
 };
 
 const communitySection: CollapsibleNavSection = {
   title: "Community",
-  icon: Combine, // 🚜 Swapped
+  icon: Combine,
   items: [
-    { href: "/showcases", label: "Showcases", icon: Flower2 }, // 🚜 Swapped
+    { href: "/showcases", label: "Showcases", icon: Flower2 },
     { href: "/discussions", label: "Discussions", icon: MessageSquare },
-    { href: "/opportunities", label: "Opportunities", icon: Tractor }, // 🚜 Swapped
-    { href: "/updates", label: "Updates", icon: CloudSun }, // 🚜 Swapped
+    { href: "/opportunities", label: "Opportunities", icon: Tractor },
+    { href: "/updates", label: "Updates", icon: CloudSun },
   ],
 };
 
 const workspaceSection: CollapsibleNavSection = {
   title: "Workspace",
-  icon: LayoutGrid, // 🚜 Swapped
+  icon: LayoutGrid,
   items: [
     { href: "/posts/my", label: "My Posts", icon: Pickaxe },
     { href: "/saved", label: "Saved Posts", icon: Bookmark },
@@ -101,8 +100,6 @@ const workspaceSection: CollapsibleNavSection = {
     { href: "/settings", label: "Settings", icon: Settings },
   ],
 };
-
-// --- Helper Components ---
 
 const MobileNavLink = ({
   href,

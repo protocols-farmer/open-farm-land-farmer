@@ -39,7 +39,6 @@ const LoginFormContent = () => {
 
   const [showPassword, setShowPassword] = useState(false);
 
-  // This state now ONLY handles errors from the actual form submission
   const [submissionError, setSubmissionError] = useState<string | null>(null);
 
   const {
@@ -54,10 +53,6 @@ const LoginFormContent = () => {
 
   useFocusOnError(errors, setFocus);
 
-  /**
-   * FIX: Derive the URL-based message during render.
-   * This avoids the "Cascading Render" effect error entirely.
-   */
   const urlMessage = useMemo(() => {
     const error = searchParams.get("error");
     const status = searchParams.get("status");
@@ -103,7 +98,6 @@ const LoginFormContent = () => {
   }, [searchParams]);
   const [login, { isLoading }] = useLoginMutation();
 
-  // Combine submission errors and URL messages
   const activeMessage = submissionError
     ? { type: "error" as const, text: submissionError, icon: AlertCircle }
     : urlMessage;
@@ -117,7 +111,6 @@ const LoginFormContent = () => {
       }).unwrap();
 
       window.location.assign("/");
-      // window.location.assign(callbackUrl);
     } catch (error: any) {
       setSubmissionError(getApiErrorMessage(error));
     }

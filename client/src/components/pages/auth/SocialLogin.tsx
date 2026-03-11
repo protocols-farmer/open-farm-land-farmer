@@ -4,9 +4,6 @@
 import { Button } from "@/components/ui/button";
 import { GitBranchPlus } from "lucide-react";
 
-/**
- * Clean Google SVG Icon component
- */
 const GoogleIcon = () => (
   <svg role="img" viewBox="0 0 24 24" className="h-4 w-4 mr-2">
     <path
@@ -17,10 +14,6 @@ const GoogleIcon = () => (
 );
 
 export default function SocialLogin() {
-  /**
-   * Initiates the OAuth flow by redirecting the browser to the backend.
-   * The backend will then redirect the user to Google/GitHub.
-   */
   const handleSignIn = (provider: "google" | "github") => {
     if (typeof window !== "undefined") {
       sessionStorage.setItem("social_provider", provider);
@@ -29,18 +22,11 @@ export default function SocialLogin() {
     const backendUrl =
       process.env.NEXT_PUBLIC_BACKEND_API_URL || "http://localhost:3001/api/v1";
 
-    /**
-     * REDIRECT: We send the user to our backend initiation route.
-     * Note: In our new flow, the backend handles the entire handshake
-     * and redirects the user back to our /auth/callback page ONLY after
-     * a secure session cookie (jid) has been established.
-     */
     window.location.href = `${backendUrl}/social/${provider}`;
   };
 
   return (
     <div className="space-y-4">
-      {/* Visual Divider */}
       <div className="relative">
         <div className="absolute inset-0 flex items-center">
           <span className="w-full border-t border-muted" />
@@ -52,7 +38,6 @@ export default function SocialLogin() {
         </div>
       </div>
 
-      {/* Social Buttons */}
       <div className="grid grid-cols-2 gap-4">
         <Button
           variant="outline"

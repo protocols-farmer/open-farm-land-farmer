@@ -31,16 +31,17 @@ import {
   Globe,
   FilterX,
   Loader2, // 🚜 ADDED
-  RotateCcw, // 🚜 ADDED
+  RotateCcw,
+  Tractor, // 🚜 ADDED
 } from "lucide-react";
 import { useDebounce } from "@/lib/hooks/useDebounce";
 import { useIntersectionObserver } from "@/lib/hooks/useIntersectionObserver"; // 🚜 ADDED
 import { cn } from "@/lib/utils";
 
 const OpportunitySkeleton = () => (
-  <div className="p-8 border rounded-2xl space-y-6 bg-card/50">
+  <div className="p-8 border  space-y-6 bg-card/50">
     <div className="flex items-center gap-4">
-      <Skeleton className="h-14 w-14 rounded-xl" />
+      <Skeleton className="h-14 w-14 " />
       <div className="space-y-2">
         <Skeleton className="h-5 w-32" />
         <Skeleton className="h-4 w-20" />
@@ -48,8 +49,8 @@ const OpportunitySkeleton = () => (
     </div>
     <Skeleton className="h-8 w-full" />
     <div className="flex gap-2">
-      <Skeleton className="h-6 w-16 rounded-full" />
-      <Skeleton className="h-6 w-16 rounded-full" />
+      <Skeleton className="h-6 w-16 " />
+      <Skeleton className="h-6 w-16 " />
     </div>
   </div>
 );
@@ -189,7 +190,7 @@ export default function OpportunityFilterPage({
     <div className="container mx-auto py-12 md:py-20 animate-in fade-in duration-500">
       <div className="mb-12 space-y-4">
         <h1 className="text-4xl md:text-6xl font-black tracking-tighter text-foreground flex items-center gap-4">
-          <Briefcase className="h-10 w-10 text-primary" />
+          <Tractor className="h-10 w-10 text-primary" />
           {title}
         </h1>
         <p className="text-lg text-muted-foreground max-w-2xl leading-relaxed font-medium">
@@ -197,14 +198,14 @@ export default function OpportunityFilterPage({
         </p>
       </div>
 
-      <Card className="p-4 md:p-6 bg-background/60 backdrop-blur-md border-border/50 shadow-sm rounded-3xl mb-8">
+      <Card className="p-4 md:p-6 bg-background/60 backdrop-blur-md border-border/50 shadow-sm  mb-8">
         <div className="flex flex-col gap-4">
           <div className="flex flex-col lg:flex-row gap-4">
             <div className="relative flex-grow">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/50" />
               <Input
                 placeholder={searchPlaceholder}
-                className="pl-11 h-12 text-sm rounded-2xl border-border/40 bg-background/50"
+                className="pl-11 h-12 text-sm  border-border/40 bg-background/50"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
@@ -212,7 +213,7 @@ export default function OpportunityFilterPage({
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="absolute right-2 top-1/2 -translate-y-1/2 h-8 w-8"
+                  className="absolute rounded-none  right-2 top-1/2 -translate-y-1/2 h-8 w-8"
                   onClick={() => setSearchTerm("")}
                 >
                   <X className="h-4 w-4 text-muted-foreground/30" />
@@ -225,10 +226,10 @@ export default function OpportunityFilterPage({
                 value={selectedType}
                 onValueChange={(val) => setSelectedType(val as any)}
               >
-                <SelectTrigger className="h-12 w-full md:w-[180px] rounded-2xl font-bold bg-background/50 border-border/40 px-5">
+                <SelectTrigger className="h-12 w-full md:w-[180px]  font-bold bg-background/50 border-border/40 px-5">
                   <SelectValue placeholder="Job Type" />
                 </SelectTrigger>
-                <SelectContent className="rounded-2xl">
+                <SelectContent className="">
                   {typeOptions.map((t) => (
                     <SelectItem
                       key={t}
@@ -245,7 +246,7 @@ export default function OpportunityFilterPage({
                 variant={isRemoteOnly ? "default" : "outline"}
                 onClick={() => setIsRemoteOnly(!isRemoteOnly)}
                 className={cn(
-                  "h-12 px-6 rounded-2xl font-bold gap-2 border-border/40 transition-all",
+                  "h-12 px-6 rounded-none  font-bold gap-2 border-border/40 transition-all",
                   isRemoteOnly && "shadow-lg shadow-primary/20",
                 )}
               >
@@ -280,7 +281,7 @@ export default function OpportunityFilterPage({
                       variant={selectedTags.has(tag) ? "default" : "outline"}
                       size="sm"
                       onClick={() => handleTagClick(tag)}
-                      className="rounded-full h-8 px-4 text-[11px] font-bold border-border/40 active:scale-95 transition-all"
+                      className="rounded-none h-8 px-4 text-[11px] font-bold border-border/40 active:scale-95 transition-all"
                     >
                       #{tag}
                     </Button>
@@ -303,7 +304,7 @@ export default function OpportunityFilterPage({
             variant="link"
             size="sm"
             onClick={clearFilters}
-            className="h-auto p-0 text-xs text-primary font-bold"
+            className="h-auto rounded-none p-0 text-xs text-primary font-bold"
           >
             <FilterX className="mr-2 h-3.5 w-3.5" /> Reset filters
           </Button>
@@ -317,7 +318,7 @@ export default function OpportunityFilterPage({
           ))}
         </div>
       ) : isError && skip === 0 ? (
-        <div className="text-center py-20 bg-destructive/5 border border-destructive/10 rounded-3xl">
+        <div className="text-center py-20 bg-destructive/5 border border-destructive/10 ">
           <ServerCrash className="mx-auto h-12 w-12 text-destructive/30" />
           <h2 className="text-xl font-black tracking-tighter mt-4">
             Failed to fetch data
@@ -329,7 +330,7 @@ export default function OpportunityFilterPage({
             onClick={() => refetch()}
             variant="outline"
             size="sm"
-            className="mt-6 gap-2 rounded-2xl font-black text-xs"
+            className="mt-6 gap-2 rounded-none font-black text-xs"
           >
             <RotateCcw className="h-3 w-3" /> Retry Connection
           </Button>
@@ -365,7 +366,7 @@ export default function OpportunityFilterPage({
                   onClick={() => refetch()}
                   variant="outline"
                   size="sm"
-                  className="rounded-full px-8 border-destructive/20 text-destructive/70 hover:bg-destructive/5 font-black text-[10px] uppercase tracking-widest shadow-sm"
+                  className=" rounded-none px-8 border-destructive/20 text-destructive/70 hover:bg-destructive/5 font-black text-[10px] uppercase tracking-widest shadow-sm"
                 >
                   <RotateCcw className="mr-2 h-3.5 w-3.5" /> Refetch
                 </Button>
@@ -384,7 +385,7 @@ export default function OpportunityFilterPage({
           </div>
         </>
       ) : (
-        <div className="flex flex-col items-center justify-center p-24 border-2 border-dashed rounded-[3rem] bg-muted/5">
+        <div className="flex flex-col items-center justify-center p-24 border-2 border-dashed ] bg-muted/5">
           <Frown className="h-16 w-16 text-muted-foreground/20" />
           <h3 className="mt-6 text-2xl font-black tracking-tighter">
             No positions found

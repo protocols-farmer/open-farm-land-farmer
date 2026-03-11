@@ -1,4 +1,4 @@
-// src/components/pages/admin/posts/PostManagement.tsx
+//src/components/pages/admin/posts/PostManagement.tsx
 "use client";
 
 import React, { useState } from "react";
@@ -61,7 +61,6 @@ import {
 } from "@/components/ui/select";
 import PaginationControls from "@/components/shared/PaginationControls";
 
-// Helper function to determine the correct path based on category
 const getPostAction = (post: AdminPostRow) => {
   const category = post.category as PostCategory;
   const categoryToPathMap: Partial<Record<PostCategory, string>> = {
@@ -77,11 +76,10 @@ const getPostAction = (post: AdminPostRow) => {
   return { href: `/${path}/${post.id}` };
 };
 
-// Row Actions Component
 function PostActions({ post }: { post: AdminPostRow }) {
   const [deletePost, { isLoading }] = useDeletePostMutation();
   const [isAlertOpen, setIsAlertOpen] = useState(false);
-  const { href } = getPostAction(post); // Get the smart href
+  const { href } = getPostAction(post);
 
   const handleDelete = async () => {
     try {
@@ -141,7 +139,6 @@ function PostActions({ post }: { post: AdminPostRow }) {
   );
 }
 
-// Main Component
 export default function PostManagement() {
   const [page, setPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");

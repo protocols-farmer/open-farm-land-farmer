@@ -16,10 +16,8 @@ export default function VerificationBanner() {
   const user = useAppSelector(selectCurrentUser);
   const [resendVerification, { isLoading }] = useResendVerificationMutation();
 
-  // Track actual seconds remaining
   const [timeLeft, setTimeLeft] = useState(0);
 
-  // Initialize from storage on mount
   useEffect(() => {
     if (!user || user.isEmailVerified) return;
 
@@ -33,7 +31,6 @@ export default function VerificationBanner() {
     }
   }, [user]);
 
-  // The Timer Ticker
   useEffect(() => {
     if (timeLeft <= 0) return;
     const interval = setInterval(() => {
@@ -42,7 +39,6 @@ export default function VerificationBanner() {
     return () => clearInterval(interval);
   }, [timeLeft]);
 
-  // 🚜 Point of No Return: If user is verified, this banner deletes itself.
   if (!user || user.isEmailVerified) return null;
 
   const handleResend = async () => {
@@ -53,7 +49,6 @@ export default function VerificationBanner() {
       setTimeLeft(COOLDOWN_SECONDS);
       toast.success("Verification link sent!");
     } catch (err: any) {
-      // 🚜 Scenario: Catch specific backend code if user is already verified
       if (err?.data?.message === "ALREADY_VERIFIED") {
         toast.success("You are already verified!");
       } else {

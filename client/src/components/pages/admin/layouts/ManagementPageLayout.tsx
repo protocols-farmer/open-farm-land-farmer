@@ -1,4 +1,4 @@
-// src/components/pages/admin/layouts/ManagementPageLayout.tsx
+//src/components/pages/admin/layouts/ManagementPageLayout.tsx
 
 import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -8,7 +8,7 @@ interface ManagementPageLayoutProps {
   description: string;
   itemCount: number;
   children: React.ReactNode;
-  controls?: React.ReactNode; // For search bars, filters etc.
+  controls?: React.ReactNode;
 }
 
 export default function ManagementPageLayout({
