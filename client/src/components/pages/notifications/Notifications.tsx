@@ -82,7 +82,6 @@ export default function Notifications() {
   );
 }
 
-// Simple Skeleton for Loading state
 function NotificationsSkeleton() {
   return (
     <div className="container mx-auto max-w-3xl py-8 px-4 space-y-4">

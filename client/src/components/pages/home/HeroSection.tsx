@@ -17,6 +17,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { useGetLatestVersionQuery } from "@/lib/features/updates/updateApiSlice";
 import { cn } from "@/lib/utils";
+import MilkSVG from "./MilkSVG";
 
 const heroButtons = [
   { href: "/projects", label: "Projects", icon: Pickaxe },
@@ -41,7 +42,8 @@ export default function HomeHero() {
 
       <div className="container mx-auto px-4">
         <div className="flex flex-col items-start gap-8 lg:flex-row lg:items-end lg:justify-between">
-          <div className="max-w-2xl space-y-4">
+          <div className="max-w-2xl space-y-4 relative">
+            <MilkSVG />
             <Link
               href={versionData?.id ? `/updates/${versionData.id}` : "/updates"}
               className="inline-flex items-center gap-2.5  border bg-muted/40 px-3 py-1 mb-6 text-xs  transition-all hover:bg-muted/60"
@@ -55,7 +57,7 @@ export default function HomeHero() {
               </span>
             </Link>
 
-            <h1 className="font-mobalys text-5xl md:text-6xl lg:text-5xl xl:text-7xl text-foreground leading-[0.9]">
+            <h1 className="font-mobalys text-xl md:text-3xl lg:text-5xl xl:text-7xl text-foreground leading-[0.9]">
               {" "}
               Open Farm Land
             </h1>

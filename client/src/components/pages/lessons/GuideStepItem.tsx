@@ -3,8 +3,8 @@
 "use client";
 
 import React from "react";
-import { GuideStepDto } from "@/lib/features/guideSection/guideTypes"; // Assuming types are in a shared folder
-import { GuideSectionItem } from "./GuideSectionItem"; // It will import its child component
+import { GuideStepDto } from "@/lib/features/guideSection/guideTypes";
+import { GuideSectionItem } from "./GuideSectionItem";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -36,7 +36,6 @@ export default function GuideStepItem({
   onEditSection,
   onDeleteSection,
 }: GuideStepItemProps) {
-  // Sanitize the step description to safely render HTML from Tiptap
   const sanitizedDescription = step.description
     ? DOMPurify.sanitize(step.description)
     : null;

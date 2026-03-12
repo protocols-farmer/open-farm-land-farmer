@@ -1,3 +1,4 @@
+//src/components/pages/notifications/NotificationBell.tsx
 "use client";
 
 import Link from "next/link";
@@ -10,9 +11,8 @@ import { cn } from "@/lib/utils";
 export default function NotificationBell() {
   const currentUser = useAppSelector(selectCurrentUser);
 
-  // Only poll if the user is actually logged in
   const { data } = useGetUnreadCountQuery(undefined, {
-    pollingInterval: 60000, // Check for new alerts every 60 seconds
+    pollingInterval: 60000,
     skip: !currentUser,
   });
 

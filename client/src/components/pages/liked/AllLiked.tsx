@@ -1,3 +1,4 @@
+//src/components/pages/liked/AllLiked.tsx
 "use client";
 
 import PostFilterPage from "@/components/pages/posts/PostFilterPage";
@@ -24,7 +25,7 @@ export default function AllLiked() {
       subtitle="A collection of posts you have liked across the platform."
       icon={Heart}
       searchPlaceholder="Search your liked posts..."
-      likedByUserId={currentUser.id} // <-- PASS THE USER'S ID HERE
+      likedByUserId={currentUser.id}
     />
   );
 }

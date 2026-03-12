@@ -22,9 +22,6 @@ interface GuideSectionItemProps {
   onDelete: () => void;
 }
 
-/**
- * Robust helper function to create a valid embed URL for iframes.
- */
 const getEmbedUrl = (url: string | null | undefined): string | null => {
   if (!url) return null;
 
@@ -50,9 +47,6 @@ const getEmbedUrl = (url: string | null | undefined): string | null => {
   }
 };
 
-/**
- * Reusable Actions Component for consistency
- */
 function SectionActions({
   onEdit,
   onDelete,
@@ -100,9 +94,6 @@ export function GuideSectionItem({
         id={`section-${section.id}`}
         className="scroll-mt-24 mb-4 relative overflow-hidden"
       >
-        {/* FIX: Remove the "Gap". 
-          We only render CardHeader if there is an actual title.
-        */}
         {section.title && (
           <CardHeader className="pb-2">
             <div className="flex justify-between items-start gap-4">
@@ -117,9 +108,6 @@ export function GuideSectionItem({
         <CardContent
           className={`prose dark:prose-invert max-w-none space-y-4 ${!section.title ? "pt-6" : ""}`}
         >
-          {/* FIX: If no title exists, we place the author menu absolutely 
-            so it doesn't create a large empty header block.
-          */}
           {!section.title && isAuthor && (
             <div className="absolute top-2 right-2 z-10">
               <SectionActions onEdit={onEdit} onDelete={onDelete} />

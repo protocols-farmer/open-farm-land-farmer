@@ -50,7 +50,6 @@ export default function GuideStepForm({
 
   return (
     <Form {...form}>
-      {/* The form now uses a simple vertical space-y layout */}
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
         <FormField
           control={form.control}

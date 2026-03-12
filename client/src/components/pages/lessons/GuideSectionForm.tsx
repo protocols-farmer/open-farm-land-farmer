@@ -1,4 +1,4 @@
-// FILE: src/components/pages/guides/GuideSectionForm.tsx
+//src/components/pages/lessons/GuideSectionForm.tsx
 
 "use client";
 
@@ -51,13 +51,13 @@ export default function GuideSectionForm({
 
   const handleSubmit = (values: GuideSectionFormValues) => {
     const formData = new FormData();
-    // Append all non-file fields to formData
+
     Object.entries(values).forEach(([key, value]) => {
       if (key !== "image" && value != null) {
         formData.append(key, String(value));
       }
     });
-    // Handle the file input separately
+
     const imageFile = values.image?.[0];
     if (imageFile instanceof File) {
       formData.append("image", imageFile);

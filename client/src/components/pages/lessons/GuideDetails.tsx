@@ -4,22 +4,20 @@
 import React, { useEffect, useState, useMemo } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/navigation"; // Added for redirection
+import { useRouter } from "next/navigation";
 import { formatDistanceToNow } from "date-fns";
 import toast from "react-hot-toast";
 import DOMPurify from "dompurify";
 import "highlight.js/styles/github-dark.css";
 
-// --- HOOKS & STATE MANAGEMENT ---
 import {
   useGetPostByIdQuery,
   useRecordPostViewMutation,
-  useDeletePostMutation, // Added missing mutation
+  useDeletePostMutation,
 } from "@/lib/features/post/postApiSlice";
 import { useAppSelector } from "@/lib/hooks/hooks";
 import { selectCurrentUser } from "@/lib/features/user/userSlice";
 
-// --- GUIDE SPECIFIC LOGIC ---
 import PostInteractionHub from "../../shared/PostInteractionHub";
 import GuideStepItem from "./GuideStepItem";
 import GuideStepForm from "./GuideStepForm";
@@ -40,7 +38,6 @@ import {
   useDeleteGuideSectionMutation,
 } from "@/lib/features/guideSection/guideSectionApiSlice";
 
-// --- UI COMPONENTS ---
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
@@ -83,7 +80,7 @@ import {
 } from "lucide-react";
 
 export default function GuideDetails({ postId }: { postId: string }) {
-  const router = useRouter(); // Added router
+  const router = useRouter();
   const {
     data: post,
     isLoading,
@@ -92,7 +89,7 @@ export default function GuideDetails({ postId }: { postId: string }) {
 
   const currentUser = useAppSelector(selectCurrentUser);
   const [recordPostView] = useRecordPostViewMutation();
-  const [deletePost, { isLoading: isDeleting }] = useDeletePostMutation(); // Added mutation hook
+  const [deletePost, { isLoading: isDeleting }] = useDeletePostMutation();
 
   const [selectedImage, setSelectedImage] = useState<string | undefined>();
   const mainImage = selectedImage || post?.images?.[0]?.url;
@@ -105,7 +102,6 @@ export default function GuideDetails({ postId }: { postId: string }) {
     });
   }, [post?.content]);
 
-  // --- LOCAL UI STATE ---
   const [activeStepIndex, setActiveStepIndex] = useState(0);
   const [isStepDialogOpen, setIsStepDialogOpen] = useState(false);
   const [isSectionDialogOpen, setIsSectionDialogOpen] = useState(false);
@@ -115,7 +111,6 @@ export default function GuideDetails({ postId }: { postId: string }) {
   );
   const [parentStepId, setParentStepId] = useState<string | null>(null);
 
-  // --- MUTATIONS ---
   const [addGuideStep, { isLoading: isAddingStep }] = useAddGuideStepMutation();
   const [updateGuideStep, { isLoading: isUpdatingStep }] =
     useUpdateGuideStepMutation();
@@ -164,7 +159,6 @@ export default function GuideDetails({ postId }: { postId: string }) {
   const totalSteps = post.steps?.length || 0;
   const currentStep = post.steps?.[activeStepIndex];
 
-  // --- HANDLERS ---
   const handleDelete = async () => {
     try {
       await deletePost(postId).unwrap();

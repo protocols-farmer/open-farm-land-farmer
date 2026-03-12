@@ -27,7 +27,6 @@ export default function NotificationItem({
     }
   };
 
-  // Helper to render the correct icon/message based on type
   const renderContent = () => {
     switch (notification.type) {
       case "NEW_FOLLOWER":
@@ -36,7 +35,7 @@ export default function NotificationItem({
           text: "started following you",
           link: `/profile/${notification.sender.username}`,
         };
-      // You can add LIKES or COMMENTS here later
+
       default:
         return { icon: null, text: "sent you a notification", link: "#" };
     }
@@ -52,7 +51,7 @@ export default function NotificationItem({
         "flex items-center gap-4 p-4 rounded-xl border transition-all hover:bg-muted/50",
         notification.read
           ? "bg-background opacity-75"
-          : "bg-primary/5 border-primary/20 shadow-sm"
+          : "bg-primary/5 border-primary/20 shadow-sm",
       )}
     >
       <div className="relative">
