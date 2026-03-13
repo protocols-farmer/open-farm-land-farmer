@@ -64,7 +64,7 @@ export default function MaintenanceGuard({
     return (
       <div className="flex min-h-screen flex-col items-center justify-center bg-background p-6 animate-in fade-in duration-500">
         <div className="mx-auto flex w-full max-w-[420px] flex-col items-center space-y-10 text-center">
-          <div className="flex h-20 w-20 items-center justify-center rounded-3xl bg-muted border border-border/50">
+          <div className="flex h-20 w-20 items-center justify-center  bg-muted border border-border/50">
             <Settings className="h-10 w-10 animate-[spin_10s_linear_infinite] text-foreground/40" />
           </div>
 
@@ -88,7 +88,7 @@ export default function MaintenanceGuard({
               the page.
             </p>
 
-            <div className="rounded-2xl border bg-muted/20 p-6 text-sm text-left w-full space-y-3">
+            <div className=" border bg-muted/20 p-6 text-sm text-left w-full space-y-3">
               <p className="font-bold  text-[10px] text-primary">
                 Current status
               </p>
@@ -109,7 +109,7 @@ export default function MaintenanceGuard({
               <Link href="/auth/login" className="w-full">
                 <Button
                   variant="outline"
-                  className="w-full font-bold h-11 border-border/60 rounded-none"
+                  className="w-full font-bold h-11 border-border/60 rounded-none "
                 >
                   <Shield className="mr-2 h-4 w-4" />
                   Admin Login

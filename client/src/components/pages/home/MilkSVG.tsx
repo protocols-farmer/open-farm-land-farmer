@@ -14,7 +14,6 @@ function MilkSVG() {
           fillOpacity="0.15"
           stroke="currentColor"
           strokeWidth="3"
-          className="text-white"
         />
 
         {/* Milk Level (Liquid inside) - Updated D path for 'shakable' slosh look */}

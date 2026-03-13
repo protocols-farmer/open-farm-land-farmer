@@ -1,4 +1,3 @@
-//src/components/pages/posts/PostCard.tsx
 "use client";
 
 import React, { useState } from "react";
@@ -58,6 +57,42 @@ import { formatCompactNumber } from "@/lib/utils";
 
 const FALLBACK_POST_IMAGE = "/fallback-project.jpg";
 
+// 🚜 VINTAGE ADDITION: Ornate Corner Filigree
+const CornerFlourish = ({ className }: { className?: string }) => (
+  <svg
+    viewBox="0 0 40 40"
+    className={cn(
+      "absolute w-12 h-12 pointer-events-none text-primary/40 z-30",
+      className,
+    )}
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="1.2"
+  >
+    <path d="M38 2H10C5.58 2 2 5.58 2 10V38" />
+    <path d="M30 6H12C8.68 6 6 8.68 6 12V30" />
+    <path d="M2 10C2 10 6 10 8 6C10 2 10 2 10 2" />
+    <circle cx="3" cy="3" r="1" fill="currentColor" stroke="none" />
+  </svg>
+);
+
+// 🚜 VINTAGE ADDITION: Side Center Filigree
+const SideFlourish = ({ className }: { className?: string }) => (
+  <svg
+    viewBox="0 0 24 12"
+    className={cn(
+      "absolute w-8 h-4 pointer-events-none text-primary/40 z-30",
+      className,
+    )}
+    fill="currentColor"
+    stroke="none"
+  >
+    <path d="M12 0L14 4H10L12 0ZM12 12L10 8H14L12 12ZM0 6L4 4V8L0 6ZM24 6L20 8V4L24 6Z" />
+    <circle cx="6" cy="6" r="1.5" className="fill-card px-2" />
+    <circle cx="18" cy="6" r="1.5" className="fill-card px-2" />
+  </svg>
+);
+
 interface PostCardProps {
   post: PostDto;
 }
@@ -74,7 +109,7 @@ const TagsDisplay = ({ tags }: { tags: PostDto["tags"] }) => {
         <Badge
           key={postTag.tag.id}
           variant="outline"
-          className=" uppercase tracking-widest text-[9px] px-1.5 py-0 h-4 rounded-none border-dashed border-primary/40 text-primary bg-transparent"
+          className="   text-[9px] px-1.5 py-0 h-4 rounded-none border-dashed border-primary/40 text-primary bg-transparent"
         >
           {postTag.tag.name}
         </Badge>
@@ -82,7 +117,7 @@ const TagsDisplay = ({ tags }: { tags: PostDto["tags"] }) => {
       {tags.length > maxTagsToShow && (
         <Badge
           variant="outline"
-          className=" uppercase tracking-widest text-[9px] px-1.5 py-0 h-4 rounded-none border-dashed border-muted-foreground/40 text-muted-foreground bg-transparent"
+          className="   text-[9px] px-1.5 py-0 h-4 rounded-none border-dashed border-muted-foreground/40 text-muted-foreground bg-transparent"
         >
           +{remainingTags}
         </Badge>
@@ -187,12 +222,21 @@ export default function PostCard({ post }: PostCardProps) {
 
   return (
     <TooltipProvider delayDuration={200}>
-      <Card className="relative rounded-none flex flex-col h-full group overflow-hidden border-2 border-border/80 bg-card hover:border-primary/60 transition-colors duration-300">
+      <Card className="relative rounded-none flex flex-col h-full group overflow-visible border-[3px] border-double border-border/80 bg-card hover:border-primary/60 transition-colors duration-300 shadow-sm hover:shadow-lg">
+        <CornerFlourish className="-top-1.5 -left-1.5 rotate-0" />
+        <CornerFlourish className="-top-1.5 -right-1.5 rotate-90" />
+        <CornerFlourish className="-bottom-1.5 -left-1.5 -rotate-90" />
+        <CornerFlourish className="-bottom-1.5 -right-1.5 rotate-180" />
+
+        <SideFlourish className="-top-2 left-1/2 -translate-x-1/2 bg-card px-2" />
+        <SideFlourish className="-bottom-2 left-1/2 -translate-x-1/2 rotate-180 bg-card px-2" />
+        <SideFlourish className="-left-[14px] top-1/2 -translate-y-1/2 -rotate-90 bg-card px-2" />
+        <SideFlourish className="-right-[14px] top-1/2 -translate-y-1/2 rotate-90 bg-card px-2" />
+
         <Link
           href={href}
           className="relative block aspect-video w-full overflow-hidden bg-secondary border-b-2 border-border/80"
         >
-          {/* VINTAGE IMAGE EFFECT: Sepia and desaturated by default, reveals color on hover */}
           <Image
             src={post.images?.[0]?.url || FALLBACK_POST_IMAGE}
             alt={post.title}
@@ -200,16 +244,15 @@ export default function PostCard({ post }: PostCardProps) {
             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
             className="object-cover sepia-[.40] contrast-[1.15] saturate-50 transition-all duration-700 ease-out group-hover:scale-105 group-hover:sepia-0 group-hover:saturate-100"
           />
-          {/* TYPEWRITER STYLE LABEL */}
+
           <Badge
             variant="outline"
-            className="absolute top-2 right-2 uppercase  tracking-[0.2em] text-[9px] bg-background/95 border-dashed border-primary/60 text-primary rounded-none shadow-sm h-6 px-2"
+            className="absolute top-2 right-2    text-[9px] bg-background/95 border-dashed border-primary/60 text-primary rounded-none shadow-sm h-6 px-2"
           >
             {post.category}
           </Badge>
         </Link>
 
-        {/* LEDGER STYLE COMPACT ACTION ROW */}
         <div className="flex items-center justify-between px-2 py-1 border-b border-dashed border-border/60 bg-muted/20">
           <div className="flex items-center gap-1">
             <Button
@@ -231,7 +274,7 @@ export default function PostCard({ post }: PostCardProps) {
                   )}
                 />
               )}
-              <span className="text-[10px]  font-bold tracking-wider">
+              <span className="text-[10px]  font-bold ">
                 {formatCompactNumber(post.likesCount)}
               </span>
             </Button>
@@ -254,7 +297,7 @@ export default function PostCard({ post }: PostCardProps) {
                   )}
                 />
               )}
-              <span className="text-[10px]  font-bold tracking-wider">
+              <span className="text-[10px]  font-bold ">
                 {formatCompactNumber(post.savedCount)}
               </span>
             </Button>
@@ -270,7 +313,7 @@ export default function PostCard({ post }: PostCardProps) {
         </div>
 
         <CardContent className="p-4 flex flex-col flex-grow space-y-3">
-          <CardTitle className="text-lg  leading-snug tracking-tight font-bold line-clamp-2">
+          <CardTitle className="text-lg  leading-snug  font-bold line-clamp-2">
             <Link
               href={href}
               className="hover:text-primary hover:underline decoration-primary/30 decoration-2 underline-offset-4 transition-all"
@@ -290,20 +333,20 @@ export default function PostCard({ post }: PostCardProps) {
               href={`/profile/${post.author.username}`}
               className="flex items-center gap-2 group/author min-w-0"
             >
-              <Avatar className="w-7 h-7 flex-shrink-0 rounded-none border border-border group-hover/author:border-primary transition-colors">
+              <Avatar className="w-7 h-7 flex-shrink-0 rounded-none border border-border group-hover/author:border-primary transition-colors grayscale group-hover/author:grayscale-0">
                 <AvatarImage
                   src={post.author.profileImage ?? undefined}
-                  className="object-cover grayscale group-hover/author:grayscale-0 transition-all"
+                  className="object-cover transition-all"
                 />
-                <AvatarFallback className="text-[10px]  bg-muted rounded-none">
-                  {post.author.name?.slice(0, 2).toUpperCase()}
+                <AvatarFallback className="text-[10px] bg-card rounded-none border border-border font-black text-foreground">
+                  {post.author.name?.slice(0, 2)}
                 </AvatarFallback>
               </Avatar>
               <div className="min-w-0">
                 <span className="text-xs  font-bold block truncate group-hover/author:text-primary transition-colors">
                   {post.author.name}
                 </span>
-                <span className="text-[9px]  uppercase tracking-widest text-muted-foreground block">
+                <span className="text-[9px]   text-muted-foreground block">
                   {timeAgo}
                 </span>
               </div>
@@ -325,7 +368,7 @@ export default function PostCard({ post }: PostCardProps) {
         <CardFooter className="p-0">
           <Button
             variant="ghost"
-            className="rounded-none w-full h-10 text-[11px]  uppercase tracking-[0.15em] border-t-2 border-border/80 bg-muted/10  group/btn transition-colors"
+            className="rounded-none w-full h-10 text-[11px] font-black   border-t-2 border-border/80 bg-muted/10  group/btn transition-all hover:bg-primary "
             onClick={() => router.push(href)}
           >
             {smartActionText}
@@ -335,13 +378,18 @@ export default function PostCard({ post }: PostCardProps) {
       </Card>
 
       <Dialog open={showShareDialog} onOpenChange={setShowShareDialog}>
-        <DialogContent className="sm:max-w-md rounded-none border-2 border-border bg-card">
+        <DialogContent className="sm:max-w-md rounded-none border-[3px] border-double border-border bg-card">
+          <CornerFlourish className="-top-1.5 -left-1.5 rotate-0" />
+          <CornerFlourish className="-top-1.5 -right-1.5 rotate-90" />
+          <CornerFlourish className="-bottom-1.5 -left-1.5 -rotate-90" />
+          <CornerFlourish className="-bottom-1.5 -right-1.5 rotate-180" />
+
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2  text-xl">
-              <Share2 className="h-5 w-5 text-primary" /> Share Archive Entry
+              <Share2 className="h-5 w-5 text-primary" /> Dispatch Record
             </DialogTitle>
             <DialogDescription className=" italic text-muted-foreground">
-              Copy the designation link below to share this record.
+              Copy the designation link below to share this archival entry.
             </DialogDescription>
           </DialogHeader>
           <div className="flex items-center space-x-2 mt-4">
@@ -352,7 +400,7 @@ export default function PostCard({ post }: PostCardProps) {
             />
             <Button
               size="sm"
-              className="px-4 h-10 rounded-none  uppercase tracking-widest text-[10px]"
+              className="px-4 h-10 rounded-none   font-black text-[10px]"
               onClick={handleShareAndCopy}
             >
               {linkCopied ? (
@@ -372,7 +420,7 @@ export default function PostCard({ post }: PostCardProps) {
                 type="button"
                 variant="outline"
                 size="sm"
-                className="rounded-none  uppercase tracking-widest text-[10px] border-dashed"
+                className="rounded-none   font-black text-[10px] border-dashed"
               >
                 Close Ledger
               </Button>

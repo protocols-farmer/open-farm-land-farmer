@@ -1,4 +1,3 @@
-//src/components/layouts/sidebar/Sidebar.tsx
 "use client";
 
 import React, { useState } from "react";
@@ -50,6 +49,23 @@ import {
 } from "@/components/ui/collapsible";
 import Logo from "@/components/shared/Logo";
 import { Separator } from "@/components/ui/separator";
+
+// 🚜 VINTAGE ADDITION: Ornate Corner Flourish
+const CornerFlourish = ({ className }: { className?: string }) => (
+  <svg
+    viewBox="0 0 40 40"
+    className={cn(
+      "absolute w-6 h-6 pointer-events-none text-primary/40 z-30",
+      className,
+    )}
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="1.5"
+  >
+    <path d="M38 2H10C5.58 2 2 5.58 2 10V38" />
+    <path d="M30 6H12C8.68 6 6 8.68 6 12V30" />
+  </svg>
+);
 
 // --- Navigation Data ---
 interface NavItem {
@@ -198,7 +214,8 @@ export default function Sidebar() {
   return (
     <aside
       className={cn(
-        "group sticky top-0 hidden lg:flex flex-col  border-r bg-background h-screen transition-all duration-300 ease-in-out z-40",
+        // 🚜 VINTAGE CHANGE: Added border-r-[3px] border-double
+        "group sticky top-0 hidden lg:flex flex-col border-r-[3px] border-double border-border/80 bg-background h-screen transition-all duration-300 ease-in-out z-40 overflow-visible",
         isCollapsed ? "w-20" : "w-64",
       )}
     >
@@ -225,7 +242,7 @@ export default function Sidebar() {
         </Tooltip>
       </TooltipProvider>
 
-      <div className="flex h-16 shrink-0 items-center justify-center border-b  px-4">
+      <div className="flex h-16 shrink-0 items-center justify-center border-b px-4">
         <Link href="/">
           <Logo isCollapsed={isCollapsed} />
         </Link>
@@ -247,7 +264,7 @@ export default function Sidebar() {
                   asChild
                   variant="default"
                   className={cn(
-                    "w-full transition-all duration-300 rounded-none",
+                    "w-full transition-all duration-300 rounded-none border border-primary/20",
                     isCollapsed ? "w-12 h-12  p-0 mx-auto" : "px-4",
                   )}
                 >
@@ -300,15 +317,21 @@ export default function Sidebar() {
 
       {/* Pro Banner Section */}
       {!isCollapsed && (
-        <div className="p-4 border-t   mt-auto shrink-0">
-          <div className=" border bg-muted/40 p-4 text-center">
+        <div className="p-4 border-t mt-auto shrink-0 overflow-visible">
+          {/* 🚜 VINTAGE CHANGE: Added border-[3px] border-double and Corner Flourishes */}
+          <div className="relative border-[3px] border-double border-border/80 bg-muted/40 p-4 text-center overflow-visible">
+            <CornerFlourish className="-top-1 -left-1 rotate-0" />
+            <CornerFlourish className="-top-1 -right-1 rotate-90" />
+            <CornerFlourish className="-bottom-1 -left-1 -rotate-90" />
+            <CornerFlourish className="-bottom-1 -right-1 rotate-180" />
+
             <div className="mb-3 flex justify-center">
-              <div className="bg-primary/10 p-2 ">
+              <div className="bg-primary/10 p-2 border border-dashed border-primary/30">
                 <Crown className="h-6 w-6 text-primary" />
               </div>
             </div>
             <h3 className="text-sm font-bold text-foreground">Go Pro</h3>
-            <p className="mt-1 text-[11px] leading-tight text-muted-foreground">
+            <p className="mt-1 text-[11px] leading-tight text-muted-foreground italic">
               Coming soon to the farm. Stay tuned!
             </p>
           </div>
