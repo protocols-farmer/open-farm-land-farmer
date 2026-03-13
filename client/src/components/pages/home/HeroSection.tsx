@@ -57,10 +57,14 @@ export default function HomeHero() {
               </span>
             </Link>
 
-            <h1 className="font-mobalys text-xl md:text-3xl lg:text-5xl xl:text-7xl text-foreground leading-[0.9]">
-              {" "}
+            <h1 className="font-mobalys text-xl md:text-3xl lg:text-5xl xl:text-7xl text-foreground  ">
               Open Farm Land
             </h1>
+            <div className="font-mobalys text-xl md:text-3xl lg:text-5xl xl:text-7xl text-foreground flex justify-center items-center ">
+              <span>✧ </span>
+              <div className="bg-foreground  md:h-[1px] lg:h-[3px] w-full"></div>
+              <span>✧</span>
+            </div>
 
             <p className=" text-muted-foreground leading-relaxed">
               This is a platform for sharing your ideas, project journey, blogs,

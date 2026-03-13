@@ -50,7 +50,7 @@ export default function DangerZone() {
     }
   };
   return (
-    <Card className="bg-card shadow-lg border-border">
+    <Card className="bg-card shadow-lg border-border rounded-none">
       <CardHeader>
         <CardTitle className="text-destructive">Danger Zone</CardTitle>
         <CardDescription>

@@ -241,7 +241,7 @@ function UpdatePostForm({ postData }: UpdatePostFormProps) {
 
   return (
     <div className="container mx-auto max-w-3xl py-8">
-      <Card>
+      <Card className="rounded-none">
         <CardHeader>
           <CardTitle className="text-3xl font-black ">Update Post</CardTitle>
           <CardDescription>

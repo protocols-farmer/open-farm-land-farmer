@@ -32,7 +32,7 @@ const AdminStatsCard = ({
   isLoading: boolean;
 }) => {
   return (
-    <Card>
+    <Card className="rounded-none">
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <CardTitle className="text-sm font-medium text-muted-foreground">
           {title}
@@ -133,7 +133,7 @@ export default function AdminDashboard() {
       </div>
 
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
-        <Card>
+        <Card className="rounded-none">
           <CardHeader>
             <CardTitle>Recent Activity</CardTitle>
           </CardHeader>

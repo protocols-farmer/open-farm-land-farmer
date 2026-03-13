@@ -198,7 +198,7 @@ export default function Sidebar() {
   return (
     <aside
       className={cn(
-        "group sticky top-0 hidden lg:flex flex-col border-r bg-background h-screen transition-all duration-300 ease-in-out z-40",
+        "group sticky top-0 hidden lg:flex flex-col  border-r bg-background h-screen transition-all duration-300 ease-in-out z-40",
         isCollapsed ? "w-20" : "w-64",
       )}
     >
@@ -208,7 +208,7 @@ export default function Sidebar() {
             <Button
               variant="outline"
               size="icon"
-              className="rounded-none absolute -right-4 top-1/2 -translate-y-1/2 h-8 w-8  bg-background hover:bg-muted z-50 border shadow-sm hidden lg:flex items-center justify-center transition-transform active:scale-95"
+              className="rounded-none absolute -right-4 top-1/2 -translate-y-1/2 h-8 w-8  bg-background hover:bg-muted z-50 border  shadow-sm hidden lg:flex items-center justify-center transition-transform active:scale-95"
               onClick={() => setIsCollapsed(!isCollapsed)}
             >
               {isCollapsed ? (
@@ -225,7 +225,7 @@ export default function Sidebar() {
         </Tooltip>
       </TooltipProvider>
 
-      <div className="flex h-16 shrink-0 items-center justify-center border-b px-4">
+      <div className="flex h-16 shrink-0 items-center justify-center border-b  px-4">
         <Link href="/">
           <Logo isCollapsed={isCollapsed} />
         </Link>
@@ -300,7 +300,7 @@ export default function Sidebar() {
 
       {/* Pro Banner Section */}
       {!isCollapsed && (
-        <div className="p-4 border-t mt-auto shrink-0">
+        <div className="p-4 border-t   mt-auto shrink-0">
           <div className=" border bg-muted/40 p-4 text-center">
             <div className="mb-3 flex justify-center">
               <div className="bg-primary/10 p-2 ">

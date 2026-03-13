@@ -1,3 +1,4 @@
+//src/components/pages/updates/UpdateForm.tsx
 "use client";
 
 import React, { useState, useMemo } from "react";
@@ -114,7 +115,7 @@ export default function UpdateForm({ existingUpdate }: UpdateFormProps) {
   };
 
   return (
-    <Card className="border-none shadow-none bg-transparent">
+    <Card className="border-none shadow-none bg-transparent rounded-none">
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
         <CardContent className="space-y-6 p-0">
           {formError && (

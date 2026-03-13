@@ -1,3 +1,4 @@
+//src/components/pages/updates/UpdateCard.tsx
 "use client";
 
 import Link from "next/link";

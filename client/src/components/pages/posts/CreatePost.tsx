@@ -179,7 +179,7 @@ export default function CreatePostPage() {
         </Link>
       </Button>
 
-      <Card>
+      <Card className="rounded-none">
         <CardHeader>
           <CardTitle className="text-3xl font-black ">
             Create a New Post

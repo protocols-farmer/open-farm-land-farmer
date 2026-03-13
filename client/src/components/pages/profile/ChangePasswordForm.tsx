@@ -1,3 +1,4 @@
+//src/components/pages/profile/ChangePasswordForm.tsx
 "use client";
 
 import React, { useState } from "react";
@@ -75,7 +76,7 @@ export default function ChangePasswordForm() {
   };
 
   return (
-    <Card className="border-border shadow-sm">
+    <Card className="border-border shadow-sm rounded-none">
       <CardHeader>
         <CardTitle className="text-xl font-bold">Security Update</CardTitle>
         <CardDescription>

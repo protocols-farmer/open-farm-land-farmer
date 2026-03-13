@@ -13,9 +13,9 @@ export default function About() {
   const [imageError, setImageError] = useState(false);
 
   return (
-    <main className="max-w-4xl mx-auto py-24 px-8">
-      <section className="mb-24 text-center">
-        <div className="flex justify-center mb-8 h-20 relative">
+    <main className="max-w-4xl mx-auto py-24 px-8 flex flex-col gap-10">
+      <section className=" text-center flex flex-col gap-4">
+        <div className="flex justify-center h-20 relative">
           <Image
             src="https://res.cloudinary.com/dhr9zmb3i/image/upload/v1772941596/open-farm-land_kfo5ui.png"
             alt="Open Farmland Logo"
@@ -25,14 +25,14 @@ export default function About() {
             priority
           />
         </div>
-        <h1 className="text-6xl font-black   mb-6">Open Farm Land</h1>
+        <h1 className="text-6xl font-black   ">Open Farm Land</h1>
         <p className="text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
           This is a platform for sharing your ideas, project journey, blogs,
           resources, articles and more,stuff!
         </p>
       </section>
 
-      <section className="bg-card border  p-8 md:p-12 relative overflow-hidden">
+      <section className="bg-card border  p-5 md:p-7 relative overflow-hidden">
         <div className="relative z-10 flex flex-col md:flex-row items-center gap-10">
           <div className="relative shrink-0 w-40 h-40">
             <div className="absolute inset-0 bg-primary/20 blur-2xl " />
@@ -57,7 +57,7 @@ export default function About() {
                 fill
                 sizes="160px"
                 className={cn(
-                  "relative object-cover  border-2 border-primary grayscale hover:grayscale-0 transition-all duration-500",
+                  "relative object-cover  border-2 border-primary transition-all duration-500",
                   imageLoading ? "opacity-0" : "opacity-100",
                 )}
                 onLoadingComplete={() => setImageLoading(false)}
@@ -103,12 +103,6 @@ export default function About() {
           </div>
         </div>
       </section>
-
-      <footer className="mt-32 text-center py-12 border-t border-muted/30">
-        <p className="font-mono text-sm text-muted-foreground/50  ">
-          Chat is coming soon{" "}
-        </p>
-      </footer>
     </main>
   );
 }

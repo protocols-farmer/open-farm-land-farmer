@@ -69,12 +69,12 @@ const TagsDisplay = ({ tags }: { tags: PostDto["tags"] }) => {
   const tagsToShow = tags.slice(0, maxTagsToShow);
 
   return (
-    <div className="flex flex-wrap items-center gap-1">
+    <div className="flex flex-wrap items-center gap-1.5 mt-1">
       {tagsToShow.map((postTag) => (
         <Badge
           key={postTag.tag.id}
-          variant="secondary"
-          className="font-normal text-[10px] px-1.5 py-0 h-4"
+          variant="outline"
+          className=" uppercase tracking-widest text-[9px] px-1.5 py-0 h-4 rounded-none border-dashed border-primary/40 text-primary bg-transparent"
         >
           {postTag.tag.name}
         </Badge>
@@ -82,7 +82,7 @@ const TagsDisplay = ({ tags }: { tags: PostDto["tags"] }) => {
       {tags.length > maxTagsToShow && (
         <Badge
           variant="outline"
-          className="font-normal text-[10px] px-1.5 py-0 h-4"
+          className=" uppercase tracking-widest text-[9px] px-1.5 py-0 h-4 rounded-none border-dashed border-muted-foreground/40 text-muted-foreground bg-transparent"
         >
           +{remainingTags}
         </Badge>
@@ -187,49 +187,51 @@ export default function PostCard({ post }: PostCardProps) {
 
   return (
     <TooltipProvider delayDuration={200}>
-      <Card className="relative flex flex-col h-full group overflow-hidden border-border/60 hover:border-border hover:shadow-lg transition-all duration-300">
+      <Card className="relative rounded-none flex flex-col h-full group overflow-hidden border-2 border-border/80 bg-card hover:border-primary/60 transition-colors duration-300">
         <Link
           href={href}
-          className="relative block aspect-video w-full overflow-hidden bg-muted/40"
+          className="relative block aspect-video w-full overflow-hidden bg-secondary border-b-2 border-border/80"
         >
+          {/* VINTAGE IMAGE EFFECT: Sepia and desaturated by default, reveals color on hover */}
           <Image
             src={post.images?.[0]?.url || FALLBACK_POST_IMAGE}
             alt={post.title}
             fill
             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-            className="object-cover transition-transform duration-500 ease-out group-hover:scale-105"
+            className="object-cover sepia-[.40] contrast-[1.15] saturate-50 transition-all duration-700 ease-out group-hover:scale-105 group-hover:sepia-0 group-hover:saturate-100"
           />
+          {/* TYPEWRITER STYLE LABEL */}
           <Badge
-            variant="secondary"
-            className="absolute top-2 right-2 capitalize text-[10px] bg-background/80 backdrop-blur-md h-5"
+            variant="outline"
+            className="absolute top-2 right-2 uppercase  tracking-[0.2em] text-[9px] bg-background/95 border-dashed border-primary/60 text-primary rounded-none shadow-sm h-6 px-2"
           >
-            {post.category.toLowerCase()}
+            {post.category}
           </Badge>
         </Link>
 
-        {/* COMPACT ACTION ROW */}
-        <div className="flex items-center justify-between px-2 py-1 border-b bg-muted/5">
-          <div className="flex items-center gap-0.5">
+        {/* LEDGER STYLE COMPACT ACTION ROW */}
+        <div className="flex items-center justify-between px-2 py-1 border-b border-dashed border-border/60 bg-muted/20">
+          <div className="flex items-center gap-1">
             <Button
               variant="ghost"
               size="sm"
               className={cn(
-                "h-8 px-2 gap-1.5 rounded-none",
-                post.isLikedByCurrentUser && "text-red-500",
+                "h-7 px-2 gap-1.5 rounded-none hover:bg-transparent hover:text-destructive",
+                post.isLikedByCurrentUser && "text-destructive",
               )}
               onClick={handleToggleLike}
             >
               {isLiking || isUnliking ? (
-                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                <Loader2 className="h-3 w-3 animate-spin" />
               ) : (
                 <Heart
                   className={cn(
-                    "h-3.5 w-3.5",
-                    post.isLikedByCurrentUser && "fill-current",
+                    "h-3 w-3 transition-all",
+                    post.isLikedByCurrentUser && "fill-current scale-110",
                   )}
                 />
               )}
-              <span className="text-[11px] font-bold">
+              <span className="text-[10px]  font-bold tracking-wider">
                 {formatCompactNumber(post.likesCount)}
               </span>
             </Button>
@@ -237,22 +239,22 @@ export default function PostCard({ post }: PostCardProps) {
               variant="ghost"
               size="sm"
               className={cn(
-                "h-8 px-2 gap-1.5 rounded-none",
+                "h-7 px-2 gap-1.5 rounded-none hover:bg-transparent hover:text-primary",
                 post.isSavedByCurrentUser && "text-primary",
               )}
               onClick={handleToggleSave}
             >
               {isSaving || isUnsaving ? (
-                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                <Loader2 className="h-3 w-3 animate-spin" />
               ) : (
                 <Bookmark
                   className={cn(
-                    "h-3.5 w-3.5",
-                    post.isSavedByCurrentUser && "fill-current",
+                    "h-3 w-3 transition-all",
+                    post.isSavedByCurrentUser && "fill-current scale-110",
                   )}
                 />
               )}
-              <span className="text-[11px] font-bold">
+              <span className="text-[10px]  font-bold tracking-wider">
                 {formatCompactNumber(post.savedCount)}
               </span>
             </Button>
@@ -260,109 +262,119 @@ export default function PostCard({ post }: PostCardProps) {
           <Button
             variant="ghost"
             size="sm"
-            className="h-8 px-2 rounded-none"
+            className="h-7 px-2 rounded-none hover:bg-transparent hover:text-primary"
             onClick={handleOpenShareDialog}
           >
-            <Share2 className="h-3.5 w-3.5" />
+            <Share2 className="h-3 w-3" />
           </Button>
         </div>
 
-        <CardContent className="p-3 flex flex-col flex-grow space-y-2">
-          <CardTitle className="text-base leading-snug font-bold line-clamp-2">
-            <Link href={href} className="hover:text-primary transition-colors">
+        <CardContent className="p-4 flex flex-col flex-grow space-y-3">
+          <CardTitle className="text-lg  leading-snug tracking-tight font-bold line-clamp-2">
+            <Link
+              href={href}
+              className="hover:text-primary hover:underline decoration-primary/30 decoration-2 underline-offset-4 transition-all"
+            >
               {post.title}
             </Link>
           </CardTitle>
 
-          <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">
+          <p className="text-sm  italic text-muted-foreground line-clamp-2 leading-relaxed">
             {post.description}
           </p>
 
           <TagsDisplay tags={post.tags} />
 
-          <div className="flex items-center justify-between mt-auto pt-2">
+          <div className="flex items-end justify-between mt-auto pt-4 border-t border-dashed border-border/40">
             <Link
               href={`/profile/${post.author.username}`}
               className="flex items-center gap-2 group/author min-w-0"
             >
-              <Avatar className="w-6 h-6 flex-shrink-0 group-hover/author:ring-1 group-hover/author:ring-primary ring-offset-1 transition-all">
-                <AvatarImage src={post.author.profileImage ?? undefined} />
-                <AvatarFallback className="text-[10px] bg-muted">
+              <Avatar className="w-7 h-7 flex-shrink-0 rounded-none border border-border group-hover/author:border-primary transition-colors">
+                <AvatarImage
+                  src={post.author.profileImage ?? undefined}
+                  className="object-cover grayscale group-hover/author:grayscale-0 transition-all"
+                />
+                <AvatarFallback className="text-[10px]  bg-muted rounded-none">
                   {post.author.name?.slice(0, 2).toUpperCase()}
                 </AvatarFallback>
               </Avatar>
               <div className="min-w-0">
-                <span className="text-xs font-semibold block truncate group-hover/author:text-primary transition-colors">
+                <span className="text-xs  font-bold block truncate group-hover/author:text-primary transition-colors">
                   {post.author.name}
                 </span>
-                <span className="text-[10px] text-muted-foreground block">
+                <span className="text-[9px]  uppercase tracking-widest text-muted-foreground block">
                   {timeAgo}
                 </span>
               </div>
             </Link>
-            <div className="flex items-center text-muted-foreground text-[10px] gap-2.5 shrink-0">
-              <span className="flex items-center gap-1">
-                <Eye className="h-3 w-3" />
+
+            <div className="flex items-center text-muted-foreground text-[10px]  gap-3 shrink-0">
+              <span className="flex items-center gap-1.5" title="Views">
+                <Eye className="h-3 w-3 opacity-70" />
                 {formatCompactNumber(post.viewsCount)}
               </span>
-              <span className="flex items-center gap-1">
-                <MessageSquare className="h-3 w-3" />
+              <span className="flex items-center gap-1.5" title="Comments">
+                <MessageSquare className="h-3 w-3 opacity-70" />
                 {formatCompactNumber(post.commentsCount)}
               </span>
             </div>
           </div>
         </CardContent>
 
-        <CardFooter className="p-2 pt-0">
+        <CardFooter className="p-0">
           <Button
-            size="sm"
-            variant="outline"
-            className="rounded-none w-full h-8 text-xs hover:bg-accent hover:text-accent-foreground group/btn"
+            variant="ghost"
+            className="rounded-none w-full h-10 text-[11px]  uppercase tracking-[0.15em] border-t-2 border-border/80 bg-muted/10  group/btn transition-colors"
             onClick={() => router.push(href)}
           >
             {smartActionText}
-            <ArrowRight className="ml-2 h-3 w-3 transition-transform group-hover/btn:translate-x-1" />
+            <ArrowRight className="ml-2 h-3.5 w-3.5 transition-transform group-hover/btn:translate-x-2" />
           </Button>
         </CardFooter>
       </Card>
 
       <Dialog open={showShareDialog} onOpenChange={setShowShareDialog}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-md rounded-none border-2 border-border bg-card">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <Share2 className="h-5 w-5" /> Share Post
+            <DialogTitle className="flex items-center gap-2  text-xl">
+              <Share2 className="h-5 w-5 text-primary" /> Share Archive Entry
             </DialogTitle>
-            <DialogDescription>
-              Copy the link to share this post with others.
+            <DialogDescription className=" italic text-muted-foreground">
+              Copy the designation link below to share this record.
             </DialogDescription>
           </DialogHeader>
-          <div className="flex items-center space-x-2 mt-2">
+          <div className="flex items-center space-x-2 mt-4">
             <Input
               defaultValue={`${typeof window !== "undefined" ? window.location.origin : ""}${href}`}
               readOnly
-              className="flex-1 h-9 text-sm"
+              className="flex-1 h-10 text-xs  rounded-none border-dashed focus-visible:ring-primary/50"
             />
             <Button
               size="sm"
-              className="px-3 rounded-none"
+              className="px-4 h-10 rounded-none  uppercase tracking-widest text-[10px]"
               onClick={handleShareAndCopy}
             >
               {linkCopied ? (
-                <Check className="h-4 w-4" />
+                <>
+                  <Check className="h-3.5 w-3.5 mr-1.5" /> Copied
+                </>
               ) : (
-                <Copy className="h-4 w-4" />
+                <>
+                  <Copy className="h-3.5 w-3.5 mr-1.5" /> Copy
+                </>
               )}
             </Button>
           </div>
-          <DialogFooter className="sm:justify-start">
+          <DialogFooter className="sm:justify-start mt-2">
             <DialogClose asChild>
               <Button
                 type="button"
-                variant="secondary"
+                variant="outline"
                 size="sm"
-                className="rounded-none"
+                className="rounded-none  uppercase tracking-widest text-[10px] border-dashed"
               >
-                Close
+                Close Ledger
               </Button>
             </DialogClose>
           </DialogFooter>
