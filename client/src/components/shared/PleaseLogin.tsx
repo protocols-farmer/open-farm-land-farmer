@@ -26,8 +26,17 @@ export default function PleaseLogin({
         <h2 className="mt-6 text-2xl font-semibold tracking-tight">{title}</h2>
         <p className="mt-2 text-muted-foreground">{message}</p>
         <div className="mt-8 flex justify-center gap-4">
-          <Button onClick={() => router.push("/auth/login")}>Log In</Button>
-          <Button variant="outline" onClick={() => router.push("/auth/signup")}>
+          <Button
+            onClick={() => router.push("/auth/login")}
+            className="rounded-none"
+          >
+            Log In
+          </Button>
+          <Button
+            variant="outline"
+            onClick={() => router.push("/auth/signup")}
+            className="rounded-none"
+          >
             Sign Up
           </Button>
         </div>

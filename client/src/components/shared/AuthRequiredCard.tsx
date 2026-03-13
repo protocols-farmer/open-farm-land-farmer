@@ -26,7 +26,7 @@ export default function AuthRequiredCard({
 }: AuthRequiredCardProps) {
   return (
     <div className="flex items-center justify-center p-6">
-      <Card className="w-full max-w-md shadow-lg border-primary/20 bg-card/50 backdrop-blur">
+      <Card className="w-full max-w-md shadow-lg border-primary/20 bg-card/50 backdrop-blur rounded-none">
         <CardHeader className="text-center">
           <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
             <LockKeyhole className="h-8 w-8 text-primary" />
@@ -54,7 +54,7 @@ export default function AuthRequiredCard({
           <Button
             variant="ghost"
             asChild
-            className="w-full text-muted-foreground"
+            className="w-full text-muted-foreground rounded-none"
           >
             <Link href="/">
               <ArrowLeft className="mr-2 h-4 w-4" /> Back to Home

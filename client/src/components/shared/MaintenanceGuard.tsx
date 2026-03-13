@@ -109,7 +109,7 @@ export default function MaintenanceGuard({
               <Link href="/auth/login" className="w-full">
                 <Button
                   variant="outline"
-                  className="w-full rounded-full font-bold h-11 border-border/60"
+                  className="w-full font-bold h-11 border-border/60 rounded-none"
                 >
                   <Shield className="mr-2 h-4 w-4" />
                   Admin Login

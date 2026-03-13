@@ -15,7 +15,7 @@ import {
 
 export default function AccessDenied() {
   return (
-    <Card className="w-full max-w-md shadow-2xl border-destructive/20 bg-card/50 backdrop-blur-md">
+    <Card className="w-full rounded-none max-w-md shadow-2xl border-destructive/20 bg-card/50 backdrop-blur-md">
       <CardHeader className="text-center pt-8">
         <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-destructive/10 ring-8 ring-destructive/5">
           <ShieldAlert className="h-10 w-10 text-destructive animate-pulse" />
@@ -35,7 +35,7 @@ export default function AccessDenied() {
         <Button
           variant="default"
           asChild
-          className="w-full h-11 text-base font-semibold shadow-sm"
+          className="w-full h-11 text-base font-semibold shadow-sm rounded-none"
         >
           <Link href="/">
             <ArrowLeft className="mr-2 h-5 w-5" /> Return to Safety

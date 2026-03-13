@@ -152,7 +152,7 @@ const ImageComponent: React.FC<ImageComponentProps> = ({ onFileSelect }) => {
             objectFit="contain"
             className={cn(
               "transition-opacity duration-300",
-              isImageLoading || imageHasError ? "opacity-50" : "opacity-100"
+              isImageLoading || imageHasError ? "opacity-50" : "opacity-100",
             )}
             onLoad={handleImageLoad}
             onError={handleImageError}
@@ -169,7 +169,7 @@ const ImageComponent: React.FC<ImageComponentProps> = ({ onFileSelect }) => {
               "w-full max-w-xs rounded-lg border-2 border-dashed flex flex-col items-center justify-center text-center p-6 transition-colors duration-300",
               isDragging
                 ? "border-primary bg-primary/10 text-primary"
-                : "border-zinc-300 dark:border-zinc-600 bg-zinc-50 dark:bg-zinc-800/30 text-zinc-400 dark:text-zinc-500"
+                : "border-zinc-300 dark:border-zinc-600 bg-zinc-50 dark:bg-zinc-800/30 text-zinc-400 dark:text-zinc-500",
             )}
             style={{ aspectRatio: "16/9", minHeight: "120px" }}
           >
@@ -184,7 +184,7 @@ const ImageComponent: React.FC<ImageComponentProps> = ({ onFileSelect }) => {
             type="button"
             variant="outline"
             onClick={handleButtonClick}
-            className="w-full max-w-xs"
+            className="w-full max-w-xs rounded-none"
           >
             Select File
           </Button>

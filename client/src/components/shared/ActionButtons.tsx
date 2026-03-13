@@ -1,3 +1,4 @@
+//src/components/shared/ActionButtons.tsx
 "use client";
 
 import React, { useState } from "react";
@@ -86,7 +87,7 @@ export default function ActionButtons({ post }: ActionButtonsProps) {
               size="lg"
               className={cn(
                 "gap-2 w-full",
-                post.isLikedByCurrentUser && "text-red-500 bg-red-500/10"
+                post.isLikedByCurrentUser && "text-red-500 bg-red-500/10",
               )}
               onClick={handleToggleLike}
               disabled={isLiking || isUnliking}
@@ -97,7 +98,7 @@ export default function ActionButtons({ post }: ActionButtonsProps) {
                 <Heart
                   className={cn(
                     "h-5 w-5",
-                    post.isLikedByCurrentUser && "fill-current"
+                    post.isLikedByCurrentUser && "fill-current",
                   )}
                 />
               )}{" "}
@@ -115,7 +116,7 @@ export default function ActionButtons({ post }: ActionButtonsProps) {
               size="lg"
               className={cn(
                 "gap-2 w-full",
-                post.isSavedByCurrentUser && "text-primary bg-primary/10"
+                post.isSavedByCurrentUser && "text-primary bg-primary/10",
               )}
               onClick={handleToggleSave}
               disabled={isSaving || isUnsaving}
@@ -126,7 +127,7 @@ export default function ActionButtons({ post }: ActionButtonsProps) {
                 <Bookmark
                   className={cn(
                     "h-5 w-5",
-                    post.isSavedByCurrentUser && "fill-current"
+                    post.isSavedByCurrentUser && "fill-current",
                   )}
                 />
               )}{" "}
@@ -174,7 +175,7 @@ export default function ActionButtons({ post }: ActionButtonsProps) {
             <Button
               type="button"
               size="sm"
-              className="px-3"
+              className="px-3 rounded-none"
               onClick={handleShareAndCopy}
               disabled={isSharing}
             >

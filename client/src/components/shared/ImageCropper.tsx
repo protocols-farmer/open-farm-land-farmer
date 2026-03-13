@@ -75,10 +75,15 @@ export default function ImageCropper({
       </div>
 
       <div className="p-4 flex justify-end gap-3 bg-background border-t border-border">
-        <Button variant="outline" onClick={onCancel} type="button">
+        <Button
+          variant="outline"
+          onClick={onCancel}
+          type="button"
+          className="rounded-none"
+        >
           Cancel
         </Button>
-        <Button onClick={handleDone} type="button">
+        <Button onClick={handleDone} type="button" className="rounded-none">
           Crop & Save
         </Button>
       </div>
