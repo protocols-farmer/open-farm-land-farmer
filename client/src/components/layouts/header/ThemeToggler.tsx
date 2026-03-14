@@ -72,7 +72,6 @@ function ThemeToggler() {
           disabled={isLoading}
           className="relative transition-colors border-[3px] border-double border-border/80 rounded-none hover:bg-accent overflow-visible"
         >
-          {/* 🚜 VINTAGE CORNERS */}
           <CornerFlourish className="-top-1 -left-1 rotate-0" />
           <CornerFlourish className="-bottom-1 -right-1 rotate-180" />
 
@@ -96,19 +95,19 @@ function ThemeToggler() {
           onClick={() => handleThemeChange("light")}
           className="cursor-pointer text-[10px] uppercase tracking-widest"
         >
-          I. Light Mode
+          Light Mode
         </DropdownMenuItem>
         <DropdownMenuItem
           onClick={() => handleThemeChange("dark")}
           className="cursor-pointer text-[10px] uppercase tracking-widest"
         >
-          II. Dark Mode
+          Dark Mode
         </DropdownMenuItem>
         <DropdownMenuItem
           onClick={() => handleThemeChange("system")}
           className="cursor-pointer text-[10px] uppercase tracking-widest"
         >
-          III. System
+          System
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

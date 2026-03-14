@@ -1,4 +1,4 @@
-// src/components/pages/opportunities/EditOpportunityPage.tsx
+//src/components/pages/opportunities/EditOpportunityPage.tsx
 "use client";
 
 import React, { useEffect } from "react";
@@ -24,7 +24,6 @@ export default function EditOpportunityPage({
     isError,
   } = useGetOpportunityQuery(opportunityId);
 
-  // Authorization Check
   useEffect(() => {
     if (
       currentUser &&

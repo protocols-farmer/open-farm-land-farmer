@@ -9,7 +9,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { FetchBaseQueryError } from "@reduxjs/toolkit/query";
 import { SerializedError } from "@reduxjs/toolkit";
 
-// --- HOOKS & API ---
 import {
   useUpdatePostMutation,
   useGetPostByIdQuery,
@@ -17,7 +16,6 @@ import {
 import { useAppSelector } from "@/lib/hooks/hooks";
 import { selectCurrentUser } from "@/lib/features/user/userSlice";
 
-// --- SCHEMAS & TYPES ---
 import {
   updatePostSchema,
   UpdatePostFormValues,
@@ -28,7 +26,6 @@ import {
   PostDto,
 } from "@/lib/features/post/postTypes";
 
-// --- UI COMPONENTS ---
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -58,7 +55,6 @@ import {
   CheckCircle,
 } from "lucide-react";
 
-// --- CUSTOM COMPONENTS & UTILS ---
 import ReactHashTags from "./ReactHashTags";
 import RichTextEditor from "./RichTextEditor";
 import ImageUploadWithCropper from "./ImageUploadWithCropper";
@@ -166,7 +162,6 @@ function UpdatePostForm({ postData }: UpdatePostFormProps) {
     useUpdatePostMutation();
   const [formError, setFormError] = useState<string | null>(null);
 
-  // Tracks which images already exist on Cloudinary that the user wants to keep
   const [retainedImages, setRetainedImages] = useState<PostImageDto[]>(
     postData.images,
   );
@@ -186,7 +181,7 @@ function UpdatePostForm({ postData }: UpdatePostFormProps) {
       content: postData.content,
       category: postData.category,
       postTags: postData.tags.map((t) => t.tag.name),
-      postImages: [], // New uploads start empty
+      postImages: [],
       externalLink: postData.externalLink || "",
       githubLink: postData.githubLink || "",
     },
@@ -217,7 +212,6 @@ function UpdatePostForm({ postData }: UpdatePostFormProps) {
     formData.append("externalLink", data.externalLink || "");
     formData.append("githubLink", data.githubLink || "");
 
-    // FIX: Type Guard to handle the Union Type (File | Record)
     data.postImages?.forEach((item) => {
       if (item instanceof File) {
         formData.append("postImages", item);
@@ -325,7 +319,6 @@ function UpdatePostForm({ postData }: UpdatePostFormProps) {
                 render={({ field }) => (
                   <ImageUploadWithCropper
                     existingImages={retainedImages}
-                    // Filter to only pass binary Files to the cropper component
                     value={(field.value || []).filter(
                       (i): i is File => i instanceof File,
                     )}

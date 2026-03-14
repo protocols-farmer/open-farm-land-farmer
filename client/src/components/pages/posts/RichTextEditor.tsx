@@ -1,9 +1,9 @@
-// src/components/RichTextEditor.tsx
+//src/components/RichTextEditor.tsx
 "use client";
 
-import "highlight.js/styles/github-dark.css"; // for code block highlighting
+import "highlight.js/styles/github-dark.css";
 
-import React, { useEffect } from "react"; // useEffect can be removed if not used elsewhere
+import React, { useEffect } from "react";
 import { useEditor, EditorContent, Editor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import TextAlign from "@tiptap/extension-text-align";
@@ -20,7 +20,7 @@ import TableHeader from "@tiptap/extension-table-header";
 import TableRow from "@tiptap/extension-table-row";
 import CodeBlockLowlight from "@tiptap/extension-code-block-lowlight";
 import Underline from "@tiptap/extension-underline";
-// import { ColumnExtension } from "@gocapsule/column-extension"; // Uncomment if you use this
+
 import Placeholder from "@tiptap/extension-placeholder";
 
 import { createLowlight } from "lowlight";
@@ -29,9 +29,8 @@ import css from "highlight.js/lib/languages/css";
 import javascript from "highlight.js/lib/languages/javascript";
 import typescript from "highlight.js/lib/languages/typescript";
 
-import MenuBar from "./MenuBar"; // Ensure this path is correct
+import MenuBar from "./MenuBar";
 
-// --- Setup syntax highlighting ---
 const lowlight = createLowlight();
 lowlight.register({ xml });
 lowlight.register({ css });
@@ -39,10 +38,9 @@ lowlight.register({ javascript });
 lowlight.register({ typescript });
 lowlight.registerAlias({ xml: ["html"] });
 
-// --- Props Interface ---
 interface RichTextEditorProps {
-  initialContent?: string; // Optional initial content
-  onChange: (htmlContent: string) => void; // Callback for content changes
+  initialContent?: string;
+  onChange: (htmlContent: string) => void;
 }
 
 function RichTextEditor({
@@ -52,20 +50,18 @@ function RichTextEditor({
   const editor = useEditor({
     extensions: [
       StarterKit.configure({
-        codeBlock: false, // We replace StarterKit's codeBlock with CodeBlockLowlight
+        codeBlock: false,
         heading: {
-          // Configure heading levels within StarterKit
           levels: [1, 2, 3],
         },
-        // bulletList, orderedList, listItem will use their defaults from StarterKit
       }),
       Placeholder.configure({
         placeholder: "Sow the details of your project journey here...",
-        emptyEditorClass: "is-editor-empty", // This matches the class in your CSS!
+        emptyEditorClass: "is-editor-empty",
       }),
       TextAlign.configure({ types: ["heading", "paragraph"] }),
       Highlight,
-      Image, // Ensure you have a way to upload/manage images if you use this
+      Image,
       TaskList,
       TaskItem.configure({ nested: true }),
       Link.configure({
@@ -76,7 +72,7 @@ function RichTextEditor({
       Color,
       TextStyle,
       Underline,
-      // ColumnExtension, // Uncomment if you use this
+
       Table.configure({ resizable: true }),
       TableRow,
       TableHeader,
@@ -94,25 +90,21 @@ function RichTextEditor({
       },
     },
     onUpdate: ({ editor: currentEditor }: { editor: Editor }) => {
-      // console.log("HTML:", currentEditor.getHTML());
-      onChange(currentEditor.getHTML()); // Call the passed onChange function
+      onChange(currentEditor.getHTML());
     },
-    immediatelyRender: false, // To avoid SSR hydration mismatches
+    immediatelyRender: false,
   });
 
   useEffect(() => {
     if (editor && editor.isEditable) {
       const currentEditorHTML = editor.getHTML();
-      // Only update if the prop is different from current content
+
       if (currentEditorHTML !== initialContent) {
-        // If initialContent is "" and the editor is just an empty paragraph,
-        // Tiptap might represent this as "<p></p>".
-        // We explicitly tell it to set the content to the new initialContent.
-        editor.commands.setContent(initialContent, false); // 'false' prevents emitting an update event
+        editor.commands.setContent(initialContent, false);
       }
     }
-  }, [initialContent, editor]); // Depend on initialContent and editor instance
-  // It's also good practice to destroy the editor instance on unmount
+  }, [initialContent, editor]);
+
   useEffect(() => {
     return () => {
       if (editor) {
@@ -122,7 +114,7 @@ function RichTextEditor({
   }, [editor]);
 
   if (!editor) {
-    return null; // Or a loading indicator
+    return null;
   }
   return (
     <div className="flex flex-col h-full w-full  border">

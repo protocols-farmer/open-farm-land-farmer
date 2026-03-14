@@ -1,8 +1,8 @@
-// filePath: @/app/projects/[id]/CommentForm.tsx
+//src/components/pages/posts/CommentForm.tsx
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Send, Loader2, X } from "lucide-react"; // IMPROVEMENT: Using Lucide icons
+import { Send, Loader2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
@@ -40,7 +40,7 @@ export default function CommentForm({
     if (!text.trim() || isLoading) return;
     await onSubmit(text);
     if (!initialText) {
-      setText(""); // Clear form only on new comment submission
+      setText("");
     }
   };
 

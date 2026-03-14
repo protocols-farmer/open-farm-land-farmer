@@ -1,3 +1,4 @@
+//src/components/pages/posts/ReactHashTags.tsx
 "use client";
 
 import React, { useState, useCallback, useRef, useEffect } from "react";
@@ -8,7 +9,7 @@ import { cn } from "@/lib/utils";
 import { X, AlertCircle } from "lucide-react";
 
 const SUGGESTION_LIMIT = 10;
-const MAX_TAG_LENGTH = 25; // 🚜 Guard: Maximum characters per tag
+const MAX_TAG_LENGTH = 25;
 
 const impossibleCombinations: string[][] = [
   ["React", "Angular"],
@@ -19,7 +20,6 @@ const impossibleCombinations: string[][] = [
 ];
 
 interface ReactHashTagsProps {
-  // The component is fully controlled via these props.
   initialTags?: string[];
   onChange: (tags: string[]) => void;
   maxTags?: number;
@@ -69,19 +69,16 @@ const ReactHashTags: React.FC<ReactHashTagsProps> = ({
       const trimmedTag = tagToAdd.trim();
       if (!trimmedTag) return;
 
-      // 🚜 Guard: Prevent paragraphs/long strings
       if (trimmedTag.length > MAX_TAG_LENGTH) {
         setError(`Tags must be under ${MAX_TAG_LENGTH} characters.`);
         return;
       }
 
-      // 🚜 Guard: Prevent spaces (force slug-style tags)
       if (/\s/.test(trimmedTag)) {
         setError("Tags cannot contain spaces. Use hyphens instead.");
         return;
       }
 
-      // 🚜 Guard: The 11th Tag Warning
       if (tags.length >= maxTags) {
         setError(`Maximum of ${maxTags} tags allowed.`);
         setInputValue("");
@@ -229,7 +226,7 @@ const ReactHashTags: React.FC<ReactHashTagsProps> = ({
               placeholder="e.g., React, Python..."
               className="w-full h-10 "
               autoComplete="off"
-              maxLength={MAX_TAG_LENGTH} // 🚜 Visual Guard for input
+              maxLength={MAX_TAG_LENGTH}
               role="combobox"
               aria-expanded={filteredSuggestions.length > 0}
               aria-controls="tech-suggestions-list"

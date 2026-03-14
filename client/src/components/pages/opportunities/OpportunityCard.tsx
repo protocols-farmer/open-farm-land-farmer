@@ -1,3 +1,4 @@
+//src/components/pages/opportunities/OpportunityCard.tsx
 "use client";
 
 import Link from "next/link";
@@ -34,7 +35,6 @@ export default function OpportunityCard({
     <Card className="group h-full flex flex-col bg-card border-border/40 hover:border-primary/50 transition-all duration-500 hover:-translate-y-2 shadow-sm hover:shadow-2xl rounded-[2rem] overflow-hidden relative">
       <CardHeader className="p-7 pb-5">
         <div className="flex items-start gap-5">
-          {/* --- COMPANY LOGO --- */}
           <div className="relative h-16 w-16 rounded-2xl overflow-hidden bg-muted/50 border border-border/50 shrink-0 flex items-center justify-center shadow-inner">
             {opportunity.companyLogo ? (
               <Image
@@ -50,7 +50,6 @@ export default function OpportunityCard({
 
           <div className="space-y-1.5 flex-1 min-w-0">
             <CardTitle className="text-xl font-black tracking-tighter leading-tight line-clamp-2 group-hover:text-primary transition-colors duration-300">
-              {/* 🚜 The "after:absolute" trick makes the whole card clickable safely */}
               <Link
                 href={`/opportunities/${opportunity.id}`}
                 className="after:absolute after:inset-0"
@@ -66,7 +65,6 @@ export default function OpportunityCard({
       </CardHeader>
 
       <CardContent className="px-7 flex-grow space-y-6">
-        {/* --- JOB DETAILS --- */}
         <div className="grid grid-cols-1 gap-3">
           <div className="flex items-center gap-3 text-[13px] font-bold text-muted-foreground/70">
             <div className="p-1.5 rounded-lg bg-muted border border-border/50">
@@ -101,7 +99,6 @@ export default function OpportunityCard({
           )}
         </div>
 
-        {/* --- TAGS --- */}
         {opportunity.tags && opportunity.tags.length > 0 && (
           <div className="flex flex-wrap gap-2 pt-2">
             {opportunity.tags.slice(0, 3).map((tag) => (

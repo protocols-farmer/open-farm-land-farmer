@@ -6,10 +6,8 @@ import Image from "next/image";
 import { useDropzone } from "react-dropzone";
 import { dataURLtoFile } from "@/components/shared/dataURLtoFile";
 
-// --- Import the type for existing images ---
 import { PostImageDto } from "@/lib/features/post/postTypes";
 
-// UI Components & Icons
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -22,45 +20,36 @@ import { UploadCloud, X, AlertCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import ImageCropper from "@/components/shared/ImageCropper";
 
-// =======================================================
-// === STEP 1: UPDATE THE PROPS INTERFACE ===
-// =======================================================
 interface ImageUploadWithCropperProps {
-  value: File[]; // This will hold NEWLY added files
+  value: File[];
 
-  // FIX: Change the signature to report back both new and retained images
   onChange: (newFiles: File[], retainedImages: PostImageDto[]) => void;
 
   maxFiles?: number;
 
-  // ADD: A prop to accept images that already exist on the post
   existingImages?: PostImageDto[];
 }
 
-const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+const MAX_FILE_SIZE = 5 * 1024 * 1024;
 
 export default function ImageUploadWithCropper({
   value = [],
   onChange,
   maxFiles = 5,
-  existingImages = [], // Initialize with an empty array
+  existingImages = [],
 }: ImageUploadWithCropperProps) {
-  // State for NEW file previews
   const [newFilePreviews, setNewFilePreviews] = useState<string[]>([]);
 
-  // State for EXISTING images that haven't been deleted by the user
   const [retainedImages, setRetainedImages] =
     useState<PostImageDto[]>(existingImages);
 
   const [error, setError] = useState<string | null>(null);
   const [croppingImage, setCroppingImage] = useState<string | null>(null);
 
-  // Sync component's internal state when the initial existingImages prop is loaded
   useEffect(() => {
     setRetainedImages(existingImages);
   }, [existingImages]);
 
-  // Sync previews for NEWLY added files
   useEffect(() => {
     const objectUrls = value.map((file) => URL.createObjectURL(file));
     setNewFilePreviews(objectUrls);
@@ -98,19 +87,15 @@ export default function ImageUploadWithCropper({
     );
     if (newFile) {
       const newFilesArray = [...value, newFile];
-      // Call onChange with the updated new files and the current retained images
+
       onChange(newFilesArray, retainedImages);
     }
     setCroppingImage(null);
   };
 
-  // =======================================================
-  // === STEP 2: UPDATE THE REMOVAL LOGIC ===
-  // =======================================================
-
   const removeNewFile = (indexToRemove: number) => {
     const newFilesArray = value.filter((_, index) => index !== indexToRemove);
-    // Call onChange with the updated new files and the current retained images
+
     onChange(newFilesArray, retainedImages);
   };
 
@@ -119,7 +104,7 @@ export default function ImageUploadWithCropper({
       (img) => img.id !== idToRemove,
     );
     setRetainedImages(newRetainedArray);
-    // Call onChange with the current new files and the UPDATED retained images
+
     onChange(value, newRetainedArray);
   };
 

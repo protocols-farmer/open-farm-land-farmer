@@ -1,4 +1,4 @@
-// filePath: @/app/projects/[id]/RepliesList.tsx
+//src/components/pages/posts/RepliesList.tsx
 "use client";
 
 import React, { useState } from "react";
@@ -26,7 +26,6 @@ export default function RepliesList({ parentId, postId }: RepliesListProps) {
   const replies = repliesResponse?.data || [];
   const pagination = repliesResponse?.pagination;
 
-  // This is a placeholder as replies don't need to optimistically update the main list
   const dummyGetCommentsParams: GetCommentsForPostParams = { postId };
 
   return (

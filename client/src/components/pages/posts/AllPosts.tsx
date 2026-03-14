@@ -1,8 +1,8 @@
 //src/components/pages/posts/AllPosts.tsx
 "use client";
 
-import PostFilterPage from "./PostFilterPage"; // Adjust the import path as needed
-import { LayoutGrid } from "lucide-react"; // Using a generic icon for "all posts"
+import PostFilterPage from "./PostFilterPage";
+import { LayoutGrid } from "lucide-react";
 
 export default function AllPosts() {
   return (

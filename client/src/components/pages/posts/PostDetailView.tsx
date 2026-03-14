@@ -1,4 +1,4 @@
-// FILE: src/components/pages/posts/PostDetailView.tsx
+//src/components/pages/posts/PostDetailView.tsx
 "use client";
 
 import {
@@ -11,7 +11,6 @@ import { format } from "date-fns";
 import DOMPurify from "dompurify";
 import "highlight.js/styles/github-dark.css";
 
-// UI Components
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
@@ -31,21 +30,17 @@ import { useAppSelector } from "@/lib/hooks/hooks";
 import { selectCurrentUser } from "@/lib/features/user/userSlice";
 import CommentSection from "./CommentSection";
 
-// This component takes an ID, fetches the data, and renders the result.
 export default function PostDetailView({ postId }: { postId: string }) {
   const { data: post, isLoading, isError, error } = useGetPostByIdQuery(postId);
   const currentUser = useAppSelector(selectCurrentUser);
 
   const [recordPostView] = useRecordPostViewMutation();
   useEffect(() => {
-    // Record a view only if we have a post ID and a logged-in user
     if (postId && currentUser) {
-      // We don't need to wait for this to finish, it can happen in the background.
       recordPostView(postId);
     }
   }, [postId, currentUser, recordPostView]);
-  // --- 1. Loading State ---
-  // Display skeletons while the post data is being fetched.
+
   if (isLoading) {
     return (
       <div className="container mx-auto max-w-3xl py-8 space-y-8">
@@ -70,7 +65,6 @@ export default function PostDetailView({ postId }: { postId: string }) {
     );
   }
 
-  // --- 2. Error and Not Found State ---
   if (isError || !post) {
     const status = "status" in (error || {}) ? (error as any).status : 500;
     const title = status === 404 ? "Post Not Found" : "Error Loading Post";
@@ -90,8 +84,6 @@ export default function PostDetailView({ postId }: { postId: string }) {
     );
   }
 
-  // --- 3. Security: Sanitize the user-generated HTML content ---
-  // This is CRUCIAL to prevent XSS attacks.
   const sanitizedContent = DOMPurify.sanitize(post.content, {
     ADD_ATTR: ["class"],
   });

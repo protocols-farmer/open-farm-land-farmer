@@ -27,14 +27,7 @@ import {
   Calendar,
   Tags,
   ServerCrash,
-  FolderGit2,
-  Newspaper,
-  BookCopy,
-  FileText,
-  Presentation,
-  MessagesSquare,
-  Compass,
-  Loader2, // 🚜 ADDED
+  Loader2,
   RotateCcw,
   Shovel,
   Pickaxe,
@@ -42,10 +35,10 @@ import {
   Milk,
   Flower2,
   MessageSquare,
-  Sprout, // 🚜 ADDED
+  Sprout,
 } from "lucide-react";
 import { useDebounce } from "@/lib/hooks/useDebounce";
-import { useIntersectionObserver } from "@/lib/hooks/useIntersectionObserver"; // 🚜 ADDED
+import { useIntersectionObserver } from "@/lib/hooks/useIntersectionObserver";
 import { cn } from "@/lib/utils";
 
 interface PostFilterPageProps {
@@ -125,11 +118,9 @@ export default function PostFilterPage({
     searchParams.get("sort") || "newest",
   );
 
-  // 🚜 INFINITE SCROLL STATE
   const [page, setPage] = useState(1);
   const debouncedSearchTerm = useDebounce(searchTerm, 500);
 
-  // Reset page when filters change
   useEffect(() => {
     setPage(1);
   }, [debouncedSearchTerm, selectedCategory, selectedTags, sortOrder]);
@@ -137,7 +128,6 @@ export default function PostFilterPage({
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
 
-    // const params = new URLSearchParams(searchParams.toString());
     if (debouncedSearchTerm) params.set("q", debouncedSearchTerm);
     else params.delete("q");
     if (selectedTags.size > 0)
@@ -170,8 +160,8 @@ export default function PostFilterPage({
     tags:
       selectedTags.size > 0 ? Array.from(selectedTags).join(",") : undefined,
     sort: sortOrder as GetPostsArgs["sort"],
-    limit: 12, // 🚜 Standardized to 12 for grid math
-    page, // 🚜 Now dynamic
+    limit: 12,
+    page,
   };
 
   const {
@@ -179,7 +169,7 @@ export default function PostFilterPage({
     isLoading,
     isFetching,
     isError,
-    refetch, // 🚜 For the error button
+    refetch,
   } = useGetPostsQuery(queryParams);
 
   const { data: tagsResponse } = useGetTagsQuery({
@@ -193,7 +183,6 @@ export default function PostFilterPage({
   const posts = postsResponse?.data || [];
   const availableTags = tagsResponse?.data.map((t) => t.name) || [];
 
-  // 🚜 INFINITE SCROLL LOGIC
   const hasMore = postsResponse
     ? postsResponse.pagination.currentPage < postsResponse.pagination.totalPages
     : false;

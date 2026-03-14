@@ -1,3 +1,4 @@
+//src/components/pages/posts/myPosts/MyPosts.tsx
 "use client";
 
 import PostFilterPage from "@/components/pages/posts/PostFilterPage";
@@ -25,7 +26,7 @@ export default function MyPosts() {
       subtitle="A collection of all the content you have created."
       icon={FolderKanban}
       searchPlaceholder="Search your posts..."
-      authorId={currentUser.id} // <-- PASS THE USER'S ID HERE
+      authorId={currentUser.id}
     />
   );
 }

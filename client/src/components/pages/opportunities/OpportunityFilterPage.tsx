@@ -30,12 +30,12 @@ import {
   Briefcase,
   Globe,
   FilterX,
-  Loader2, // 🚜 ADDED
+  Loader2,
   RotateCcw,
-  Tractor, // 🚜 ADDED
+  Tractor,
 } from "lucide-react";
 import { useDebounce } from "@/lib/hooks/useDebounce";
-import { useIntersectionObserver } from "@/lib/hooks/useIntersectionObserver"; // 🚜 ADDED
+import { useIntersectionObserver } from "@/lib/hooks/useIntersectionObserver";
 import { cn } from "@/lib/utils";
 
 const OpportunitySkeleton = () => (
@@ -76,7 +76,6 @@ export default function OpportunityFilterPage({
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
-  // --- STATE ---
   const [searchTerm, setSearchTerm] = useState(searchParams.get("q") || "");
   const [selectedType, setSelectedType] = useState<"All" | OpportunityTypeEnum>(
     (searchParams.get("type") as OpportunityTypeEnum) || "All",
@@ -88,21 +87,18 @@ export default function OpportunityFilterPage({
     () => new Set(searchParams.get("tags")?.split(",").filter(Boolean) || []),
   );
 
-  // 🚜 INFINITE SCROLL STATE (skip = offset)
   const [skip, setSkip] = useState(0);
   const BATCH_SIZE = 12;
 
   const debouncedSearchTerm = useDebounce(searchTerm, 500);
 
-  // 🚜 Reset skip when any filter changes
   useEffect(() => {
     setSkip(0);
   }, [debouncedSearchTerm, selectedType, isRemoteOnly, selectedTags]);
 
-  // --- URL SYNC ---
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    // const params = new URLSearchParams(searchParams.toString());
+
     if (debouncedSearchTerm) params.set("q", debouncedSearchTerm);
     else params.delete("q");
     if (selectedType !== "All") params.set("type", selectedType);
@@ -123,15 +119,14 @@ export default function OpportunityFilterPage({
     router,
   ]);
 
-  // --- DATA FETCHING ---
   const queryParams: GetOpportunitiesParams = {
     q: debouncedSearchTerm || undefined,
     type: selectedType === "All" ? undefined : selectedType,
     isRemote: isRemoteOnly || undefined,
     tags:
       selectedTags.size > 0 ? Array.from(selectedTags).join(",") : undefined,
-    take: BATCH_SIZE, // 🚜 Standardized limit
-    skip: skip, // 🚜 Dynamic offset
+    take: BATCH_SIZE,
+    skip: skip,
   };
 
   const {
@@ -139,7 +134,7 @@ export default function OpportunityFilterPage({
     isLoading,
     isFetching,
     isError,
-    refetch, // 🚜 For the error button
+    refetch,
   } = useGetOpportunitiesQuery(queryParams);
 
   /**

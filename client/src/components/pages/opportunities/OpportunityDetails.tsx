@@ -121,7 +121,6 @@ export default function OpportunityDetailsPage({
   return (
     <div className="container mx-auto max-w-5xl py-12 md:py-20 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <article className="grid grid-cols-1 lg:grid-cols-12 gap-12">
-        {/* Left Column: Main Info */}
         <div className="lg:col-span-8 space-y-12">
           <header className="space-y-8">
             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6">
@@ -211,9 +210,7 @@ export default function OpportunityDetailsPage({
           )}
         </div>
 
-        {/* Right Column: CTA */}
         <div className="lg:col-span-4 space-y-8">
-          {/* 🚜 Refined: Card uses theme variables exclusively */}
           <Card className="p-8 bg-card text-card-foreground border-border shadow-2xl relative top-24">
             <div className="space-y-6">
               <div className="space-y-2">
@@ -259,7 +256,6 @@ export default function OpportunityDetailsPage({
             </div>
           </Card>
 
-          {/* Corrected Tag Access logic */}
           {(opportunity.tags?.length ?? 0) > 0 && (
             <div className="space-y-4 px-2">
               <h3 className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
@@ -279,7 +275,6 @@ export default function OpportunityDetailsPage({
             </div>
           )}
 
-          {/* Admin Tools */}
           {canModify && (
             <div className="pt-8 flex items-center justify-center gap-4">
               <Button

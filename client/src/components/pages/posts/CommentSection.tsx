@@ -32,7 +32,6 @@ const CommentSection: React.FC<CommentSectionProps> = ({
   const searchParams = useSearchParams();
   const page = parseInt(searchParams.get("cpage") || "1", 10);
 
-  // This object is still needed for the query hook itself
   const getCommentsParams = {
     postId,
     skip: (page - 1) * COMMENTS_PER_PAGE,
@@ -48,8 +47,6 @@ const CommentSection: React.FC<CommentSectionProps> = ({
     isError,
     error,
   } = useGetCommentsForPostQuery(getCommentsParams, {
-    // 🚜 THE FIX: Prevent query execution if postId is missing.
-    // Combined with the Backend 'optionalVerifyToken' fix, this stops the 401.
     skip: !postId,
   });
 

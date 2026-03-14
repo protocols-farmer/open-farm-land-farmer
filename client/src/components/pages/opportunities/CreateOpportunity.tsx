@@ -1,4 +1,4 @@
-// src/components/pages/opportunities/CreateOpportunityPage.tsx
+//src/components/pages/opportunities/CreateOpportunityPage.tsx
 "use client";
 
 import React, { useEffect } from "react";
@@ -13,7 +13,6 @@ export default function CreateOpportunityPage() {
   const router = useRouter();
   const currentUser = useAppSelector(selectCurrentUser);
 
-  // Authorization Check
   useEffect(() => {
     if (
       currentUser &&
@@ -27,7 +26,6 @@ export default function CreateOpportunityPage() {
     }
   }, [currentUser, router]);
 
-  // Avoid rendering the form if the user is not authorized to prevent content flash
   if (
     !currentUser ||
     !(

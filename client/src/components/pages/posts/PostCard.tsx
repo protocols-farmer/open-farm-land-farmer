@@ -1,3 +1,4 @@
+//src/components/pages/posts/PostCard.tsx
 "use client";
 
 import React, { useState } from "react";
@@ -6,7 +7,6 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 
-// --- HOOKS & STATE MANAGEMENT ---
 import { useAuthAction } from "@/lib/hooks/useAuthAction";
 import {
   useLikePostMutation,
@@ -17,7 +17,6 @@ import {
 } from "@/lib/features/post/postApiSlice";
 import { PostDto, PostCategory } from "@/lib/features/post/postTypes";
 
-// --- UI COMPONENTS & ICONS ---
 import { Card, CardContent, CardFooter, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -50,14 +49,12 @@ import {
   ArrowRight,
 } from "lucide-react";
 
-// --- UTILITIES ---
 import { cn } from "@/lib/utils";
 import { formatDistanceToNow } from "date-fns";
 import { formatCompactNumber } from "@/lib/utils";
 
 const FALLBACK_POST_IMAGE = "/fallback-project.jpg";
 
-// 🚜 VINTAGE ADDITION: Ornate Corner Filigree
 const CornerFlourish = ({ className }: { className?: string }) => (
   <svg
     viewBox="0 0 40 40"
@@ -76,7 +73,6 @@ const CornerFlourish = ({ className }: { className?: string }) => (
   </svg>
 );
 
-// 🚜 VINTAGE ADDITION: Side Center Filigree
 const SideFlourish = ({ className }: { className?: string }) => (
   <svg
     viewBox="0 0 24 12"
@@ -99,7 +95,7 @@ interface PostCardProps {
 
 const TagsDisplay = ({ tags }: { tags: PostDto["tags"] }) => {
   if (!tags || tags.length === 0) return null;
-  const maxTagsToShow = 2; // Reduced to save space
+  const maxTagsToShow = 2;
   const remainingTags = tags.length - maxTagsToShow;
   const tagsToShow = tags.slice(0, maxTagsToShow);
 

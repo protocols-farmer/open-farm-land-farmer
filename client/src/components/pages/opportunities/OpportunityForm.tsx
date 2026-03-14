@@ -1,3 +1,4 @@
+//src/components/pages/opportunities/OpportunityForm.tsx
 "use client";
 
 import React, { useState } from "react";
@@ -6,7 +7,6 @@ import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Image from "next/image";
 
-// --- HOOKS & API ---
 import {
   opportunitySchema,
   OpportunityFormValues,
@@ -20,7 +20,6 @@ import {
   OpportunityTypeEnum,
 } from "@/lib/features/opportunities/opportunityTypes";
 
-// --- UI COMPONENTS ---
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -37,7 +36,6 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Separator } from "@/components/ui/separator";
 
-// --- CUSTOM COMPONENTS & UTILS ---
 import {
   Loader2,
   PlusCircle,

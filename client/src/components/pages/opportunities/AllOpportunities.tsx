@@ -31,7 +31,6 @@ export default function AllOpportunitiesPage() {
 
   return (
     <div className="relative">
-      {/* 🚜 Action Button: Floating for better UX and clean design */}
       {canCreate && (
         <div className="fixed bottom-8 right-8 z-50">
           <Button

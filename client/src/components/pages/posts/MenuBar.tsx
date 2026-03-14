@@ -36,7 +36,6 @@ import {
 import { cn } from "@/lib/utils";
 import { Separator } from "@/components/ui/separator";
 
-// --- Typed and Styled IconButton ---
 interface IconButtonProps {
   onClick: () => void;
   isActive: boolean;
@@ -66,7 +65,6 @@ function IconButton({ onClick, isActive, Icon, label }: IconButtonProps) {
   );
 }
 
-// --- Improved Color Picker ---
 function ColorPicker({ editor }: { editor: Editor }) {
   return (
     <div className="flex items-center  p-1 hover:bg-accent">
@@ -87,7 +85,6 @@ function ColorPicker({ editor }: { editor: Editor }) {
   );
 }
 
-// --- The Main MenuBar Component ---
 function MenuBar({ editor }: { editor: Editor | null }) {
   const addImage = useCallback(() => {
     if (!editor) return;
