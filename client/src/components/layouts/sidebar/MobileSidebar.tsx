@@ -1,4 +1,3 @@
-//src/components/layouts/sidebar/MobileSidebar.tsx
 "use client";
 
 import React from "react";
@@ -48,7 +47,25 @@ import {
   User,
   Settings,
   Fence,
+  Crown, // 🚜 Added
 } from "lucide-react";
+
+// 🚜 VINTAGE ADDITION: Ornate Corner Flourish
+const CornerFlourish = ({ className }: { className?: string }) => (
+  <svg
+    viewBox="0 0 40 40"
+    className={cn(
+      "absolute w-6 h-6 pointer-events-none text-primary/40 z-30",
+      className,
+    )}
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="1.5"
+  >
+    <path d="M38 2H10C5.58 2 2 5.58 2 10V38" />
+    <path d="M30 6H12C8.68 6 6 8.68 6 12V30" />
+  </svg>
+);
 
 interface NavItem {
   href: string;
@@ -159,7 +176,11 @@ export default function MobileSidebar() {
             <span className="sr-only">Toggle navigation menu</span>
           </Button>
         </SheetTrigger>
-        <SheetContent side="left" className="flex flex-col bg-background p-0">
+        {/* 🚜 VINTAGE CHANGE: Added border-r-[3px] border-double */}
+        <SheetContent
+          side="left"
+          className="flex flex-col bg-background p-0 border-r-[3px] border-double border-border/80"
+        >
           <SheetHeader className="h-16 shrink-0 border-b px-4 flex items-center">
             <SheetTitle className="sr-only">Main Menu</SheetTitle>
             <SheetDescription className="sr-only">
@@ -178,7 +199,7 @@ export default function MobileSidebar() {
                 <Button
                   asChild
                   variant="default"
-                  className="w-full mb-2 rounded-none"
+                  className="w-full mb-2 rounded-none border border-primary/20"
                 >
                   <Link href="/create">
                     <Plus className="mr-2 h-5 w-5" />
@@ -195,6 +216,26 @@ export default function MobileSidebar() {
               <CollapsibleNav section={communitySection} pathname={pathname} />
               <Separator className="my-2" />
               <CollapsibleNav section={workspaceSection} pathname={pathname} />
+
+              {/* 🚜 ADDED PRO BANNER (Synced with Sidebar) */}
+              <div className="mt-6 px-1">
+                <div className="relative border-[3px] border-double border-border/80 bg-muted/40 p-4 text-center overflow-visible">
+                  <CornerFlourish className="-top-1 -left-1 rotate-0" />
+                  <CornerFlourish className="-top-1 -right-1 rotate-90" />
+                  <CornerFlourish className="-bottom-1 -left-1 -rotate-90" />
+                  <CornerFlourish className="-bottom-1 -right-1 rotate-180" />
+
+                  <div className="mb-3 flex justify-center">
+                    <div className="bg-primary/10 p-2 border border-dashed border-primary/30">
+                      <Crown className="h-6 w-6 text-primary" />
+                    </div>
+                  </div>
+                  <h3 className="text-sm font-bold text-foreground">Go Pro</h3>
+                  <p className="mt-1 text-[11px] leading-tight text-muted-foreground italic">
+                    Coming soon to the farm. Stay tuned!
+                  </p>
+                </div>
+              </div>
             </nav>
           </div>
 

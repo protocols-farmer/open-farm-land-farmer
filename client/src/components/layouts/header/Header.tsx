@@ -1,3 +1,4 @@
+//src/components/layouts/header/Header.tsx
 "use client";
 
 import MobileSidebar from "@/components/layouts/sidebar/MobileSidebar";
@@ -9,7 +10,6 @@ import { selectIsHydrated } from "@/lib/features/auth/authSlice";
 import NotificationBell from "@/components/pages/notifications/NotificationBell";
 import { cn } from "@/lib/utils";
 
-// 🚜 VINTAGE ADDITION: Ornate Corner Flourish
 const CornerFlourish = ({ className }: { className?: string }) => (
   <svg
     viewBox="0 0 40 40"
@@ -26,7 +26,6 @@ const CornerFlourish = ({ className }: { className?: string }) => (
   </svg>
 );
 
-// 🚜 VINTAGE ADDITION: Technical Ruler (Fixed with CSS Gradient to prevent overflow)
 const MeasurementRuler = () => (
   <div
     className="absolute top-0 left-0 w-full h-2 opacity-20 pointer-events-none"
@@ -47,10 +46,8 @@ export default function Header() {
 
   return (
     <header className="relative w-full border-b-[3px] border-double border-border/80 bg-background/60 shadow-sm backdrop-blur-lg z-50 overflow-visible">
-      {/* 🚜 Archival Ruler Overlay */}
       <MeasurementRuler />
 
-      {/* 🚜 Bottom Corner Flourishes (Adjusted to right-0 to fix horizontal scroll) */}
       <CornerFlourish className="-bottom-1.5 left-0 -rotate-90" />
       <CornerFlourish className="-bottom-1.5 right-0 rotate-180" />
 
@@ -67,8 +64,8 @@ export default function Header() {
                 </span>
               </h1>
             ) : (
-              <h1 className="text-lg font-semibold text-foreground italic">
-                Open Farm Land Archive
+              <h1 className="text-lg font-semibold text-foreground ">
+                Welcome to Open Farm Land
               </h1>
             )}
           </div>

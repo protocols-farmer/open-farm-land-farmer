@@ -69,7 +69,7 @@ function ResetPasswordContent() {
 
   if (!token) {
     return (
-      <Card className="w-full max-w-md border-border shadow-lg">
+      <Card className="w-full max-w-md border-border shadow-lg rounded-none">
         <CardHeader className="text-center space-y-2">
           <div className="mx-auto bg-destructive/10 p-3 rounded-full w-fit">
             <AlertCircle className="h-6 w-6 text-destructive" />
@@ -93,7 +93,7 @@ function ResetPasswordContent() {
   }
 
   return (
-    <Card className="w-full max-w-md border-border shadow-lg">
+    <Card className="w-full max-w-md border-border shadow-lg rounded-none">
       <CardHeader className="space-y-1">
         <CardTitle className="text-2xl font-bold">New Password</CardTitle>
         <CardDescription>

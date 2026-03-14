@@ -70,7 +70,7 @@ export default function ForgotPasswordPage() {
   if (isSubmitted) {
     return (
       <div className="flex items-center justify-center min-h-[80vh] p-4">
-        <Card className="w-full max-w-md border-border shadow-lg text-center">
+        <Card className="w-full max-w-md border-border shadow-lg text-center rounded-none">
           <CardHeader>
             <div className="mx-auto bg-green-500/10 p-3 rounded-full w-fit mb-2">
               <CheckCircle2 className="h-6 w-6 text-green-600" />
@@ -95,8 +95,8 @@ export default function ForgotPasswordPage() {
   }
 
   return (
-    <div className="flex items-center justify-center min-h-[80vh] p-4">
-      <Card className="w-full max-w-md border-border shadow-lg">
+    <div className="flex items-center justify-center min-h-[80vh] p-4 rounded-none">
+      <Card className="w-full max-w-md border-border shadow-lg rounded-none">
         <CardHeader className="space-y-1">
           <Link
             href="/auth/login"

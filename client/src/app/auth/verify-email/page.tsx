@@ -35,7 +35,7 @@ function VerifyEmailContent() {
 
   if (!token) {
     return (
-      <Card className="w-full max-w-md mx-auto text-center border-border shadow-lg">
+      <Card className="w-full max-w-md mx-auto text-center border-border shadow-lg rounded-none">
         <CardHeader>
           <div className="mx-auto bg-destructive/10 p-3 rounded-full w-fit mb-2">
             <XCircle className="h-6 w-6 text-destructive" />

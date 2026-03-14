@@ -49,7 +49,7 @@ function ThemeToggler() {
 
     if (isHydrated && currentUser) {
       try {
-        const themeValue = newTheme.toUpperCase() as ThemePreference;
+        const themeValue = newTheme as ThemePreference;
         await updateSettings({ theme: themeValue }).unwrap();
       } catch (err: any) {
         if (err?.status !== 401) {
@@ -93,19 +93,19 @@ function ThemeToggler() {
       >
         <DropdownMenuItem
           onClick={() => handleThemeChange("light")}
-          className="cursor-pointer text-[10px] uppercase tracking-widest"
+          className="cursor-pointer text-[10px]  "
         >
           Light Mode
         </DropdownMenuItem>
         <DropdownMenuItem
           onClick={() => handleThemeChange("dark")}
-          className="cursor-pointer text-[10px] uppercase tracking-widest"
+          className="cursor-pointer text-[10px]  "
         >
           Dark Mode
         </DropdownMenuItem>
         <DropdownMenuItem
           onClick={() => handleThemeChange("system")}
-          className="cursor-pointer text-[10px] uppercase tracking-widest"
+          className="cursor-pointer text-[10px]  "
         >
           System
         </DropdownMenuItem>

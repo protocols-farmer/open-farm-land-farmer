@@ -50,7 +50,6 @@ import {
 import Logo from "@/components/shared/Logo";
 import { Separator } from "@/components/ui/separator";
 
-// 🚜 VINTAGE ADDITION: Ornate Corner Flourish
 const CornerFlourish = ({ className }: { className?: string }) => (
   <svg
     viewBox="0 0 40 40"
@@ -67,7 +66,6 @@ const CornerFlourish = ({ className }: { className?: string }) => (
   </svg>
 );
 
-// --- Navigation Data ---
 interface NavItem {
   href: string;
   label: string;
@@ -214,7 +212,6 @@ export default function Sidebar() {
   return (
     <aside
       className={cn(
-        // 🚜 VINTAGE CHANGE: Added border-r-[3px] border-double
         "group sticky top-0 hidden lg:flex flex-col border-r-[3px] border-double border-border/80 bg-background h-screen transition-all duration-300 ease-in-out z-40 overflow-visible",
         isCollapsed ? "w-20" : "w-64",
       )}
@@ -225,19 +222,32 @@ export default function Sidebar() {
             <Button
               variant="outline"
               size="icon"
-              className="rounded-none absolute -right-4 top-1/2 -translate-y-1/2 h-8 w-8  bg-background hover:bg-muted z-50 border  shadow-sm hidden lg:flex items-center justify-center transition-transform active:scale-95"
+              className={cn(
+                "rounded-none absolute -right-4 top-1/2 -translate-y-1/2 h-8 w-8 z-50 transition-all active:scale-95",
+                "hidden lg:flex items-center justify-center bg-background",
+
+                "border-[3px] border-double border-border/80 hover:border-primary/60 hover:bg-muted shadow-sm overflow-visible",
+              )}
               onClick={() => setIsCollapsed(!isCollapsed)}
             >
+              <div className="absolute -top-[2px] -left-[2px] w-2 h-2 border-t-[1.5px] border-l-[1.5px] border-primary/60" />
+              <div className="absolute -bottom-[2px] -right-[2px] w-2 h-2 border-b-[1.5px] border-r-[1.5px] border-primary/60" />
+
+              <div className="absolute inset-1 border border-dashed border-primary/10 pointer-events-none" />
+
               {isCollapsed ? (
-                <ChevronRight className="h-4 w-4" />
+                <ChevronRight className="h-4 w-4 text-primary/80" />
               ) : (
-                <ChevronLeft className="h-4 w-4" />
+                <ChevronLeft className="h-4 w-4 text-primary/80" />
               )}
               <span className="sr-only">Toggle Sidebar</span>
             </Button>
           </TooltipTrigger>
-          <TooltipContent side="right">
-            {isCollapsed ? "Expand" : "Collapse"}
+          <TooltipContent
+            side="right"
+            className="rounded-none border-2 border-double font-bold text-[10px]  "
+          >
+            {isCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
           </TooltipContent>
         </Tooltip>
       </TooltipProvider>
@@ -315,10 +325,8 @@ export default function Sidebar() {
         </nav>
       </div>
 
-      {/* Pro Banner Section */}
       {!isCollapsed && (
         <div className="p-4 border-t mt-auto shrink-0 overflow-visible">
-          {/* 🚜 VINTAGE CHANGE: Added border-[3px] border-double and Corner Flourishes */}
           <div className="relative border-[3px] border-double border-border/80 bg-muted/40 p-4 text-center overflow-visible">
             <CornerFlourish className="-top-1 -left-1 rotate-0" />
             <CornerFlourish className="-top-1 -right-1 rotate-90" />

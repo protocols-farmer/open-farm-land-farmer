@@ -41,7 +41,7 @@ export default function AuthInitializer({
     return (
       <div className="flex flex-col items-center justify-center h-screen w-full bg-background animate-in fade-in duration-500">
         <div className="mx-auto flex w-full max-w-[420px] flex-col items-center space-y-10 text-center">
-          <div className="flex h-24 w-24 items-center justify-center rounded-3xl bg-muted border border-border/50">
+          <div className="flex h-24 w-24 items-center justify-center  bg-muted border border-border/50">
             <Settings className="h-12 w-12 animate-[spin_10s_linear_infinite] text-foreground/40" />
           </div>
 
@@ -52,7 +52,7 @@ export default function AuthInitializer({
               This usually takes a few moments.
             </p>
 
-            <div className="rounded-2xl border bg-muted/20 p-6 text-sm text-left w-full space-y-3">
+            <div className=" border bg-muted/20 p-6 text-sm text-left w-full space-y-3">
               <p className="font-bold  text-[10px]  text-primary">
                 Current status
               </p>
