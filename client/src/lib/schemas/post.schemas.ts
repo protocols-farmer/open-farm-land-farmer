@@ -39,7 +39,10 @@ export const createPostSchema = z.object({
     .string()
     .min(10, "Description must be at least 10 characters long.")
     .max(500, "Description cannot exceed 500 characters."),
-  content: z.string().min(20, "Main content must have at least 20 characters."),
+  content: z
+    .string()
+    .min(20, "Main content must have at least 20 characters.")
+    .max(50000, "Main content is too long. It cannot exceed 50000 characters."),
   category: z.enum(postCategories, {
     required_error: "You must select a post category.",
   }),

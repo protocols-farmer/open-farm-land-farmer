@@ -17,10 +17,10 @@ app.set("trust proxy", 1);
 app.use(cors(corsOptions));
 
 // // Parse JSON request bodies
-app.use(express.json({ limit: "10kb" }));
+app.use(express.json({ limit: "100kb" }));
 
 // // Parse URL-encoded request bodies
-app.use(express.urlencoded({ extended: true, limit: "10kb" }));
+app.use(express.urlencoded({ extended: true, limit: "100kb" }));
 
 // // Parse cookies
 app.use(cookieParser());

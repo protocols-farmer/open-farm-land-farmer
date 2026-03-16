@@ -29,8 +29,9 @@ export const uploadToCloudinary = async (
 ): Promise<UploadApiResponse> => {
   const uploadOptions: UploadApiOptions = {
     folder: folder,
-    resource_type: "auto",
-
+    // 🚜 UPDATED: Changed from "auto" to "image" to prevent non-image uploads
+    resource_type: "image",
+    // overwrite: true is used with a specific public_id to replace old files
     ...(publicId && { public_id: publicId, overwrite: true }),
   };
 
@@ -45,6 +46,8 @@ export const uploadToCloudinary = async (
     logger.error({ err: error }, "Cloudinary Upload Error");
     throw error;
   } finally {
+    // ALWAYS delete the file from the local 'uploads/images_temp' folder
+    // to prevent server storage from filling up.
     try {
       await fs.unlink(filePath);
       logger.debug({ filePath }, "Temporary local file deleted.");
@@ -83,14 +86,11 @@ export const deleteFromCloudinary = async (
  */
 export const extractPublicIdFromUrl = (url: string): string | null => {
   try {
-    const parts = url.split("/");
-    const fileNameWithExt = parts.pop();
-    if (!fileNameWithExt) return null;
-
-    const fileName = fileNameWithExt.split(".")[0];
-    const folder = parts.pop();
-
-    return `${folder}/${fileName}`;
+    // 🚜 UPDATED: Replaced manual splitting with a robust Regex
+    // to handle versioning (v12345/) and folder depths correctly.
+    const regex = /\/upload\/(?:v\d+\/)?(.+)\.[a-z]+$/;
+    const match = url.match(regex);
+    return match ? match[1] : null;
   } catch (error) {
     return null;
   }

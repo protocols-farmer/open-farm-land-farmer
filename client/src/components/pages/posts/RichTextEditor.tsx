@@ -56,7 +56,7 @@ function RichTextEditor({
         },
       }),
       Placeholder.configure({
-        placeholder: "Sow the details of your project journey here...",
+        placeholder: "Write actual content here... and be brief! :)",
         emptyEditorClass: "is-editor-empty",
       }),
       TextAlign.configure({ types: ["heading", "paragraph"] }),

@@ -1,4 +1,3 @@
-// server/src/features/post/post.validation.ts
 import { z } from "zod";
 import { PostCategory } from "@prisma-client";
 
@@ -69,11 +68,30 @@ const strictGitHubLinkSchema = z
     }
   });
 
+// 🚜 CREATE SCHEMA
 export const createPostSchema = z.object({
   body: z.object({
-    title: z.string().min(1, "Title is required").max(255),
-    description: z.string().min(1, "Description is required.").max(500),
-    content: z.string().min(1, "Post content cannot be empty."),
+    // UPDATED: Min 5 (matches frontend)
+    title: z
+      .string()
+      .min(5, "Title must be at least 5 characters long.")
+      .max(255),
+
+    // UPDATED: Min 10 (matches frontend)
+    description: z
+      .string()
+      .min(10, "Description must be at least 10 characters long.")
+      .max(500),
+
+    // UPDATED: Min 20 and Max 50,000 (matches frontend and adds hacker protection)
+    content: z
+      .string()
+      .min(20, "Main content must have at least 20 characters.")
+      .max(
+        50000,
+        "Main content is too long. It cannot exceed 50000 characters.",
+      ),
+
     category: z.enum(postCategoryValues, {
       message: "Please select a valid category.",
     }),
@@ -96,14 +114,35 @@ export const createPostSchema = z.object({
   }),
 });
 
+// 🚜 UPDATE SCHEMA
+// Logic: We use the exact same rules as Create to ensure data quality remains high.
 export const updatePostSchema = z.object({
   body: z.object({
-    title: z.string().min(1, "Title is required").max(255),
-    description: z.string().min(1, "Description is required").max(500),
-    content: z.string().min(1, "Post content cannot be empty."),
+    // UPDATED: Min 5 (matches createPostSchema)
+    title: z
+      .string()
+      .min(5, "Title must be at least 5 characters long.")
+      .max(255),
+
+    // UPDATED: Min 10 (matches createPostSchema)
+    description: z
+      .string()
+      .min(10, "Description must be at least 10 characters long.")
+      .max(500),
+
+    // UPDATED: Min 20 and Max 50,000 (matches createPostSchema)
+    content: z
+      .string()
+      .min(20, "Main content must have at least 20 characters.")
+      .max(
+        50000,
+        "Main content is too long. It cannot exceed 50000 characters.",
+      ),
+
     category: z.enum(postCategoryValues, {
       message: "Please select a valid category.",
     }),
+
     postTags: z.preprocess(
       preprocessTags,
       z

@@ -40,7 +40,12 @@ const imageFileFilter = (
 export const uploadImage = multer({
   storage: imageStorage,
   fileFilter: imageFileFilter,
-  limits: { fileSize: 5 * 1024 * 1024 },
+  limits: {
+    fileSize: 5 * 1024 * 1024,
+    fieldSize: 5 * 1024 * 1024,
+    fieldNameSize: 100,
+    headerPairs: 10,
+  },
 });
 
 const DOCUMENT_UPLOADS_DIR = path.join(process.cwd(), "uploads/documents_temp");
