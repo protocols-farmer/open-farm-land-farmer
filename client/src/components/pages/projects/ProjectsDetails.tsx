@@ -1,3 +1,4 @@
+//src/components/pages/projects/ProjectsDetails.tsx
 "use client";
 
 import React, { useState, useMemo, useEffect } from "react";
@@ -136,9 +137,8 @@ function ProjectDetailView({ post, currentUser }: ProjectDetailViewProps) {
   return (
     <section className="space-y-12">
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-2 lg:gap-12">
-        {/* --- Image Section --- */}
         <div className="flex flex-col gap-4 lg:sticky lg:top-24 h-fit">
-          <div className="relative aspect-[16/10] w-full overflow-hidden rounded-2xl border bg-muted">
+          <div className="relative aspect-[16/10] w-full overflow-hidden  border bg-muted">
             {selectedImage && (
               <Image
                 src={selectedImage}
@@ -155,7 +155,7 @@ function ProjectDetailView({ post, currentUser }: ProjectDetailViewProps) {
                 <button
                   key={img.id}
                   onClick={() => setSelectedImage(img.url)}
-                  className={`relative aspect-square w-full overflow-hidden rounded-lg border-2 transition-all ${
+                  className={`relative aspect-square w-full overflow-hidden  border-2 transition-all ${
                     selectedImage === img.url
                       ? "border-primary"
                       : "border-transparent hover:border-primary/50"
@@ -173,7 +173,6 @@ function ProjectDetailView({ post, currentUser }: ProjectDetailViewProps) {
           )}
         </div>
 
-        {/* --- Header & Meta Section --- */}
         <div className="lg:col-span-1 flex flex-col space-y-6">
           <header className="space-y-4">
             <Link
@@ -182,9 +181,7 @@ function ProjectDetailView({ post, currentUser }: ProjectDetailViewProps) {
             >
               <Avatar className="h-12 w-12 border">
                 <AvatarImage src={post.author.profileImage ?? undefined} />
-                <AvatarFallback>
-                  {post.author.name.slice(0, 2).toUpperCase()}
-                </AvatarFallback>
+                <AvatarFallback>{post.author.name.slice(0, 2)}</AvatarFallback>
               </Avatar>
               <div>
                 <p className="font-semibold text-foreground hover:underline">
@@ -198,12 +195,9 @@ function ProjectDetailView({ post, currentUser }: ProjectDetailViewProps) {
                 </p>
               </div>
             </Link>
-            <h1 className="text-4xl font-bold tracking-tighter md:text-5xl">
-              {post.title}
-            </h1>
+            <h1 className="text-4xl font-bold  md:text-5xl">{post.title}</h1>
             <p className="text-lg text-muted-foreground">{post.description}</p>
 
-            {/* 🚜 UPDATED: Author Actions with Delete functionality */}
             {isAuthor && (
               <div className="flex items-center gap-2 pt-2">
                 <Button asChild variant="outline" className="flex-1">
@@ -268,10 +262,9 @@ function ProjectDetailView({ post, currentUser }: ProjectDetailViewProps) {
             </CardContent>
           </Card>
 
-          {/* Links Section */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {post.githubLink ? (
-              <Button asChild className="w-full">
+              <Button asChild className="w-full rounded-none">
                 <a
                   href={post.githubLink}
                   target="_blank"
@@ -281,12 +274,12 @@ function ProjectDetailView({ post, currentUser }: ProjectDetailViewProps) {
                 </a>
               </Button>
             ) : (
-              <div className="text-sm text-center text-muted-foreground p-3 rounded-md border border-dashed">
+              <div className="text-sm text-center text-muted-foreground p-3  border border-dashed">
                 No GitHub link
               </div>
             )}
             {post.externalLink ? (
-              <Button variant="outline" asChild className="w-full">
+              <Button variant="outline" asChild className="w-full rounded-none">
                 <a
                   href={post.externalLink}
                   target="_blank"
@@ -296,7 +289,7 @@ function ProjectDetailView({ post, currentUser }: ProjectDetailViewProps) {
                 </a>
               </Button>
             ) : (
-              <div className="text-sm text-center text-muted-foreground p-3 rounded-md border border-dashed">
+              <div className="text-sm text-center text-muted-foreground p-3  border border-dashed">
                 No live demo
               </div>
             )}
@@ -304,7 +297,6 @@ function ProjectDetailView({ post, currentUser }: ProjectDetailViewProps) {
         </div>
       </div>
 
-      {/* --- Tabs Section --- */}
       <Tabs defaultValue="overview" className="w-full">
         <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="overview">Overview</TabsTrigger>

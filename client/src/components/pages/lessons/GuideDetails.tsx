@@ -140,14 +140,12 @@ export default function GuideDetails({ postId }: { postId: string }) {
         <Card className="max-w-md mx-auto border-destructive/20 shadow-none bg-destructive/5">
           <CardContent className="pt-6 text-center space-y-4">
             <Terminal className="h-10 w-10 mx-auto text-destructive/50" />
-            <h2 className="text-xl font-black tracking-tighter">
-              Guide not found
-            </h2>
+            <h2 className="text-xl font-black ">Guide not found</h2>
             <p className="text-muted-foreground text-sm font-medium">
               The requested guide is unavailable or has been removed from the
               system.
             </p>
-            <Button variant="outline" asChild className="rounded-full">
+            <Button variant="outline" asChild className="">
               <Link href="/guides">Back to guides</Link>
             </Button>
           </CardContent>
@@ -257,7 +255,7 @@ export default function GuideDetails({ postId }: { postId: string }) {
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-2 lg:gap-12">
         {/* --- Image Gallery --- */}
         <div className="lg:sticky lg:top-24 h-fit flex flex-col gap-4">
-          <div className="relative aspect-[16/10] w-full overflow-hidden rounded-2xl border bg-muted shadow-sm">
+          <div className="relative aspect-[16/10] w-full overflow-hidden  border bg-muted shadow-sm">
             {mainImage ? (
               <Image
                 src={mainImage}
@@ -278,7 +276,7 @@ export default function GuideDetails({ postId }: { postId: string }) {
                 <button
                   key={img.id}
                   onClick={() => setSelectedImage(img.url)}
-                  className={`relative aspect-square w-full overflow-hidden rounded-lg border-2 transition-all ${
+                  className={`relative aspect-square w-full overflow-hidden  border-2 transition-all ${
                     mainImage === img.url
                       ? "border-primary"
                       : "border-transparent hover:border-primary/50"
@@ -302,7 +300,7 @@ export default function GuideDetails({ postId }: { postId: string }) {
             <Badge variant="secondary" className="w-fit font-bold">
               {post.category.toLowerCase()}
             </Badge>
-            <h1 className="text-4xl font-black tracking-tighter md:text-5xl leading-none">
+            <h1 className="text-4xl font-black  md:text-5xl leading-none">
               {post.title}
             </h1>
             <p className="text-xl text-muted-foreground leading-relaxed font-medium">
@@ -311,11 +309,7 @@ export default function GuideDetails({ postId }: { postId: string }) {
 
             {isAuthor && (
               <div className="flex items-center gap-2 pt-2">
-                <Button
-                  asChild
-                  variant="outline"
-                  className="flex-1 font-bold rounded-xl"
-                >
+                <Button asChild variant="outline" className="flex-1 font-bold ">
                   <Link href={`/posts/${post.id}/update`}>
                     <Edit className="mr-2 h-4 w-4" /> Edit guide
                   </Link>
@@ -324,15 +318,11 @@ export default function GuideDetails({ postId }: { postId: string }) {
                 <AlertDialog>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="rounded-xl"
-                      >
+                      <Button variant="ghost" size="icon" className="">
                         <MoreHorizontal className="h-4 w-4" />
                       </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="rounded-xl">
+                    <DropdownMenuContent align="end" className="">
                       <AlertDialogTrigger asChild>
                         <DropdownMenuItem className="text-destructive font-bold cursor-pointer">
                           <Trash2 className="mr-2 h-4 w-4" /> Delete
@@ -341,9 +331,9 @@ export default function GuideDetails({ postId }: { postId: string }) {
                     </DropdownMenuContent>
                   </DropdownMenu>
 
-                  <AlertDialogContent className="rounded-2xl border-border">
+                  <AlertDialogContent className=" border-border">
                     <AlertDialogHeader>
-                      <AlertDialogTitle className="text-2xl font-black tracking-tighter">
+                      <AlertDialogTitle className="text-2xl font-black ">
                         Confirm deletion
                       </AlertDialogTitle>
                       <AlertDialogDescription className="text-muted-foreground font-medium">
@@ -352,13 +342,13 @@ export default function GuideDetails({ postId }: { postId: string }) {
                       </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter className="pt-4">
-                      <AlertDialogCancel className="rounded-full font-bold">
+                      <AlertDialogCancel className=" font-bold">
                         Cancel
                       </AlertDialogCancel>
                       <AlertDialogAction
                         onClick={handleDelete}
                         disabled={isDeleting}
-                        className="bg-destructive text-white hover:bg-destructive/90 rounded-full font-bold px-8"
+                        className="bg-destructive text-white hover:bg-destructive/90  font-bold px-8"
                       >
                         {isDeleting ? "Deleting..." : "Confirm delete"}
                       </AlertDialogAction>
@@ -376,14 +366,14 @@ export default function GuideDetails({ postId }: { postId: string }) {
                 <Avatar className="h-12 w-12 border shadow-sm">
                   <AvatarImage src={post.author.profileImage ?? undefined} />
                   <AvatarFallback className="font-bold">
-                    {post.author.name.slice(0, 2).toUpperCase()}
+                    {post.author.name.slice(0, 2)}
                   </AvatarFallback>
                 </Avatar>
                 <div>
                   <p className="font-bold text-foreground group-hover:underline decoration-primary">
                     {post.author.name}
                   </p>
-                  <p className="text-xs text-muted-foreground font-bold tracking-widest uppercase">
+                  <p className="text-xs text-muted-foreground font-bold  ">
                     Published{" "}
                     {formatDistanceToNow(new Date(post.createdAt), {
                       addSuffix: true,
@@ -398,7 +388,7 @@ export default function GuideDetails({ postId }: { postId: string }) {
 
           <Card className="bg-muted/30 border-none">
             <CardHeader className="pb-3">
-              <CardTitle className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground/60">
+              <CardTitle className="text-[10px] font-bold   text-muted-foreground/60">
                 Tags
               </CardTitle>
             </CardHeader>
@@ -417,18 +407,14 @@ export default function GuideDetails({ postId }: { postId: string }) {
 
           <div className="grid grid-cols-2 gap-4">
             {post.githubLink && (
-              <Button asChild className="font-bold rounded-xl h-11">
+              <Button asChild className="font-bold  h-11">
                 <a href={post.githubLink} target="_blank" rel="noopener">
                   <Github className="mr-2 h-4 w-4" /> Source repo
                 </a>
               </Button>
             )}
             {post.externalLink && (
-              <Button
-                variant="outline"
-                asChild
-                className="font-bold rounded-xl h-11"
-              >
+              <Button variant="outline" asChild className="font-bold  h-11">
                 <a href={post.externalLink} target="_blank" rel="noopener">
                   <ExternalLink className="mr-2 h-4 w-4" /> Live demo
                 </a>
@@ -443,7 +429,7 @@ export default function GuideDetails({ postId }: { postId: string }) {
       {/* --- Guide Content --- */}
       <div className="mx-auto max-w-4xl px-4">
         <div
-          className="prose prose-lg prose-neutral dark:prose-invert max-w-none break-words font-medium text-muted-foreground/90 prose-headings:font-black prose-headings:tracking-tighter prose-headings:text-foreground"
+          className="prose prose-lg prose-neutral dark:prose-invert max-w-none break-words font-medium text-muted-foreground/90 prose-headings:font-black prose-headings: prose-headings:text-foreground"
           dangerouslySetInnerHTML={{ __html: sanitizedContent }}
         />
       </div>
@@ -453,13 +439,13 @@ export default function GuideDetails({ postId }: { postId: string }) {
       {/* --- Guide Steps Navigator --- */}
       <main className="mx-auto max-w-4xl space-y-10">
         <div className="text-center space-y-4">
-          <h2 className="text-4xl font-black tracking-tighter">Guide steps</h2>
+          <h2 className="text-4xl font-black ">Guide steps</h2>
           {isAuthor && (
             <Button
               onClick={handleOpenCreateStepDialog}
               size="sm"
               variant="outline"
-              className="font-bold rounded-full"
+              className="font-bold "
             >
               <PlusCircle className="mr-2 h-4 w-4" /> Add new step
             </Button>
@@ -479,9 +465,9 @@ export default function GuideDetails({ postId }: { postId: string }) {
             onDeleteSection={handleDeleteSection}
           />
         ) : (
-          <div className="flex flex-col items-center justify-center rounded-2xl border-2 border-dashed bg-muted/20 p-16 text-center min-h-[30vh]">
+          <div className="flex flex-col items-center justify-center  border-2 border-dashed bg-muted/20 p-16 text-center min-h-[30vh]">
             <FileText className="h-12 w-12 text-muted-foreground/20" />
-            <h3 className="mt-6 text-xl font-black tracking-tighter">
+            <h3 className="mt-6 text-xl font-black ">
               No content published yet
             </h3>
             <p className="mt-2 text-muted-foreground font-medium">
@@ -493,23 +479,23 @@ export default function GuideDetails({ postId }: { postId: string }) {
         )}
 
         {totalSteps > 1 && (
-          <div className="flex justify-between items-center border bg-muted/10 p-5 rounded-2xl shadow-sm">
+          <div className="flex justify-between items-center border bg-muted/10 p-5  shadow-sm">
             <Button
               variant="ghost"
               onClick={goToPrevStep}
               disabled={activeStepIndex === 0}
-              className="font-bold hover:bg-muted rounded-xl"
+              className="font-bold hover:bg-muted "
             >
               <ArrowLeft className="mr-2 h-4 w-4" /> Previous
             </Button>
-            <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">
+            <div className="text-[10px] font-bold   text-muted-foreground">
               Step {activeStepIndex + 1} of {totalSteps}
             </div>
             <Button
               variant="ghost"
               onClick={goToNextStep}
               disabled={activeStepIndex === totalSteps - 1}
-              className="font-bold hover:bg-muted rounded-xl"
+              className="font-bold hover:bg-muted "
             >
               Next <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
@@ -521,18 +507,18 @@ export default function GuideDetails({ postId }: { postId: string }) {
 
       <div id="comments" className="max-w-4xl mx-auto w-full pb-20">
         <header className="mb-8">
-          <h2 className="text-3xl font-black tracking-tighter">
+          <h2 className="text-3xl font-black ">
             Discussions ({post.commentsCount})
           </h2>
         </header>
         <CommentSection postId={post.id} totalComments={post.commentsCount} />
       </div>
 
-      {/* Dialogs kept identical but with consistent rounded-xl classes */}
+      {/* Dialogs kept identical but with consistent  classes */}
       <Dialog open={isStepDialogOpen} onOpenChange={setIsStepDialogOpen}>
-        <DialogContent className="sm:max-w-2xl grid grid-rows-[auto_1fr] max-h-[90vh] p-0 rounded-2xl">
+        <DialogContent className="sm:max-w-2xl grid grid-rows-[auto_1fr] max-h-[90vh] p-0 ">
           <DialogHeader className="p-6 pb-4 border-b">
-            <DialogTitle className="font-black tracking-tighter text-2xl">
+            <DialogTitle className="font-black  text-2xl">
               {editingStep ? "Edit step" : "Add new step"}
             </DialogTitle>
           </DialogHeader>
@@ -557,9 +543,9 @@ export default function GuideDetails({ postId }: { postId: string }) {
       </Dialog>
 
       <Dialog open={isSectionDialogOpen} onOpenChange={setIsSectionDialogOpen}>
-        <DialogContent className="sm:max-w-3xl grid grid-rows-[auto_1fr] max-h-[90vh] p-0 rounded-2xl">
+        <DialogContent className="sm:max-w-3xl grid grid-rows-[auto_1fr] max-h-[90vh] p-0 ">
           <DialogHeader className="p-6 pb-4 border-b">
-            <DialogTitle className="font-black tracking-tighter text-2xl">
+            <DialogTitle className="font-black  text-2xl">
               {editingSection ? "Edit section" : "Add new section"}
             </DialogTitle>
           </DialogHeader>

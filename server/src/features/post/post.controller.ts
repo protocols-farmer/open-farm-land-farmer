@@ -12,6 +12,13 @@ class PostController {
     const userId = req.user!.id;
     const postData = req.body;
 
+    if (!req.files || !Array.isArray(req.files) || req.files.length === 0) {
+      throw createHttpError(
+        400,
+        "Validation Error: A post must have at least one image.",
+      );
+    }
+
     if (req.files && Array.isArray(req.files) && req.files.length > 0) {
       const uploadPromises = req.files.map((file) =>
         uploadToCloudinary(file.path, "post_images"),
@@ -75,6 +82,7 @@ class PostController {
       },
     });
   });
+
   updatePost = asyncHandler(async (req: Request, res: Response) => {
     const userId = req.user!.id;
     const { id: postId } = req.params;
@@ -100,6 +108,18 @@ class PostController {
       }
     }
 
+    const newCount = updateData.newImages?.length || 0;
+    const retainedCount = Array.isArray(updateData.retainedImageUrls)
+      ? updateData.retainedImageUrls.length
+      : 0;
+
+    if (newCount + retainedCount === 0) {
+      throw createHttpError(
+        400,
+        "Validation Error: A post must have at least one image.",
+      );
+    }
+
     if (updateData.postTags) {
       try {
         const tagsArray = JSON.parse(updateData.postTags);
@@ -120,7 +140,6 @@ class PostController {
       data: updatedPost,
     });
   });
-
   deletePost = asyncHandler(async (req: Request, res: Response) => {
     const userId = req.user!.id;
     const userRole = req.user!.systemRole;

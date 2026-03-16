@@ -78,7 +78,6 @@ export const createPostSchema = z.object({
       message: "Please select a valid category.",
     }),
 
-    // 🚜 TAG GUARD: Backend reinforcement to prevent paragraph pasting
     postTags: z.preprocess(
       preprocessTags,
       z
@@ -99,29 +98,25 @@ export const createPostSchema = z.object({
 
 export const updatePostSchema = z.object({
   body: z.object({
-    title: z.string().min(1, "Title is required").max(255).optional(),
-    description: z
-      .string()
-      .min(1, "Description is required")
-      .max(500)
-      .optional(),
-    content: z.string().min(1, "Post content cannot be empty.").optional(),
-    category: z.enum(postCategoryValues).optional(),
-    postTags: z
-      .preprocess(
-        preprocessTags,
-        z
-          .array(
-            z
-              .string()
-              .min(1, "Tag cannot be empty.")
-              .max(25, "Each tag must be under 25 characters.")
-              .regex(/^[a-zA-Z0-9-]+$/, "Invalid tag format."),
-          )
-          .min(1, "At least one tag is required.")
-          .max(10, "You can add up to 10 tags."),
-      )
-      .optional(),
+    title: z.string().min(1, "Title is required").max(255),
+    description: z.string().min(1, "Description is required").max(500),
+    content: z.string().min(1, "Post content cannot be empty."),
+    category: z.enum(postCategoryValues, {
+      message: "Please select a valid category.",
+    }),
+    postTags: z.preprocess(
+      preprocessTags,
+      z
+        .array(
+          z
+            .string()
+            .min(1, "Tag cannot be empty.")
+            .max(25, "Each tag must be under 25 characters.")
+            .regex(/^[a-zA-Z0-9-]+$/, "Invalid tag format."),
+        )
+        .min(1, "At least one tag is required.")
+        .max(10, "You can add up to 10 tags."),
+    ),
     externalLink: externalLinkSchema,
     githubLink: strictGitHubLinkSchema,
   }),

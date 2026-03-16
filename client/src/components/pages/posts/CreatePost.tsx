@@ -86,14 +86,12 @@ export default function CreatePostPage() {
     setValue,
     formState: { errors },
   } = useForm<CreatePostFormValues>({
-    // Using a safer cast for the resolver to prevent the string[] | undefined error
     resolver: zodResolver(createPostSchema) as any,
     mode: "onSubmit",
     defaultValues: {
       title: "",
       description: "",
       content: "",
-      // Cast the empty string to the category type to satisfy the initial state
       category: "" as unknown as CreatePostFormValues["category"],
       postTags: [],
       postImages: [],
@@ -141,7 +139,6 @@ export default function CreatePostPage() {
       const { href } = getPostAction(response.data);
       router.push(href);
     } catch (err: unknown) {
-      // PROPER TYPE GUARDING: No more lazy 'any' here
       if (err && typeof err === "object" && "data" in err) {
         setFormError(getApiErrorMessage(err));
       } else {

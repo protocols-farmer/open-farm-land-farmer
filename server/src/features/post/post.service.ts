@@ -51,6 +51,12 @@ export class PostService {
     data: CreatePostData,
   ): Promise<Post> {
     const { images, tags, ...postData } = data;
+    if (!images || images.length === 0) {
+      throw createHttpError(
+        400,
+        "Validation Error: A post must have at least one image.",
+      );
+    }
     const cleanTags = this.sanitizeTags(tags);
 
     return prisma.$transaction(async (tx) => {
@@ -302,6 +308,15 @@ export class PostService {
       (img) => !retainedImageUrls.includes(img.url),
     );
 
+    const finalImageCount =
+      postToUpdate.images.length - imagesToDelete.length + newImages.length;
+
+    if (finalImageCount === 0) {
+      throw createHttpError(
+        400,
+        "Validation Error: A post must have at least one image.",
+      );
+    }
     if (imagesToDelete.length > 0) {
       const deletePromises = imagesToDelete.map((img) =>
         deleteFromCloudinary(img.publicId).catch((err) =>

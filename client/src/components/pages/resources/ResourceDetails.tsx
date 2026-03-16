@@ -1,28 +1,26 @@
+//src/components/pages/resources/ResourceDetails.tsx
 "use client";
 
 import React, { useState, useEffect, useMemo } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/navigation"; // 🚜 ADDED
+import { useRouter } from "next/navigation";
 import { formatDistanceToNow } from "date-fns";
-import toast from "react-hot-toast"; // 🚜 ADDED
+import toast from "react-hot-toast";
 import DOMPurify from "dompurify";
 import "highlight.js/styles/github-dark.css";
 
-// --- HOOKS & API ---
 import {
   useGetPostByIdQuery,
   useRecordPostViewMutation,
-  useDeletePostMutation, // 🚜 ADDED
+  useDeletePostMutation,
 } from "@/lib/features/post/postApiSlice";
 import { useAppSelector } from "@/lib/hooks/hooks";
 import { selectCurrentUser } from "@/lib/features/user/userSlice";
 
-// --- SHARED COMPONENTS ---
 import PostInteractionHub from "../../shared/PostInteractionHub";
 import CommentSection from "../posts/CommentSection";
 
-// --- UI COMPONENTS ---
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
@@ -39,13 +37,13 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@/components/ui/alert-dialog"; // 🚜 ADDED
+} from "@/components/ui/alert-dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"; // 🚜 ADDED
+} from "@/components/ui/dropdown-menu";
 import {
   Edit,
   ExternalLink,
@@ -53,14 +51,14 @@ import {
   Terminal,
   Trash2,
   MoreHorizontal,
-} from "lucide-react"; // 🚜 UPDATED
+} from "lucide-react";
 
 export default function ResourceDetails({ postId }: { postId: string }) {
-  const router = useRouter(); // 🚜 ADDED
+  const router = useRouter();
   const { data: post, isLoading, isError } = useGetPostByIdQuery(postId);
   const currentUser = useAppSelector(selectCurrentUser);
   const [recordPostView] = useRecordPostViewMutation();
-  const [deletePost, { isLoading: isDeleting }] = useDeletePostMutation(); // 🚜 ADDED
+  const [deletePost, { isLoading: isDeleting }] = useDeletePostMutation();
 
   /**
    * FIX 1: DERIVED IMAGE STATE
@@ -86,7 +84,6 @@ export default function ResourceDetails({ postId }: { postId: string }) {
     if (postId && currentUser) recordPostView(postId);
   }, [postId, currentUser, recordPostView]);
 
-  // 🚜 DELETE HANDLER
   const handleDelete = async () => {
     if (!post) return;
     try {
@@ -101,7 +98,7 @@ export default function ResourceDetails({ postId }: { postId: string }) {
   if (isLoading)
     return (
       <div className="flex h-[60vh] items-center justify-center">
-        <p className="animate-pulse text-muted-foreground uppercase font-black tracking-tighter">
+        <p className="animate-pulse text-muted-foreground  font-black ">
           Loading Resource...
         </p>
       </div>
@@ -126,7 +123,7 @@ export default function ResourceDetails({ postId }: { postId: string }) {
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-2 lg:gap-12">
         {/* Left Side: Image Gallery */}
         <div className="lg:sticky lg:top-24 h-fit flex flex-col gap-4">
-          <div className="relative aspect-[16/10] w-full overflow-hidden rounded-2xl border bg-muted shadow-sm">
+          <div className="relative aspect-[16/10] w-full overflow-hidden  border bg-muted shadow-sm">
             {mainImage ? (
               <Image
                 src={mainImage}
@@ -136,7 +133,7 @@ export default function ResourceDetails({ postId }: { postId: string }) {
                 priority
               />
             ) : (
-              <div className="h-full w-full flex items-center justify-center text-muted-foreground uppercase text-xs font-bold">
+              <div className="h-full w-full flex items-center justify-center text-muted-foreground  text-xs font-bold">
                 No gallery images
               </div>
             )}
@@ -147,7 +144,7 @@ export default function ResourceDetails({ postId }: { postId: string }) {
                 <button
                   key={img.id}
                   onClick={() => setSelectedImage(img.url)}
-                  className={`relative aspect-square w-full overflow-hidden rounded-lg border-2 transition-all ${
+                  className={`relative aspect-square w-full overflow-hidden  border-2 transition-all ${
                     mainImage === img.url
                       ? "border-primary shadow-md"
                       : "border-transparent hover:border-primary/50"
@@ -171,7 +168,7 @@ export default function ResourceDetails({ postId }: { postId: string }) {
             <Badge variant="secondary" className="w-fit capitalize font-bold">
               {post.category.toLowerCase()}
             </Badge>
-            <h1 className="text-4xl font-black uppercase tracking-tighter md:text-5xl leading-none break-all">
+            <h1 className="text-4xl font-black   md:text-5xl leading-none break-all">
               {post.title}
             </h1>
             <p className="text-xl text-muted-foreground leading-relaxed">
@@ -205,7 +202,7 @@ export default function ResourceDetails({ postId }: { postId: string }) {
 
                   <AlertDialogContent>
                     <AlertDialogHeader>
-                      <AlertDialogTitle className="font-black uppercase tracking-tighter">
+                      <AlertDialogTitle className="font-black  ">
                         Are you absolutely sure?
                       </AlertDialogTitle>
                       <AlertDialogDescription>
@@ -237,14 +234,14 @@ export default function ResourceDetails({ postId }: { postId: string }) {
                 <Avatar className="h-12 w-12 border shadow-sm">
                   <AvatarImage src={post.author.profileImage ?? undefined} />
                   <AvatarFallback className="font-bold">
-                    {post.author.name.slice(0, 2).toUpperCase()}
+                    {post.author.name.slice(0, 2)}
                   </AvatarFallback>
                 </Avatar>
                 <div>
                   <p className="font-bold text-foreground group-hover:underline decoration-primary">
                     {post.author.name}
                   </p>
-                  <p className="text-xs text-muted-foreground uppercase tracking-widest">
+                  <p className="text-xs text-muted-foreground  ">
                     Published{" "}
                     {formatDistanceToNow(new Date(post.createdAt), {
                       addSuffix: true,
@@ -259,7 +256,7 @@ export default function ResourceDetails({ postId }: { postId: string }) {
 
           <Card className="bg-muted/30">
             <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-black uppercase tracking-widest text-muted-foreground">
+              <CardTitle className="text-sm font-black   text-muted-foreground">
                 Relevant Tags
               </CardTitle>
             </CardHeader>
@@ -288,7 +285,7 @@ export default function ResourceDetails({ postId }: { postId: string }) {
                 </a>
               </Button>
             ) : (
-              <div className="text-xs text-center text-muted-foreground p-3 rounded-md border border-dashed font-bold uppercase tracking-tighter">
+              <div className="text-xs text-center text-muted-foreground p-3  border border-dashed font-bold  ">
                 No Repo
               </div>
             )}
@@ -303,7 +300,7 @@ export default function ResourceDetails({ postId }: { postId: string }) {
                 </a>
               </Button>
             ) : (
-              <div className="text-xs text-center text-muted-foreground p-3 rounded-md border border-dashed font-bold uppercase tracking-tighter">
+              <div className="text-xs text-center text-muted-foreground p-3  border border-dashed font-bold  ">
                 No Demo
               </div>
             )}
@@ -317,7 +314,6 @@ export default function ResourceDetails({ postId }: { postId: string }) {
       {sanitizedContent && (
         <div className="mx-auto max-w-4xl px-4">
           <div
-            // Refined prose styling for professional clarity
             className="prose prose-lg prose-neutral prose-quoteless dark:prose-invert max-w-none break-words"
             dangerouslySetInnerHTML={{ __html: sanitizedContent }}
           />
@@ -330,7 +326,7 @@ export default function ResourceDetails({ postId }: { postId: string }) {
       <div id="comments" className="max-w-4xl mx-auto w-full">
         <Card className="border-none shadow-none bg-transparent">
           <CardHeader className="px-0">
-            <CardTitle className="text-2xl font-black uppercase tracking-tighter">
+            <CardTitle className="text-2xl font-black  ">
               Discussions ({post.commentsCount})
             </CardTitle>
           </CardHeader>

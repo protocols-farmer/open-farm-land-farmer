@@ -173,7 +173,7 @@ function UpdatePostForm({ postData }: UpdatePostFormProps) {
     setValue,
     formState: { errors },
   } = useForm<UpdatePostFormValues>({
-    resolver: zodResolver(updatePostSchema),
+    resolver: zodResolver(updatePostSchema) as any,
     mode: "onSubmit",
     defaultValues: {
       title: postData.title,

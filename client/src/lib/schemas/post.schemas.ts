@@ -43,7 +43,6 @@ export const createPostSchema = z.object({
   category: z.enum(postCategories, {
     required_error: "You must select a post category.",
   }),
-  // 🚜 TAG GUARD: Enforce character limit and slug format per tag
   postTags: z
     .array(
       z
@@ -59,6 +58,7 @@ export const createPostSchema = z.object({
     .default([]),
   postImages: z
     .array(z.instanceof(File))
+    .min(1, "Validation Error: A post must have at least one image.")
     .max(5, "You can upload a maximum of 5 images.")
     .default([]),
   externalLink: externalUrlSchema,
@@ -70,12 +70,12 @@ export type CreatePostFormValues = z.output<typeof createPostSchema>;
 // This is used for the useForm default values if needed
 export type CreatePostInputValues = z.input<typeof createPostSchema>;
 
-export const updatePostSchema = createPostSchema
-  .extend({
-    postImages: z
-      .array(z.union([z.instanceof(File), z.record(z.unknown())]))
-      .default([]),
-  })
-  .partial();
+export const updatePostSchema = createPostSchema.extend({
+  postImages: z
+    .array(z.union([z.instanceof(File), z.record(z.unknown())]))
+    .min(1, "Validation Error: A post must have at least one image.")
+    .max(5, "You can upload a maximum of 5 images.")
+    .default([]),
+});
 
 export type UpdatePostFormValues = z.output<typeof updatePostSchema>;

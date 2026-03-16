@@ -210,7 +210,11 @@ const ReactHashTags: React.FC<ReactHashTagsProps> = ({
       ref={containerRef}
       className="p-3 bg-card text-card-foreground  border space-y-3 w-full shadow-sm"
     >
-      <div className="relative">
+      <p className="text-xs text-muted-foreground break-all italic">
+        you can write your own tags and click add button or use default tags
+        from dropdown
+      </p>
+      <div className="relative ">
         <label htmlFor="tech-input" className="sr-only">
           Type Tech stack tags
         </label>
@@ -247,7 +251,6 @@ const ReactHashTags: React.FC<ReactHashTagsProps> = ({
             Add
           </Button>
         </div>
-
         {filteredSuggestions.length > 0 && (
           <ul
             id="tech-suggestions-list"
@@ -275,8 +278,6 @@ const ReactHashTags: React.FC<ReactHashTagsProps> = ({
           </ul>
         )}
       </div>
-
-      {/* 🚜 Warning Block: Triggered by Tag Limit or Input Guards */}
       {error && (
         <div
           className="mt-2 p-3 border border-destructive/50 text-destructive text-xs  bg-destructive/10 flex items-start gap-2 animate-in fade-in slide-in-from-top-1"
@@ -289,7 +290,6 @@ const ReactHashTags: React.FC<ReactHashTagsProps> = ({
           </div>
         </div>
       )}
-
       {tags.length > 0 && (
         <div className="mt-3 pt-3 border-t border-border">
           <div className="flex flex-wrap gap-2 items-center min-h-[2.125rem]">
@@ -329,7 +329,7 @@ const ReactHashTags: React.FC<ReactHashTagsProps> = ({
       )}
       {tags.length === 0 && !error && (
         <p className="text-muted-foreground text-xs italic mt-2">
-          No tech stack selected yet. Use the input above to add technologies.
+          No tags selected yet. Use the input above to add technologies.
         </p>
       )}
     </div>
