@@ -1,9 +1,4 @@
-/**
- * src/lib/features/user/userApiSlice.ts
- * REFINED: Removed all NextAuth dependencies (getSession, signOut).
- * Now relies on Redux State for tokens and internal dispatch for cleanup.
- */
-
+//src/lib/features/user/userApiSlice.ts
 import { createApi, retry } from "@reduxjs/toolkit/query/react";
 import { baseQueryWithReauth } from "../../api/baseQueryWithReauth";
 import { clearCredentials } from "../auth/authSlice";

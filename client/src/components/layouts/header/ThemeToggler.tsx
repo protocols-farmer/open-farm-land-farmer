@@ -49,7 +49,7 @@ function ThemeToggler() {
 
     if (isHydrated && currentUser) {
       try {
-        const themeValue = newTheme as ThemePreference;
+        const themeValue = newTheme.toUpperCase() as ThemePreference;
         await updateSettings({ theme: themeValue }).unwrap();
       } catch (err: any) {
         if (err?.status !== 401) {
