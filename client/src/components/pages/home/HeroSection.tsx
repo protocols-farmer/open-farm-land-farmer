@@ -12,59 +12,24 @@ import {
   MessageSquare,
   Plus,
   ArrowUpRight,
+  LayoutGrid,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useGetLatestVersionQuery } from "@/lib/features/updates/updateApiSlice";
 import { cn } from "@/lib/utils";
 import MilkSVG from "./MilkSVG";
-import ArchivePlate from "./ArchivePlate";
-
-const CornerFlourish = ({ className }: { className?: string }) => (
-  <svg
-    viewBox="0 0 40 40"
-    className={cn(
-      "absolute w-6 h-6 pointer-events-none text-primary/40 z-30",
-      className,
-    )}
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="1.5"
-  >
-    <path d="M38 2H10C5.58 2 2 5.58 2 10V38" />
-    <path d="M30 6H12C8.68 6 6 8.68 6 12V30" />
-  </svg>
-);
+import {
+  CornerFlourish,
+  FlourishOrnate,
+  SideFlourish,
+} from "@/components/shared/Ornates";
 
 const heroButtons = [
+  { href: "/all", label: "All Posts", icon: LayoutGrid },
   { href: "/projects", label: "Projects", icon: Pickaxe },
   { href: "/blogs", label: "Blogs", icon: Shovel },
   { href: "/resources", label: "Resources", icon: Wheat },
   { href: "/articles", label: "Articles", icon: Milk },
-  { href: "/guides", label: "Guides", icon: Sprout },
-  { href: "/showcases", label: "Showcases", icon: Flower2 },
-];
-
-const archiveEntries = [
-  {
-    href: "/projects",
-    label: "Field Projects",
-    desc: "Active excavations and engineering feats in progress.",
-    guide:
-      "Submit detailed schematics, build logs, and raw technical data. Document your failures as clearly as your successes.",
-    icon: Pickaxe,
-    image:
-      "https://images.unsplash.com/photo-1581094794329-c8112a89af12?q=80&w=800",
-  },
-  {
-    href: "/blogs",
-    label: "Journal Entries",
-    desc: "Personal chronicles of growth, thought, and discovery.",
-    guide:
-      "Post reflective narratives, daily observations, and philosophical inquiries regarding your craft.",
-    icon: Shovel,
-    image:
-      "https://images.unsplash.com/photo-1517842645767-c639042777db?q=80&w=800",
-  },
 ];
 
 export default function HomeHero() {
@@ -97,11 +62,11 @@ export default function HomeHero() {
             </h1>
             <div className="font-mobalys text-xl md:text-3xl lg:text-5xl xl:text-7xl text-foreground flex justify-center items-center w-full gap-4 py-4">
               <span className="text-primary drop-shadow-[0_0_8px_rgba(var(--primary),0.4)]">
-                ✧
+                ❁
               </span>
               <div className="h-[1px] md:h-[2px] w-full bg-gradient-to-r from-transparent via-primary/50 to-transparent"></div>
               <span className="text-primary drop-shadow-[0_0_8px_rgba(var(--primary),0.4)]">
-                ✧
+                ❁
               </span>
             </div>
 
@@ -110,7 +75,12 @@ export default function HomeHero() {
               resources, articles and more, you name it!
             </p>
 
-            <div className="flex flex-col gap-2 p-3 px-4  bg-accent/30 border border-border/50">
+            <div className="relative border-3 border-double flex flex-col gap-2 p-3 px-4  bg-accent/30 ">
+              <CornerFlourish className="-top-1 -left-1 rotate-0" />
+              <CornerFlourish className="-top-1 -right-1 rotate-90" />
+              <CornerFlourish className="-bottom-1 -left-1 -rotate-90" />
+              <CornerFlourish className="-bottom-1 -right-1 rotate-180" />
+
               <p className="text-xs text-muted-foreground font-medium ">
                 <span className=" text-foreground mr-1">Rule 1:</span>
                 We encourage you guys not to use AI. Get your hands dirty use it
@@ -120,6 +90,12 @@ export default function HomeHero() {
                 <span className=" text-foreground mr-1">Rule 2:</span>
                 Respect the community and its members. Be kind, constructive,
                 and open to feedback. We are here to learn and grow together!
+              </p>
+              <p className="text-xs text-muted-foreground  ">
+                pss, hey bro, saw a bug or vulnerability? let us know !{" "}
+                <Link href="/discussions" className="text-primary underline">
+                  discussions
+                </Link>
               </p>
             </div>
           </div>
@@ -161,6 +137,16 @@ export default function HomeHero() {
               <CornerFlourish className="-bottom-1 -left-1 -rotate-90" />
               <CornerFlourish className="-bottom-1 -right-1 rotate-180" />
 
+              <FlourishOrnate className="-top-2 -left-2 -rotate-90" />
+              <FlourishOrnate className="-top-2 -right-2 rotate-0" />
+              <FlourishOrnate className="-bottom-2 -right-2 rotate-90" />
+              <FlourishOrnate className="-bottom-2 -left-2 rotate-180" />
+
+              <SideFlourish className="-top-2 left-1/2 -translate-x-1/2 bg-card px-2" />
+              <SideFlourish className="-bottom-2 left-1/2 -translate-x-1/2 rotate-180 bg-card px-2" />
+              <SideFlourish className="-left-[14px] top-1/2 -translate-y-1/2 -rotate-90 bg-card px-2" />
+              <SideFlourish className="-right-[14px] top-1/2 -translate-y-1/2 rotate-90 bg-card px-2" />
+
               <div className="flex items-center justify-between">
                 <div className="p-2  bg-muted group-hover:bg-primary/10 transition-colors border border-dashed border-primary/20">
                   <Icon className="h-5 w-5 text-muted-foreground group-hover:text-primary" />
@@ -176,29 +162,34 @@ export default function HomeHero() {
           ))}
         </div>
 
-        {/* --- 🚜 MINIMALISM MANIFESTO SECTION --- */}
         <div className="mt-32 mb-20 max-w-4xl mx-auto px-4 md:px-0">
-          <div className="relative group p-10 md:p-16 border-[3px] border-double border-primary/20 bg-card/5 backdrop-blur-sm overflow-visible">
-            {/* 🚜 VINTAGE CORNERS (Elegant & Sharp) */}
+          <div className="relative group p-10 md:p-16 border-[3px] border-double  backdrop-blur-sm  ">
             <CornerFlourish className="-top-1 -left-1 opacity-30" />
             <CornerFlourish className="-top-1 -right-1 rotate-90 opacity-30" />
             <CornerFlourish className="-bottom-1 -left-1 -rotate-90 opacity-30" />
             <CornerFlourish className="-bottom-1 -right-1 rotate-180 opacity-30" />
 
+            <FlourishOrnate className="-top-2 -left-2 -rotate-90" />
+            <FlourishOrnate className="-top-2 -right-2 rotate-0" />
+            <FlourishOrnate className="-bottom-2 -right-2 rotate-90" />
+            <FlourishOrnate className="-bottom-2 -left-2 rotate-180" />
+
+            <SideFlourish className="-top-2 left-1/2 -translate-x-1/2 bg-card px-2" />
+            <SideFlourish className="-bottom-2 left-1/2 -translate-x-1/2 rotate-180 bg-card px-2" />
+            <SideFlourish className="-left-[14px] top-1/2 -translate-y-1/2 -rotate-90 bg-card px-2" />
+            <SideFlourish className="-right-[14px] top-1/2 -translate-y-1/2 rotate-90 bg-card px-2" />
+
             <div className="flex flex-col items-center text-center">
-              {/* Title */}
               <h2 className="font-mobalys text-5xl md:text-8xl text-foreground  mb-6">
                 Minimalism
               </h2>
 
-              {/* The Signature Divider */}
               <div className="font-mobalys text-xl md:text-3xl lg:text-5xl text-foreground flex justify-center items-center w-full max-w-xs gap-4 py-2 mb-3">
-                <span className="text-primary/60 text-xs">✧</span>
+                <span className="text-primary/60 text-xs">❁</span>
                 <div className="h-[1px] md:h-[2px] w-full bg-gradient-to-r from-transparent via-primary/40 to-transparent"></div>
-                <span className="text-primary/60 text-xs">✧</span>
+                <span className="text-primary/60 text-xs">❁</span>
               </div>
 
-              {/* Philosophy Body */}
               <div className="max-w-2xl space-y-6">
                 <p className="text-sm md:text-base text-primary/70 italic font-serif">
                   "Perfection is achieved, not when there is nothing more to
@@ -211,21 +202,6 @@ export default function HomeHero() {
             </div>
           </div>
         </div>
-
-        {/* <div className="mt-24 space-y-16">
-          {archiveEntries.map((item, index) => (
-            <ArchivePlate
-              key={item.href}
-              href={item.href}
-              title={item.label}
-              description={item.desc}
-              guideText={item.guide}
-              image={item.image}
-              icon={item.icon}
-              isReversed={index % 2 !== 0}
-            />
-          ))}
-        </div> */}
       </div>
     </section>
   );

@@ -197,7 +197,7 @@ export default function CreatePostPage() {
             )}
 
             <div className="space-y-2">
-              <Label htmlFor="title">Post Title</Label>
+              <Label htmlFor="title">Post Title (must)</Label>
               <Input
                 id="title"
                 placeholder="A catchy headline..."
@@ -211,10 +211,10 @@ export default function CreatePostPage() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="description">Short Description</Label>
+              <Label htmlFor="description">Short Description (must)</Label>
               <Textarea
                 id="description"
-                placeholder="What is this about?"
+                placeholder="What is this about? just short description..."
                 {...register("description")}
               />
               {errors.description && (
@@ -226,7 +226,7 @@ export default function CreatePostPage() {
 
             <div className="flex flex-col gap-6">
               <div className="space-y-2">
-                <Label htmlFor="category">Category</Label>
+                <Label htmlFor="category">Category (must)</Label>
                 <Controller
                   name="category"
                   control={control}
@@ -256,7 +256,7 @@ export default function CreatePostPage() {
               </div>
 
               <div className="space-y-2">
-                <Label>Tags</Label>
+                <Label>Tags (must)</Label>
                 <Controller
                   name="postTags"
                   control={control}
@@ -276,7 +276,7 @@ export default function CreatePostPage() {
             </div>
 
             <div className="space-y-2">
-              <Label>Post Images (Max 5)</Label>
+              <Label>Post Images (must and Max 5)</Label>
               <Controller
                 name="postImages"
                 control={control}
@@ -297,7 +297,7 @@ export default function CreatePostPage() {
             </div>
 
             <div className="space-y-2">
-              <Label>Main Content</Label>
+              <Label>Main Content (must)</Label>
               <Controller
                 name="content"
                 control={control}
@@ -317,7 +317,7 @@ export default function CreatePostPage() {
 
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
               <div className="space-y-2">
-                <Label htmlFor="externalLink">External Link</Label>
+                <Label htmlFor="externalLink">External Link (optional)</Label>
                 <Input
                   id="externalLink"
                   placeholder="https://..."
@@ -325,7 +325,7 @@ export default function CreatePostPage() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="githubLink">GitHub Link</Label>
+                <Label htmlFor="githubLink">GitHub Link (optional)</Label>
                 <Input
                   id="githubLink"
                   placeholder="https://github.com/..."

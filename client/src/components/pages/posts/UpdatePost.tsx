@@ -254,8 +254,12 @@ function UpdatePostForm({ postData }: UpdatePostFormProps) {
             )}
 
             <div className="space-y-2">
-              <Label htmlFor="title">Post Title</Label>
-              <Input id="title" {...register("title")} />
+              <Label htmlFor="title">Post Title (must)</Label>
+              <Input
+                id="title"
+                placeholder="A catchy headline..."
+                {...register("title")}
+              />
               {errors.title && (
                 <p className="text-xs text-destructive">
                   {errors.title.message}
@@ -264,8 +268,12 @@ function UpdatePostForm({ postData }: UpdatePostFormProps) {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="description">Short Description</Label>
-              <Textarea id="description" {...register("description")} />
+              <Label htmlFor="description">Short Description (must)</Label>
+              <Textarea
+                id="description"
+                placeholder="What is this about? just short description..."
+                {...register("description")}
+              />
               {errors.description && (
                 <p className="text-xs text-destructive">
                   {errors.description.message}
@@ -275,7 +283,7 @@ function UpdatePostForm({ postData }: UpdatePostFormProps) {
 
             <div className="flex flex-col gap-6 ">
               <div className="space-y-2">
-                <Label htmlFor="category">Category</Label>
+                <Label htmlFor="category">Category (must)</Label>
                 <Controller
                   name="category"
                   control={control}
@@ -297,7 +305,7 @@ function UpdatePostForm({ postData }: UpdatePostFormProps) {
               </div>
 
               <div className="space-y-2">
-                <Label>Tags</Label>
+                <Label>Tags (must)</Label>
                 <Controller
                   name="postTags"
                   control={control}
@@ -312,7 +320,7 @@ function UpdatePostForm({ postData }: UpdatePostFormProps) {
             </div>
 
             <div className="space-y-2">
-              <Label>Post Images (Current & New)</Label>
+              <Label>Post Images (Current & New) (must and Max 5)</Label>
               <Controller
                 name="postImages"
                 control={control}
@@ -335,7 +343,7 @@ function UpdatePostForm({ postData }: UpdatePostFormProps) {
             </div>
 
             <div className="space-y-2">
-              <Label>Main Content</Label>
+              <Label>Main Content (must)</Label>
               <Controller
                 name="content"
                 control={control}
@@ -355,11 +363,11 @@ function UpdatePostForm({ postData }: UpdatePostFormProps) {
 
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
               <div className="space-y-2">
-                <Label htmlFor="externalLink">External Link</Label>
+                <Label htmlFor="externalLink">External Link (optional)</Label>
                 <Input id="externalLink" {...register("externalLink")} />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="githubLink">GitHub Link</Label>
+                <Label htmlFor="githubLink">GitHub Link (optional)</Label>
                 <Input id="githubLink" {...register("githubLink")} />
               </div>
             </div>

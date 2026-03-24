@@ -7,6 +7,11 @@ import Link from "next/link";
 import { Github, MessageSquare, Loader2, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import {
+  CornerFlourish,
+  FlourishOrnate,
+  SideFlourish,
+} from "@/components/shared/Ornates";
 
 export default function About() {
   const [imageLoading, setImageLoading] = useState(true);
@@ -14,7 +19,7 @@ export default function About() {
 
   return (
     <main className="max-w-4xl mx-auto py-24 px-8 flex flex-col gap-10">
-      <section className=" text-center flex flex-col gap-4">
+      <section className=" text-center flex flex-col gap-4 relative">
         <div className="flex justify-center h-20 relative">
           <Image
             src="https://res.cloudinary.com/dhr9zmb3i/image/upload/v1772941596/open-farm-land_kfo5ui.png"
@@ -32,7 +37,21 @@ export default function About() {
         </p>
       </section>
 
-      <section className="bg-card border  p-5 md:p-7 relative overflow-hidden">
+      <section className="border-3 border-double bg-card   p-5 md:p-7 relative ">
+        <CornerFlourish className="-top-1 -left-1 rotate-0" />
+        <CornerFlourish className="-top-1 -right-1 rotate-90" />
+        <CornerFlourish className="-bottom-1 -left-1 -rotate-90" />
+        <CornerFlourish className="-bottom-1 -right-1 rotate-180" />
+
+        <FlourishOrnate className="-top-2 -left-2 -rotate-90" />
+        <FlourishOrnate className="-top-2 -right-2 rotate-0" />
+        <FlourishOrnate className="-bottom-2 -right-2 rotate-90" />
+        <FlourishOrnate className="-bottom-2 -left-2 rotate-180" />
+
+        <SideFlourish className="-top-2 left-1/2 -translate-x-1/2 bg-card px-2" />
+        <SideFlourish className="-bottom-2 left-1/2 -translate-x-1/2 rotate-180 bg-card px-2" />
+        <SideFlourish className="-left-[14px] top-1/2 -translate-y-1/2 -rotate-90 bg-card px-2" />
+        <SideFlourish className="-right-[14px] top-1/2 -translate-y-1/2 rotate-90 bg-card px-2" />
         <div className="relative z-10 flex flex-col md:flex-row items-center gap-10">
           <div className="relative shrink-0 w-40 h-40">
             <div className="absolute inset-0 bg-primary/20 blur-2xl " />

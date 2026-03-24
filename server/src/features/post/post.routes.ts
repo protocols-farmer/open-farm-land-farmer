@@ -12,14 +12,14 @@ import { uploadImage } from "@/middleware/multer.config.js";
 
 const router: Router = Router();
 
-// --- PUBLIC ROUTES ---
+// public routes
 router.get("/", postController.getAllPosts);
 router.get("/:id", postController.getPost);
 
-// --- PROTECTED ROUTES (verifyToken applied individually) ---
+// protected routes
 router.post(
   "/",
-  verifyToken, // 🚜 Individual Guard
+  verifyToken,
   uploadImage.array("postImages", 5),
   validate(createPostSchema),
   postController.createPost,
@@ -27,7 +27,7 @@ router.post(
 
 router.patch(
   "/:id",
-  verifyToken, // 🚜 Individual Guard
+  verifyToken,
   uploadImage.array("postImages", 5),
   validate(updatePostSchema),
   postController.updatePost,

@@ -49,22 +49,7 @@ import {
 } from "@/components/ui/collapsible";
 import Logo from "@/components/shared/Logo";
 import { Separator } from "@/components/ui/separator";
-
-const CornerFlourish = ({ className }: { className?: string }) => (
-  <svg
-    viewBox="0 0 40 40"
-    className={cn(
-      "absolute w-6 h-6 pointer-events-none text-primary/40 z-30",
-      className,
-    )}
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="1.5"
-  >
-    <path d="M38 2H10C5.58 2 2 5.58 2 10V38" />
-    <path d="M30 6H12C8.68 6 6 8.68 6 12V30" />
-  </svg>
-);
+import { CornerFlourish } from "@/components/shared/Ornates";
 
 interface NavItem {
   href: string;
@@ -335,13 +320,26 @@ export default function Sidebar() {
 
             <div className="mb-3 flex justify-center">
               <div className="bg-primary/10 p-2 border border-dashed border-primary/30">
-                <Crown className="h-6 w-6 text-primary" />
+                <Heart className="h-6 w-6 text-primary" />
               </div>
             </div>
-            <h3 className="text-sm font-bold text-foreground">Go Pro</h3>
-            <p className="mt-1 text-[11px] leading-tight text-muted-foreground italic">
-              Coming soon to the farm. Stay tuned!
+            <h3 className="text-sm font-bold text-foreground">
+              Feeling generous ?
+            </h3>
+            <p className="mt-1 text-[11px] leading-tight text-muted-foreground ">
+              Your support will help. Little it is we accept it{" "}
             </p>
+
+            <p className="text-xs text-muted-foreground mt-3">
+              Button doesn't work yet
+            </p>
+            <Button
+              variant="default"
+              className="w-full mt-3 rounded-none"
+              onClick={() => {}}
+            >
+              Donate
+            </Button>
           </div>
         </div>
       )}

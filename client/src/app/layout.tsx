@@ -10,6 +10,7 @@ import { Toaster } from "react-hot-toast";
 import Background from "@/components/pages/home/Background";
 import MaintenanceGuard from "@/components/shared/MaintenanceGuard";
 import localFont from "next/font/local";
+import { SvgSpriteDefs } from "@/components/shared/Ornates";
 
 const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
 const geistMono = Geist_Mono({
@@ -129,7 +130,7 @@ export default function RootLayout({
         <ReduxProvider>
           <ThemeProvider
             attribute="class"
-            defaultTheme="system"
+            defaultTheme="dark"
             enableSystem
             disableTransitionOnChange
           >
@@ -137,6 +138,8 @@ export default function RootLayout({
 
             <AuthInitializer>
               <MaintenanceGuard>
+                <SvgSpriteDefs />
+
                 <main className="relative z-10">{children}</main>
               </MaintenanceGuard>
             </AuthInitializer>

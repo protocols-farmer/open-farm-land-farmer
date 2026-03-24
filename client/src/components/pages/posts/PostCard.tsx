@@ -52,42 +52,13 @@ import {
 import { cn } from "@/lib/utils";
 import { formatDistanceToNow } from "date-fns";
 import { formatCompactNumber } from "@/lib/utils";
+import {
+  CornerFlourish,
+  FlourishOrnate,
+  SideFlourish,
+} from "@/components/shared/Ornates";
 
 const FALLBACK_POST_IMAGE = "/fallback-project.jpg";
-
-const CornerFlourish = ({ className }: { className?: string }) => (
-  <svg
-    viewBox="0 0 40 40"
-    className={cn(
-      "absolute w-12 h-12 pointer-events-none text-primary/40 z-30",
-      className,
-    )}
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="1.2"
-  >
-    <path d="M38 2H10C5.58 2 2 5.58 2 10V38" />
-    <path d="M30 6H12C8.68 6 6 8.68 6 12V30" />
-    <path d="M2 10C2 10 6 10 8 6C10 2 10 2 10 2" />
-    <circle cx="3" cy="3" r="1" fill="currentColor" stroke="none" />
-  </svg>
-);
-
-const SideFlourish = ({ className }: { className?: string }) => (
-  <svg
-    viewBox="0 0 24 12"
-    className={cn(
-      "absolute w-8 h-4 pointer-events-none text-primary/40 z-30",
-      className,
-    )}
-    fill="currentColor"
-    stroke="none"
-  >
-    <path d="M12 0L14 4H10L12 0ZM12 12L10 8H14L12 12ZM0 6L4 4V8L0 6ZM24 6L20 8V4L24 6Z" />
-    <circle cx="6" cy="6" r="1.5" className="fill-card px-2" />
-    <circle cx="18" cy="6" r="1.5" className="fill-card px-2" />
-  </svg>
-);
 
 interface PostCardProps {
   post: PostDto;
@@ -223,6 +194,11 @@ export default function PostCard({ post }: PostCardProps) {
         <CornerFlourish className="-top-1.5 -right-1.5 rotate-90" />
         <CornerFlourish className="-bottom-1.5 -left-1.5 -rotate-90" />
         <CornerFlourish className="-bottom-1.5 -right-1.5 rotate-180" />
+
+        <FlourishOrnate className="-top-2 -left-2 -rotate-90" />
+        <FlourishOrnate className="-top-2 -right-2 rotate-0" />
+        <FlourishOrnate className="-bottom-2 -right-2 rotate-90" />
+        <FlourishOrnate className="-bottom-2 -left-2 rotate-180" />
 
         <SideFlourish className="-top-2 left-1/2 -translate-x-1/2 bg-card px-2" />
         <SideFlourish className="-bottom-2 left-1/2 -translate-x-1/2 rotate-180 bg-card px-2" />
