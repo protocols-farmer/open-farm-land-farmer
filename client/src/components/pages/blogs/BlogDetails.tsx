@@ -112,54 +112,13 @@ export default function BlogDetails({ postId }: { postId: string }) {
   return (
     <section className="mx-auto max-w-7xl py-8 space-y-12 animate-in fade-in duration-500">
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-2 lg:gap-12">
-        {/* --- Image Section --- */}
-        <div className="lg:sticky lg:top-24 h-fit flex flex-col gap-4">
-          <div className="relative aspect-[16/10] w-full overflow-hidden  border bg-muted shadow-sm">
-            {mainImage ? (
-              <Image
-                src={mainImage}
-                alt={post.title}
-                fill
-                className="object-cover"
-                priority
-              />
-            ) : (
-              <div className="h-full w-full flex items-center justify-center text-muted-foreground">
-                No image provided
-              </div>
-            )}
-          </div>
-          {post.images && post.images.length > 1 && (
-            <div className="grid grid-cols-5 gap-2">
-              {post.images.map((img) => (
-                <button
-                  key={img.id}
-                  onClick={() => setSelectedImage(img.url)}
-                  className={`relative aspect-square w-full overflow-hidden  border-2 transition-all ${
-                    mainImage === img.url
-                      ? "border-primary shadow-md"
-                      : "border-transparent hover:border-primary/50"
-                  }`}
-                >
-                  <Image
-                    src={img.url}
-                    alt="thumbnail"
-                    fill
-                    className="object-cover"
-                  />
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
-
-        {/* --- Header & Meta Section --- */}
+        {/* intro section */}
         <div className="flex flex-col space-y-6">
           <header className="space-y-4">
             <Badge variant="secondary" className="w-fit capitalize font-bold">
               {post.category.toLowerCase()}
             </Badge>
-            <h1 className="text-4xl font-black   md:text-5xl leading-none break-all">
+            <h1 className="text-2xl md:text-3xl lg:text-4xl font-black leading-none break-words">
               {post.title}
             </h1>
             <p className="text-xl text-muted-foreground leading-relaxed">
@@ -275,12 +234,52 @@ export default function BlogDetails({ postId }: { postId: string }) {
             )}
           </div>
         </div>
+        {/* --- Image Section --- */}
+        <div className="lg:sticky lg:top-24 h-fit flex flex-col gap-4">
+          <div className="relative aspect-[16/10] w-full overflow-hidden  border bg-muted shadow-sm">
+            {mainImage ? (
+              <Image
+                src={mainImage}
+                alt={post.title}
+                fill
+                className="object-cover"
+                priority
+              />
+            ) : (
+              <div className="h-full w-full flex items-center justify-center text-muted-foreground">
+                No image provided
+              </div>
+            )}
+          </div>
+          {post.images && post.images.length > 1 && (
+            <div className="grid grid-cols-5 gap-2">
+              {post.images.map((img) => (
+                <button
+                  key={img.id}
+                  onClick={() => setSelectedImage(img.url)}
+                  className={`relative aspect-square w-full overflow-hidden  border-2 transition-all ${
+                    mainImage === img.url
+                      ? "border-primary shadow-md"
+                      : "border-transparent hover:border-primary/50"
+                  }`}
+                >
+                  <Image
+                    src={img.url}
+                    alt="thumbnail"
+                    fill
+                    className="object-cover"
+                  />
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
 
       <Separator />
 
       {/* --- Main Content Section --- */}
-      <div className="mx-auto max-w-4xl px-4">
+      <div className="mx-auto w-full px-4">
         <div
           className="prose prose-lg prose-neutral prose-quoteless dark:prose-invert max-w-none break-words"
           dangerouslySetInnerHTML={{ __html: sanitizedContent }}
@@ -290,7 +289,7 @@ export default function BlogDetails({ postId }: { postId: string }) {
       <Separator />
 
       {/* --- Comments Section --- */}
-      <div id="comments" className="max-w-4xl mx-auto w-full">
+      <div id="comments" className="w-full ">
         <Card className="border-none shadow-none bg-transparent">
           <CardHeader className="px-0">
             <CardTitle className="text-2xl font-black  ">

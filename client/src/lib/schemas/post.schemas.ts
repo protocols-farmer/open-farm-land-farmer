@@ -34,11 +34,14 @@ const externalUrlSchema = z
   .default("");
 
 export const createPostSchema = z.object({
-  title: z.string().min(5, "Title must be at least 5 characters long."),
+  title: z
+    .string()
+    .min(5, "Title must be at least 5 characters long.")
+    .max(150, "Title cannot exceed 150 characters."),
   description: z
     .string()
     .min(10, "Description must be at least 10 characters long.")
-    .max(500, "Description cannot exceed 500 characters."),
+    .max(300, "Description cannot exceed 300 characters."),
   content: z
     .string()
     .min(20, "Main content must have at least 20 characters.")

@@ -1,3 +1,4 @@
+//src/features/post/post.validation.ts
 import { z } from "zod";
 import { PostCategory } from "@prisma-client";
 
@@ -68,22 +69,18 @@ const strictGitHubLinkSchema = z
     }
   });
 
-// 🚜 CREATE SCHEMA
 export const createPostSchema = z.object({
   body: z.object({
-    // UPDATED: Min 5 (matches frontend)
     title: z
       .string()
       .min(5, "Title must be at least 5 characters long.")
-      .max(255),
+      .max(150, "Title cannot exceed 150 characters."),
 
-    // UPDATED: Min 10 (matches frontend)
     description: z
       .string()
       .min(10, "Description must be at least 10 characters long.")
-      .max(500),
+      .max(300, "Description cannot exceed 300 characters."),
 
-    // UPDATED: Min 20 and Max 50,000 (matches frontend and adds hacker protection)
     content: z
       .string()
       .min(20, "Main content must have at least 20 characters.")
@@ -114,23 +111,19 @@ export const createPostSchema = z.object({
   }),
 });
 
-// 🚜 UPDATE SCHEMA
 // Logic: We use the exact same rules as Create to ensure data quality remains high.
 export const updatePostSchema = z.object({
   body: z.object({
-    // UPDATED: Min 5 (matches createPostSchema)
     title: z
       .string()
       .min(5, "Title must be at least 5 characters long.")
       .max(255),
 
-    // UPDATED: Min 10 (matches createPostSchema)
     description: z
       .string()
       .min(10, "Description must be at least 10 characters long.")
       .max(500),
 
-    // UPDATED: Min 20 and Max 50,000 (matches createPostSchema)
     content: z
       .string()
       .min(20, "Main content must have at least 20 characters.")
