@@ -10,6 +10,7 @@ import {
   AlertCircle,
   CheckCircle,
   Info,
+  Ban, // 🚜 ADDED: Ban icon for the suspension message
 } from "lucide-react";
 import { useForm, SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -56,6 +57,16 @@ const LoginFormContent = () => {
   const urlMessage = useMemo(() => {
     const error = searchParams.get("error");
     const status = searchParams.get("status");
+
+    // 🚜 ADDED: Check for the "banned" status flag from the interceptor
+    if (status === "banned") {
+      return {
+        type: "error" as const,
+        text: "Your account has been suspended or banned due to a violation of our terms. Please contact support.",
+        icon: Ban,
+      };
+    }
+
     if (status === "verification_sent") {
       return {
         type: "info" as const,
@@ -96,6 +107,7 @@ const LoginFormContent = () => {
     }
     return null;
   }, [searchParams]);
+
   const [login, { isLoading }] = useLoginMutation();
 
   const activeMessage = submissionError
@@ -115,6 +127,7 @@ const LoginFormContent = () => {
       setSubmissionError(getApiErrorMessage(error));
     }
   };
+
   return (
     <div className="flex items-center justify-center min-h-screen bg-background p-4">
       <Card className="w-full max-w-md border-border shadow-lg">

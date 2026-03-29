@@ -3,16 +3,14 @@ import { Request, Response } from "express";
 import { asyncHandler } from "@/middleware/asyncHandler.js";
 import { adminService } from "./admin.service.js";
 import { createHttpError } from "@/utils/error.factory.js";
-import { SystemRole } from "@prisma-client";
+import { SystemRole, UserStatus } from "@prisma-client";
 
 class AdminController {
-  // GET /admin/stats
   getDashboardStats = asyncHandler(async (_req: Request, res: Response) => {
     const stats = await adminService.getDashboardStats();
     res.status(200).json({ status: "success", data: stats });
   });
 
-  // GET /admin/users
   getAllUsers = asyncHandler(async (req: Request, res: Response) => {
     const { users, total } = await adminService.getAllUsers(req.query);
     const limit = parseInt(req.query.limit as string) || 10;
@@ -29,7 +27,6 @@ class AdminController {
     });
   });
 
-  // GET /admin/posts
   getAllPosts = asyncHandler(async (req: Request, res: Response) => {
     const { posts, total } = await adminService.getAllPosts(req.query);
     const limit = parseInt(req.query.limit as string) || 10;
@@ -46,7 +43,6 @@ class AdminController {
     });
   });
 
-  // GET /admin/opportunities
   getAllOpportunities = asyncHandler(async (req: Request, res: Response) => {
     const { opportunities, total } = await adminService.getAllOpportunities(
       req.query,
@@ -65,7 +61,6 @@ class AdminController {
     });
   });
 
-  // GET /admin/updates
   getAllUpdates = asyncHandler(async (req: Request, res: Response) => {
     const { updates, total } = await adminService.getAllUpdates(req.query);
     const limit = parseInt(req.query.limit as string) || 10;
@@ -82,7 +77,6 @@ class AdminController {
     });
   });
 
-  // GET /admin/comments
   getAllComments = asyncHandler(async (req: Request, res: Response) => {
     const { comments, total } = await adminService.getAllComments(req.query);
     const limit = parseInt(req.query.limit as string) || 10;
@@ -99,7 +93,6 @@ class AdminController {
     });
   });
 
-  // PATCH /admin/users/:id/role
   updateUserRole = asyncHandler(async (req: Request, res: Response) => {
     const { id } = req.params;
     const { role } = req.body;
@@ -112,7 +105,6 @@ class AdminController {
     res.status(200).json({ status: "success", data: updatedUser });
   });
 
-  // DELETE handlers
   deleteUser = asyncHandler(async (req: Request, res: Response) => {
     const { id } = req.params;
     if (req.user?.id === id) {
@@ -149,7 +141,6 @@ class AdminController {
     res.status(204).send();
   });
 
-  // System Config handlers
   getSystemConfig = asyncHandler(async (_req: Request, res: Response) => {
     const config = await adminService.getSystemConfig();
     res.status(200).json({ status: "success", data: config });
@@ -162,6 +153,36 @@ class AdminController {
       maintenanceMessage,
     });
     res.status(200).json({ status: "success", data: updated });
+  });
+
+  updateUserStatus = asyncHandler(async (req: Request, res: Response) => {
+    const { id } = req.params;
+    const { status, reason, expiresAt } = req.body;
+    const adminId = req.user!.id;
+
+    if (!status || !Object.values(UserStatus).includes(status)) {
+      throw createHttpError(400, "Invalid status provided.");
+    }
+
+    if (
+      (status === UserStatus.BANNED || status === UserStatus.SUSPENDED) &&
+      !reason
+    ) {
+      throw createHttpError(
+        400,
+        "A reason must be provided when banning or suspending a user.",
+      );
+    }
+
+    const updatedUser = await adminService.updateUserStatus(
+      id,
+      status,
+      adminId,
+      reason,
+      expiresAt ? new Date(expiresAt) : null,
+    );
+
+    res.status(200).json({ status: "success", data: updatedUser });
   });
 }
 

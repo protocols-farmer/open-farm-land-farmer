@@ -1,10 +1,10 @@
 //apiRoutes
 import { Router } from "express";
+import { deserializeUser } from "./post/deserializeUser.js";
 import authRoutes from "./auth/auth.routes.js";
 import userRoutes from "./user/user.routes.js";
 import postRoutes from "./post/post.routes.js";
 import tagRoutes from "./tags/tag.routes.js";
-import { deserializeUser } from "./post/deserializeUser.js";
 import commentRoutes from "./comments/comment.routes.js";
 import opportunityRoutes from "./opportunities/opportunity.routes.js";
 import updateRoutes from "./updates/update.routes.js";
@@ -17,6 +17,7 @@ import notificationRoutes from "./notifications/notifications.routes.js";
 import githubRoutes from "./github/github.routes.js";
 import socialAuthRoutes from "./social-auth/social-auth.routes.js";
 import settingsRoutes from "./settings/settings.routes.js";
+import appealRoutes from "../features/appeals/appeal.routes.js";
 
 const router: Router = Router();
 router.use(deserializeUser);
@@ -43,4 +44,5 @@ router.use("/follows", followRoutes);
 router.use("/notifications", notificationRoutes);
 router.use("/github", githubRoutes);
 router.use("/settings", settingsRoutes);
+router.use("/appeals", appealRoutes);
 export default router;

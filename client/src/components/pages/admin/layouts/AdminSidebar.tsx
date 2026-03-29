@@ -16,6 +16,7 @@ import {
   BookText,
   ShieldCheck,
   Settings,
+  Scale,
 } from "lucide-react";
 
 const navLinks = [
@@ -59,6 +60,12 @@ const navLinks = [
     href: "/admin/settings",
     label: "Settings",
     icon: Settings,
+    requiredRole: [SystemRole.SUPER_ADMIN],
+  },
+  {
+    href: "/admin/appeals",
+    label: "Appeals",
+    icon: Scale,
     requiredRole: [SystemRole.SUPER_ADMIN],
   },
 ];

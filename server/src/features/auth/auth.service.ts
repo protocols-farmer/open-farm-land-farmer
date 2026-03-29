@@ -1,3 +1,4 @@
+//src/features/auth/auth.service.ts
 import bcrypt from "bcryptjs";
 import prisma, { rawPrisma } from "@/db/prisma.js";
 import { User } from "@prisma-client";
@@ -75,7 +76,6 @@ export class AuthService {
     const user = await userService.createUser(fullUserData as any);
 
     try {
-      // 🚜 CHANGE: Send professional welcome guide instead of verification link
       await emailService.sendWelcomeEmail(user.email, user.name);
     } catch (err: any) {
       logger.error(
@@ -95,12 +95,14 @@ export class AuthService {
       tokens: { accessToken, refreshToken, refreshTokenExpiresAt: expiresAt },
     };
   }
+
   public async loginUser(input: LoginInputDto): Promise<{
     user: SafeUser;
     tokens: AuthTokens;
   }> {
     const { email, password } = input;
 
+    // 1. Fast, lightweight initial query
     const userWithPassword = await rawPrisma.user.findUnique({
       where: { email },
     });
@@ -121,12 +123,62 @@ export class AuthService {
       throw createHttpError(401, "The password you entered is incorrect.");
     }
 
-    const accessToken = generateAccessToken(userWithPassword);
+    let activeSanction = undefined;
+
+    if (
+      userWithPassword.status === "SUSPENDED" ||
+      userWithPassword.status === "BANNED"
+    ) {
+      const sanction = await rawPrisma.userSanction.findFirst({
+        where: {
+          userId: userWithPassword.id,
+          status: { in: ["ACTIVE", "APPEALED"] },
+        },
+        orderBy: { createdAt: "desc" },
+        include: { appeal: true },
+      });
+
+      if (sanction) {
+        // If suspended and time is up, restore access immediately
+        if (
+          userWithPassword.status === "SUSPENDED" &&
+          sanction.expiresAt &&
+          new Date() >= sanction.expiresAt
+        ) {
+          await rawPrisma.$transaction([
+            rawPrisma.user.update({
+              where: { id: userWithPassword.id },
+              data: { status: "ACTIVE" },
+            }),
+            rawPrisma.userSanction.update({
+              where: { id: sanction.id },
+              data: { status: "EXPIRED" },
+            }),
+          ]);
+          // Update local memory so they get a normal access token
+          userWithPassword.status = "ACTIVE";
+        } else {
+          // Time is not up, attach the sanction details for the frontend
+          activeSanction = {
+            reason: sanction.reason,
+            expiresAt: sanction.expiresAt,
+            type: sanction.type,
+            status: sanction.status,
+            appealStatus: sanction.appeal?.status || null,
+          };
+        }
+      }
+    }
+
+    const accessToken = generateAccessToken(userWithPassword as any);
     const { token: refreshToken, expiresAt } =
       await generateAndStoreRefreshToken(userWithPassword.id);
 
+    const { hashedPassword, ...safeUserBase } = userWithPassword;
+    const safeUser = { ...safeUserBase, activeSanction };
+
     return {
-      user: userWithPassword as unknown as SafeUser,
+      user: safeUser as unknown as SafeUser,
       tokens: { accessToken, refreshToken, refreshTokenExpiresAt: expiresAt },
     };
   }
@@ -212,9 +264,15 @@ export class AuthService {
       where: { id: decodedOldToken.id },
     });
 
-    if (!user || user.status !== "ACTIVE") {
+    if (!user) {
       await this.revokeTokenByJti(decodedOldToken.jti);
-      throw createHttpError(403, "Access denied: Account is inactive.");
+      throw createHttpError(401, "Session invalid: User not found.");
+    }
+
+    // so they stay in the "Ghost State". Only kick out DEACTIVATED users.
+    if (user.status === "DEACTIVATED") {
+      await this.revokeTokenByJti(decodedOldToken.jti);
+      throw createHttpError(403, "Access denied: Account is deactivated.");
     }
 
     return await prisma.$transaction(async (tx) => {
@@ -325,13 +383,12 @@ export class AuthService {
    */
   public async sendPasswordResetToken(email: string): Promise<void> {
     const user = await rawPrisma.user.findUnique({ where: { email } });
-    // 🚜 Scenario Fix: Developer insight for missing email
+
     if (!user) {
       logger.info({ email }, "🔍 Forgot Password: Email not found in DB.");
       return;
     }
 
-    // 🚜 Scenario Fix: Detect and block social accounts from reset flow
     if (!user.hashedPassword) {
       logger.warn({ email }, "⚠️ Forgot Password: User is a Social Account.");
       throw createHttpError(400, "SOCIAL_ACCOUNT_DETECTED");
@@ -363,7 +420,6 @@ export class AuthService {
     token: string,
     newPassword: string,
   ): Promise<void> {
-    // 🚜 Use rawPrisma here too
     const user = await rawPrisma.user.findFirst({
       where: {
         passwordResetToken: token,
@@ -375,7 +431,6 @@ export class AuthService {
 
     const hashedPassword = await bcrypt.hash(newPassword, 10);
 
-    // 🚜 Use rawPrisma for the transaction as well
     await rawPrisma.$transaction([
       rawPrisma.user.update({
         where: { id: user.id },
@@ -400,7 +455,6 @@ export class AuthService {
     });
 
     if (!user) {
-      // 🚜 Scenario Fix: Log the failed token for debugging
       logger.warn(
         { token },
         "❌ Email Verification Failed: Token invalid or not found.",
@@ -427,7 +481,6 @@ export class AuthService {
 
     if (!user) throw createHttpError(404, "User not found.");
 
-    // 🚜 Scenario Fix: Prevent resend for already verified accounts
     if (user.isEmailVerified) {
       logger.info({ userId }, "ℹ️ Resend Blocked: Account already verified.");
       throw createHttpError(400, "ALREADY_VERIFIED");

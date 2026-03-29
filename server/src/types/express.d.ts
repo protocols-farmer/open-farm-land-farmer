@@ -1,3 +1,4 @@
+//src/types/express.d.ts
 import { SystemRole, UserStatus } from "@prisma-client";
 import { UserJWTPayload } from "../features/auth/auth.types.js";
 

@@ -14,6 +14,7 @@ import {
   UpdateSystemConfigArgs,
   GetAdminUpdatesResponse,
   GetAdminOpportunitiesResponse,
+  UserStatus,
 } from "./adminTypes";
 
 const baseQueryWithRetry = retry(baseQueryWithReauth, { maxRetries: 3 });
@@ -193,6 +194,23 @@ export const adminApiSlice = createApi({
       query: (id) => ({ url: `/admin/updates/${id}`, method: "DELETE" }),
       invalidatesTags: ["AdminUpdates", "AdminStats"],
     }),
+
+    updateUserStatus: builder.mutation<
+      void,
+      {
+        userId: string;
+        status: UserStatus;
+        reason?: string;
+        expiresAt?: string | null;
+      }
+    >({
+      query: ({ userId, status, reason, expiresAt }) => ({
+        url: `/admin/users/${userId}/status`,
+        method: "PATCH",
+        body: { status, reason, expiresAt },
+      }),
+      invalidatesTags: [{ type: "AdminUsers", id: "LIST" }],
+    }),
   }),
 });
 
@@ -211,4 +229,5 @@ export const {
   useGetAdminUpdatesQuery,
   useDeleteOpportunityMutation, // Added
   useDeleteUpdateMutation,
+  useUpdateUserStatusMutation,
 } = adminApiSlice;

@@ -1,5 +1,4 @@
 //src/lib/store.ts
-
 import { configureStore } from "@reduxjs/toolkit";
 import { setupListeners } from "@reduxjs/toolkit/query";
 import authReducer from "./features/auth/authSlice";
@@ -9,7 +8,6 @@ import postReducer from "./features/post/postSlice";
 import uiReducer from "./features/ui/uiSlice";
 import commentUiReducer from "./features/comment/commentUiSlice";
 
-// API Slices
 import { userApiSlice } from "./features/user/userApiSlice";
 import { authApiSlice } from "./features/auth/authApiSlice";
 import { postApiSlice } from "./features/post/postApiSlice";
@@ -24,6 +22,7 @@ import { notificationsApiSlice } from "./features/notifications/notificationsApi
 import { socialAuthApiSlice } from "./features/social-auth/socialAuthApiSlice";
 import { githubApiSlice } from "./features/github/githubApiSlice";
 import { settingsApiSlice } from "./features/settings/settingsApiSlice";
+import { appealApiSlice } from "./features/appeals/appealApiSlice";
 /**
  * CENTRAL REDUX STORE
  * This is now the "Source of Truth" for the entire application,
@@ -38,7 +37,6 @@ export const store = configureStore({
     ui: uiReducer,
     commentUi: commentUiReducer,
 
-    // RTK Query Slices
     [userApiSlice.reducerPath]: userApiSlice.reducer,
     [authApiSlice.reducerPath]: authApiSlice.reducer,
     [socialAuthApiSlice.reducerPath]: socialAuthApiSlice.reducer,
@@ -53,6 +51,7 @@ export const store = configureStore({
     [notificationsApiSlice.reducerPath]: notificationsApiSlice.reducer,
     [githubApiSlice.reducerPath]: githubApiSlice.reducer,
     [settingsApiSlice.reducerPath]: settingsApiSlice.reducer,
+    [appealApiSlice.reducerPath]: appealApiSlice.reducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
@@ -71,7 +70,8 @@ export const store = configureStore({
       notificationsApiSlice.middleware,
       socialAuthApiSlice.middleware,
       githubApiSlice.middleware,
-      settingsApiSlice.middleware, // 🚜 ADD THIS LINE HERE
+      settingsApiSlice.middleware,
+      appealApiSlice.middleware,
     ]),
 });
 

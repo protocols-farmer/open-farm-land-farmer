@@ -1,4 +1,4 @@
-// FILE: src/lib/schemas/post.schemas.ts
+//src/lib/schemas/post.schemas.ts
 import { z } from "zod";
 
 export const postCategories = [
@@ -14,7 +14,6 @@ export const postCategories = [
 const flexibleGithubRegex =
   /^https?:\/\/(www\.)?github\.com\/[\w.-]+(\/[\w.-]+)?\/?$/;
 
-// Ensure these return strings (empty or otherwise) to prevent 'undefined' leaks
 const githubUrlSchema = z
   .string()
   .url("Please enter a valid URL.")
@@ -71,17 +70,21 @@ export const createPostSchema = z.object({
   githubLink: githubUrlSchema,
 });
 
-// THIS IS THE KEY: We need the Output type for the SubmitHandler
 export type CreatePostFormValues = z.output<typeof createPostSchema>;
-// This is used for the useForm default values if needed
 export type CreatePostInputValues = z.input<typeof createPostSchema>;
 
-export const updatePostSchema = createPostSchema.extend({
-  postImages: z
-    .array(z.union([z.instanceof(File), z.record(z.unknown())]))
-    .min(1, "Validation Error: A post must have at least one image.")
-    .max(5, "You can upload a maximum of 5 images.")
-    .default([]),
-});
+export const updatePostSchema = createPostSchema
+  .extend({
+    postImages: z.array(z.instanceof(File)).default([]),
+    retainedImages: z.array(z.string()).default([]),
+  })
+  .refine((data) => data.postImages.length + data.retainedImages.length >= 1, {
+    message: "Validation Error: A post must have at least one image.",
+    path: ["postImages"],
+  })
+  .refine((data) => data.postImages.length + data.retainedImages.length <= 5, {
+    message: "You can upload a maximum of 5 images total.",
+    path: ["postImages"],
+  });
 
 export type UpdatePostFormValues = z.output<typeof updatePostSchema>;

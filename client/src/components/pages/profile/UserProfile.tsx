@@ -36,6 +36,7 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
 import PostFilterPage from "@/components/pages/posts/PostFilterPage";
+import FollowListModal from "./FollowListModal"; // 🚜 ADD THIS
 
 const getInitials = (name: string | null | undefined): string => {
   if (!name) return "?";
@@ -101,6 +102,9 @@ export default function UserProfile() {
   const username = (params.slug || params.username) as string;
   const currentUser = useAppSelector(selectCurrentUser);
   const [isCopied, setIsCopied] = useState(false);
+  const [followModalType, setFollowModalType] = useState<
+    "followers" | "following" | null
+  >(null);
 
   const {
     data: user,
@@ -254,14 +258,20 @@ export default function UserProfile() {
             {/* Stats Row */}
             <div className="flex flex-wrap gap-y-3 gap-x-8 text-sm font-semibold text-muted-foreground/80">
               <div className="flex items-center gap-6 pt-1 md:pt-0">
-                <span className="text-foreground">
+                <button
+                  onClick={() => setFollowModalType("followers")}
+                  className="text-foreground hover:text-primary hover:underline transition-colors focus:outline-none"
+                >
                   <b className="text-xl">{user.followersCount ?? 0}</b>{" "}
                   Followers
-                </span>
-                <span className="text-foreground">
+                </button>
+                <button
+                  onClick={() => setFollowModalType("following")}
+                  className="text-foreground hover:text-primary hover:underline transition-colors focus:outline-none"
+                >
                   <b className="text-xl">{user.followingCount ?? 0}</b>{" "}
                   Following
-                </span>
+                </button>
                 <span className="text-foreground">
                   <b className="text-xl">{user._count?.posts ?? 0}</b> Posts
                 </span>
@@ -331,6 +341,12 @@ export default function UserProfile() {
           searchPlaceholder={`Search within @${user.username}'s posts...`}
         />
       </section>
+      <FollowListModal
+        userId={user.id}
+        type={followModalType}
+        isOpen={followModalType !== null}
+        onClose={() => setFollowModalType(null)}
+      />
     </div>
   );
 }

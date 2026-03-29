@@ -11,6 +11,7 @@ import Background from "@/components/pages/home/Background";
 import MaintenanceGuard from "@/components/shared/MaintenanceGuard";
 import localFont from "next/font/local";
 import { SvgSpriteDefs } from "@/components/shared/Ornates";
+import SanctionGuard from "@/components/shared/SanctionGuard";
 
 const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
 const geistMono = Geist_Mono({
@@ -138,9 +139,11 @@ export default function RootLayout({
 
             <AuthInitializer>
               <MaintenanceGuard>
-                <SvgSpriteDefs />
+                <SanctionGuard>
+                  <SvgSpriteDefs />
 
-                <main className="relative z-10">{children}</main>
+                  <main className="relative z-10">{children}</main>
+                </SanctionGuard>
               </MaintenanceGuard>
             </AuthInitializer>
             <AuthModal />

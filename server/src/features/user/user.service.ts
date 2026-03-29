@@ -42,9 +42,67 @@ export class UserService {
   }
 
   public async findUserById(id: string): Promise<SafeUser | null> {
-    return this.userDelegate.findUnique({
+    // 1. Fast, lightweight initial query
+    const user = await this.userDelegate.findUnique({
       where: { id },
-    }) as Promise<SafeUser | null>;
+    });
+
+    if (!user) return null;
+
+    let activeSanction = undefined;
+
+    // 2. Only query the moderation table if we know they are disciplined
+    if (user.status === "SUSPENDED" || user.status === "BANNED") {
+      const sanction = await (
+        prisma as ExtendedPrismaClient
+      ).userSanction.findFirst({
+        where: {
+          userId: id,
+          status: { in: ["ACTIVE", "APPEALED"] },
+        },
+        orderBy: { createdAt: "desc" },
+        include: { appeal: true }, // 🚜 NEW: Fetch the attached appeal history
+      });
+
+      if (sanction) {
+        // 3. If suspended and time is up, restore access immediately
+        if (
+          user.status === "SUSPENDED" &&
+          sanction.expiresAt &&
+          new Date() >= sanction.expiresAt
+        ) {
+          await (prisma as ExtendedPrismaClient).$transaction([
+            (prisma as ExtendedPrismaClient).user.update({
+              where: { id },
+              data: { status: "ACTIVE" },
+            }),
+            (prisma as ExtendedPrismaClient).userSanction.update({
+              where: { id: sanction.id },
+              data: { status: "EXPIRED" },
+            }),
+          ]);
+          // Update local memory so the frontend sees them as ACTIVE immediately
+          user.status = "ACTIVE";
+        } else {
+          // Time is not up (or it's a permanent ban), attach the sanction details
+          activeSanction = {
+            reason: sanction.reason,
+            expiresAt: sanction.expiresAt,
+            type: sanction.type,
+            status: sanction.status,
+            appealStatus: sanction.appeal?.status || null, // 🚜 NEW: Pass the appeal status specifically
+          };
+        }
+      }
+    }
+
+    // 4. Clean destructuring, no 'delete' keywords or 'any' hacks
+    const { hashedPassword, ...safeUserBase } = user;
+
+    return {
+      ...safeUserBase,
+      activeSanction,
+    } as unknown as SafeUser;
   }
 
   public async createUser(input: SignUpInputDto): Promise<SafeUser> {
@@ -81,7 +139,6 @@ export class UserService {
 
     if (!user) return;
 
-    // 🚜 Cleanup Cloudinary Assets
     const profileId = user.profileImagePublicId;
     const bannerId = user.bannerImagePublicId;
 
@@ -105,7 +162,6 @@ export class UserService {
     }
 
     try {
-      // 🚜 Crucial: Proceed with DB deletion regardless of Cloudinary outcome
       await this.userDelegate.delete({ where: { id: userId } });
       logger.info(
         { userId },
@@ -139,7 +195,6 @@ export class UserService {
 
       return updatedUser as unknown as SafeUser;
     } catch (e: any) {
-      // 🚜 Catch Prisma Unique Constraint error (P2002)
       if (
         e.code === "P2002" ||
         (e instanceof Prisma.PrismaClientKnownRequestError &&

@@ -46,6 +46,7 @@ export const verifyToken = asyncHandler(
         );
       }
 
+      // 🚜 CHANGE 1: Stripped out the heavy 'include: { sanctionsReceived }'
       const userFromDb = await (prisma as ExtendedPrismaClient).user.findUnique(
         {
           where: { id: decoded.id },
@@ -60,18 +61,30 @@ export const verifyToken = asyncHandler(
         return next(createHttpError(401, "Unauthorized: User not found."));
       }
 
+      // 🚜 CHANGE 2: Removed the Auto-Restore $transaction database writes
+
       if (userFromDb.status !== "ACTIVE") {
-        logger.warn(
-          { userId: userFromDb.id, status: userFromDb.status },
-          "[Auth Middleware] Access denied: Account is not ACTIVE",
+        // Allow specific routes for suspended/banned users so the frontend can render the SanctionGuard
+        // and allow the user to logout or appeal their ban.
+        const allowedPaths = ["/user/me", "/appeals", "/auth/logout"];
+        const isAllowed = allowedPaths.some(
+          (path) => req.originalUrl.includes(path) || req.path.includes(path),
         );
 
-        throw createHttpError(
-          403,
-          `Your account is ${userFromDb.status.toLowerCase()}. Please contact support.`,
-        );
+        if (!isAllowed) {
+          logger.warn(
+            { userId: userFromDb.id, status: userFromDb.status },
+            "[Auth Middleware] Access denied: Account is not ACTIVE",
+          );
+
+          throw createHttpError(
+            403,
+            `Your account is ${userFromDb.status.toLowerCase()}. Please contact support.`,
+          );
+        }
       }
 
+      // 🚜 CHANGE 3: Simplified the req.user object (No activeSanction passed here)
       req.user = {
         id: userFromDb.id,
         systemRole: userFromDb.systemRole,
@@ -88,6 +101,7 @@ export const verifyToken = asyncHandler(
         joinedAt: userFromDb.joinedAt,
         updatedAt: userFromDb.updatedAt,
       };
+
       logger.info(
         { userId: req.user!.id, username: req.user!.username },
         "[Auth Middleware] User authenticated and attached to request",

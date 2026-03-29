@@ -1,3 +1,4 @@
+//src/features/auth/auth.routes.ts
 import { Router } from "express";
 import { authController } from "@/features/auth/auth.controller.js";
 import { validate } from "@/middleware/validate.js";

@@ -40,7 +40,7 @@ model User {
 
   // --- Deactivation / Soft Delete ---
   status        UserStatus @default(ACTIVE)
-  systemRole SystemRole @default(USER)
+  systemRole    SystemRole @default(USER)
   deactivatedAt DateTime?
 
   // --- Social links ---
@@ -66,12 +66,17 @@ model User {
   notificationsSent     Notification[]        @relation("Sender")
   followers             Follow[]              @relation("Following")
   following             Follow[]              @relation("Follower")
+  sanctionsReceived     UserSanction[]        @relation("UserSanctions")
+  sanctionsIssued       UserSanction[]        @relation("AdminSanctions")
+  appealsSubmitted      Appeal[]              @relation("UserAppeals")
+  appealsReviewed       Appeal[]              @relation("AdminAppeals")
 
   followersCount Int       @default(0) @map("followers_count")
   followingCount Int       @default(0) @map("following_count")
 
   @@map("users")
 }
+
 model RefreshToken {
   id        String   @id @default(uuid())
   jti       String   @unique // The JWT ID
@@ -104,6 +109,7 @@ model UserSettings {
 
   @@map("user_settings")
 }
+
 model Follow {
   followerId  String
   followingId String
@@ -115,6 +121,34 @@ model Follow {
   @@id([followerId, followingId])
   @@index([followingId]) 
   @@map("follows")
+}
+
+// ===============================================
+// ===        ADMIN & MODERATION MODELS        ===
+// ===============================================
+
+model UserSanction {
+  id          String   @id @default(uuid())
+  reason      String   @db.Text 
+  
+  type        SanctionType
+  status      SanctionStatus @default(ACTIVE)
+  
+  expiresAt   DateTime? 
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  userId      String
+  user        User     @relation("UserSanctions", fields: [userId], references: [id], onDelete: Cascade)
+
+  
+  adminId     String?
+  admin       User?    @relation("AdminSanctions", fields: [adminId], references: [id], onDelete: SetNull)
+  appeal      Appeal?
+  @@index([userId])
+  @@index([status, expiresAt]) 
+  @@map("user_sanctions")
 }
 
 
@@ -163,6 +197,7 @@ model Post {
   @@index([category, createdAt(sort: Desc)])
   @@map("posts")
 }
+
 model GuideStep {
   id          String   @id @default(uuid())
   title       String   // e.g., "Part 1: Setting Up Your Environment"
@@ -419,6 +454,8 @@ model Notification {
 }
 
 
+
+
 // ===============================================
 // ===         ANALYTICS MODELS                ===
 // ===============================================
@@ -472,14 +509,64 @@ model SystemConfig {
   updatedAt         DateTime @default(now()) @updatedAt
 }
 
+
+
+// ===============================================
+// ===             APPEALS MODEL               ===
+// ===============================================
+
+model Appeal {
+  id          String       @id @default(uuid())
+  reason      String       @db.Text // The user's explanation/defense
+  status      AppealStatus @default(PENDING)
+  adminNotes  String?      @db.Text // Internal notes from the reviewing admin
+  
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  // The user who is appealing
+  userId      String
+  user        User         @relation("UserAppeals", fields: [userId], references: [id], onDelete: Cascade)
+
+  // The specific sanction being appealed (1-to-1 so they can't spam appeals for the same ban)
+  sanctionId  String       @unique 
+  sanction    UserSanction @relation(fields: [sanctionId], references: [id], onDelete: Cascade)
+
+  // The admin who reviewed/decided the appeal
+  reviewerId  String?
+  reviewer    User?        @relation("AdminAppeals", fields: [reviewerId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([status])
+  @@map("appeals")
+}
+
+enum AppealStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
 // ===============================================
 // ===             ENUMERATIONS                ===
 // ===============================================
 
 enum UserStatus {
   ACTIVE
+  SUSPENDED // 🚜 NEW STATUS ADDED
   DEACTIVATED
   BANNED
+}
+
+// 🚜 NEW ENUMS FOR MODERATION
+enum SanctionType {
+  SUSPENSION
+  BAN
+}
+
+enum SanctionStatus {
+  ACTIVE
+  EXPIRED
+  APPEALED
 }
 
 enum SystemRole {

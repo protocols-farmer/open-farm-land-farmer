@@ -2,13 +2,14 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { userApiSlice } from "./userApiSlice";
 import { clearCredentials } from "../auth/authSlice";
+import { authApiSlice } from "../auth/authApiSlice"; // 🚜 Make sure this is imported!
 import type { RootState } from "../../store";
 import type {
   SanitizedUserDto,
   UsersState,
   UpdateProfileApiResponse,
 } from "./userTypes";
-import { authApiSlice } from "../auth/authApiSlice";
+
 const initialState: UsersState = {
   currentUser: null,
 };
@@ -23,10 +24,19 @@ const userSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-
       .addCase(clearCredentials, (state) => {
         state.currentUser = null;
       })
+
+      // 🚜 ADD THIS BLOCK: Catch the user data the exact second they log in
+      .addMatcher(
+        authApiSlice.endpoints.login.matchFulfilled,
+        (state, action: PayloadAction<any>) => {
+          if (action.payload.data?.user) {
+            state.currentUser = action.payload.data.user;
+          }
+        },
+      )
 
       .addMatcher(
         userApiSlice.endpoints.getMe.matchFulfilled,
@@ -34,7 +44,6 @@ const userSlice = createSlice({
           state.currentUser = action.payload;
         },
       )
-
       .addMatcher(
         userApiSlice.endpoints.updateMyProfile.matchFulfilled,
         (state, action: PayloadAction<UpdateProfileApiResponse>) => {
@@ -43,7 +52,6 @@ const userSlice = createSlice({
           }
         },
       )
-
       .addMatcher(
         authApiSlice.endpoints.verifyEmail.matchFulfilled,
         (state) => {
@@ -56,7 +64,5 @@ const userSlice = createSlice({
 });
 
 export const { setCurrentUser } = userSlice.actions;
-
 export const selectCurrentUser = (state: RootState) => state.user.currentUser;
-
 export default userSlice.reducer;

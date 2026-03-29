@@ -1,7 +1,7 @@
 //src/components/pages/profile/ProfileHeader.tsx
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { format } from "date-fns";
@@ -18,6 +18,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { SanitizedUserDto } from "@/lib/features/user/userTypes";
+import FollowListModal from "./FollowListModal"; // 🚜 ADD THIS
 
 const getInitials = (name: string | null | undefined): string => {
   if (!name) return "?";
@@ -34,6 +35,9 @@ interface ProfileHeaderProps {
 }
 
 export default function ProfileHeader({ user, onEdit }: ProfileHeaderProps) {
+  const [followModalType, setFollowModalType] = useState<
+    "followers" | "following" | null
+  >(null);
   return (
     <section className="relative">
       {/* Banner */}
@@ -110,12 +114,18 @@ export default function ProfileHeader({ user, onEdit }: ProfileHeaderProps) {
 
           <div className="flex flex-wrap gap-y-3 gap-x-8 text-sm font-semibold text-muted-foreground/80">
             <div className="flex items-center gap-6 pt-1 md:pt-0">
-              <span className="text-foreground">
+              <button
+                onClick={() => setFollowModalType("followers")}
+                className="text-foreground hover:text-primary hover:underline transition-colors focus:outline-none"
+              >
                 <b className="text-xl">{user.followersCount ?? 0}</b> Followers
-              </span>
-              <span className="text-foreground">
+              </button>
+              <button
+                onClick={() => setFollowModalType("following")}
+                className="text-foreground hover:text-primary hover:underline transition-colors focus:outline-none"
+              >
                 <b className="text-xl">{user.followingCount ?? 0}</b> Following
-              </span>
+              </button>
             </div>
             <div className="flex items-center gap-6">
               {user.location && (
@@ -171,6 +181,12 @@ export default function ProfileHeader({ user, onEdit }: ProfileHeaderProps) {
           </div>
         </div>
       </div>
+      <FollowListModal
+        userId={user.id}
+        type={followModalType}
+        isOpen={followModalType !== null}
+        onClose={() => setFollowModalType(null)}
+      />
     </section>
   );
 }

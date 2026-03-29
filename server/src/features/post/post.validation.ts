@@ -111,18 +111,18 @@ export const createPostSchema = z.object({
   }),
 });
 
-// Logic: We use the exact same rules as Create to ensure data quality remains high.
+// Replace your existing updatePostSchema with this:
 export const updatePostSchema = z.object({
   body: z.object({
     title: z
       .string()
       .min(5, "Title must be at least 5 characters long.")
-      .max(255),
+      .max(150, "Title cannot exceed 150 characters."), // 🚜 FIXED: Was 255
 
     description: z
       .string()
       .min(10, "Description must be at least 10 characters long.")
-      .max(500),
+      .max(300, "Description cannot exceed 300 characters."), // 🚜 FIXED: Was 500
 
     content: z
       .string()

@@ -1,4 +1,3 @@
-// src/lib/api/baseQueryWithReauth.ts
 import { fetchBaseQuery } from "@reduxjs/toolkit/query";
 import type {
   BaseQueryFn,
@@ -35,6 +34,10 @@ export const baseQueryWithReauth: BaseQueryFn<
 
   let result = await rawBaseQuery(args, api, extraOptions);
 
+  if (result.error && result.error.status === 403) {
+    return result;
+  }
+
   if (result.error && result.error.status === 401) {
     const isRefreshRequest =
       (typeof args === "string" && args.includes("/auth/refresh")) ||
@@ -53,7 +56,6 @@ export const baseQueryWithReauth: BaseQueryFn<
         if (typeof window !== "undefined") {
           const currentPath = window.location.pathname;
           if (!currentPath.includes("/auth/login")) {
-            // Using replace() prevents history-stack loops
             window.location.replace("/auth/login?status=session_expired");
           }
         }

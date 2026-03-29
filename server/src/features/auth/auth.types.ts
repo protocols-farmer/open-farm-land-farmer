@@ -82,4 +82,9 @@ export interface UserJWTPayload {
   name: string;
   profileImage?: string;
   type: "access";
+  activeSanction?: {
+    reason: string;
+    expiresAt: Date | null;
+    type: string;
+  };
 }

@@ -238,10 +238,10 @@ export default function PostManagement() {
                     )}
                   </div>
                 </TableCell>
-                <TableCell className="font-medium align-top break-words">
+                <TableCell className="font-medium align-top break-all">
                   {post.title}
                 </TableCell>
-                <TableCell className="text-sm text-muted-foreground align-top break-words">
+                <TableCell className="text-sm text-muted-foreground align-top break-all">
                   {post.description}
                 </TableCell>
                 <TableCell className="align-top">

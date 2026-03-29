@@ -8,10 +8,16 @@ import {
   Opportunity,
   Update,
   UpdateCategory,
+  UserSanction,
 } from "@prisma-client";
 
-export type SanitizedUser = Omit<User, "hashedPassword">;
-
+export type SanitizedUser = Omit<User, "hashedPassword"> & {
+  activeSanction?: {
+    reason: string;
+    expiresAt: Date | null;
+    type: string;
+  };
+};
 // Data shape for the main dashboard statistics card
 export interface AdminDashboardStats {
   totalUsers: number;
@@ -30,6 +36,7 @@ export type AdminUserRow = SanitizedUser & {
     posts: number;
     comments: number;
   };
+  sanctionsReceived?: UserSanction[];
 };
 
 // Data shape for a post row

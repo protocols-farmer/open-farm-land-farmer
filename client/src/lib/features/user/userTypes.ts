@@ -12,6 +12,7 @@ export enum SystemRole {
 export enum UserStatus {
   ACTIVE = "ACTIVE",
   DEACTIVATED = "DEACTIVATED",
+  SUSPENDED = "SUSPENDED",
   BANNED = "BANNED",
 }
 
@@ -29,12 +30,19 @@ export type SanitizedUserDto = {
   joinedAt: string;
   updatedAt: string;
   systemRole: SystemRole;
-  status: UserStatus; // Matches backend 'UserStatus'
+  status: UserStatus;
   twitterUrl: string | null;
   githubUrl: string | null;
   websiteUrl: string | null;
   followersCount: number;
   followingCount: number;
+  activeSanction?: {
+    reason: string;
+    expiresAt: string | null;
+    type: string;
+    status: "ACTIVE" | "APPEALED" | "EXPIRED";
+    appealStatus: "PENDING" | "APPROVED" | "REJECTED" | null;
+  };
 };
 
 export interface UserProfile extends SanitizedUserDto {

@@ -372,6 +372,25 @@ export default function CreatePostPage() {
                 </>
               )}
             </Button>
+
+            {Object.keys(errors).length > 0 && (
+              <Alert
+                variant="destructive"
+                className="mt-6 border-destructive/50 bg-destructive/10 animate-in fade-in zoom-in duration-300"
+              >
+                <AlertCircle className="h-4 w-4" />
+                <AlertTitle>
+                  Please fix the following errors to publish:
+                </AlertTitle>
+                <AlertDescription>
+                  <ul className="list-disc list-inside text-xs mt-2 space-y-1 font-medium">
+                    {Object.values(errors).map((error, index) => (
+                      <li key={index}>{String(error?.message)}</li>
+                    ))}
+                  </ul>
+                </AlertDescription>
+              </Alert>
+            )}
           </form>
         </CardContent>
       </Card>

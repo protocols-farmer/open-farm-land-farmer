@@ -1,6 +1,6 @@
 //src/features/admin/admin.service.ts
 import prisma from "@/db/prisma.js";
-import { Prisma, SystemRole } from "@prisma-client";
+import { Prisma, SystemRole, UserStatus } from "@prisma-client";
 import {
   AdminDashboardStats,
   AdminUserRow,
@@ -49,9 +49,6 @@ class AdminService {
     };
   }
 
-  /**
-   * Fetches a paginated, searchable, and filterable list of all users.
-   */
   public async getAllUsers(
     query: AdminApiQuery,
   ): Promise<{ users: AdminUserRow[]; total: number }> {
@@ -78,14 +75,20 @@ class AdminService {
         skip: (page - 1) * limit,
         take: limit,
         orderBy: { [sortBy]: order },
-        include: { _count: { select: { posts: true, comments: true } } },
+        include: {
+          _count: { select: { posts: true, comments: true } },
+          sanctionsReceived: {
+            where: { status: "ACTIVE" },
+            orderBy: { createdAt: "desc" },
+            take: 1,
+          },
+        },
       }),
       prisma.user.count({ where }),
     ]);
 
     return { users: users as AdminUserRow[], total };
   }
-
   /**
    * Fetches a paginated, searchable list of all posts.
    */
@@ -321,6 +324,50 @@ class AdminService {
       where: { id: config.id },
       data,
     });
+  }
+
+  public async updateUserStatus(
+    userId: string,
+    newStatus: UserStatus,
+    adminId?: string,
+    reason?: string,
+    expiresAt?: Date | null,
+  ): Promise<SanitizedUser> {
+    return prisma.$transaction(async (tx) => {
+      const updatedUser = await tx.user.update({
+        where: { id: userId },
+        data: { status: newStatus },
+      });
+
+      if (
+        (newStatus === "BANNED" || newStatus === "SUSPENDED") &&
+        adminId &&
+        reason
+      ) {
+        await tx.userSanction.updateMany({
+          where: { userId, status: "ACTIVE" },
+          data: { status: "EXPIRED" },
+        });
+
+        await tx.userSanction.create({
+          data: {
+            userId,
+            adminId,
+            reason,
+            type: newStatus === "BANNED" ? "BAN" : "SUSPENSION",
+            status: "ACTIVE",
+            expiresAt: expiresAt || null,
+          },
+        });
+      } else if (newStatus === "ACTIVE") {
+        await tx.userSanction.updateMany({
+          where: { userId, status: "ACTIVE" },
+          data: { status: "EXPIRED" },
+        });
+      }
+
+      return updatedUser;
+    }) as Promise<SanitizedUser>;
   }
 }
 

@@ -1,9 +1,26 @@
+//src/lib/features/admin/adminTypes.ts
 // These should match the enums in your backend/Prisma schema
 export enum SystemRole {
   USER = "USER",
   SYSTEM_CONTENT_CREATOR = "SYSTEM_CONTENT_CREATOR",
   DEVELOPER = "DEVELOPER",
   SUPER_ADMIN = "SUPER_ADMIN",
+}
+
+export enum UserStatus {
+  ACTIVE = "ACTIVE",
+  SUSPENDED = "SUSPENDED",
+  DEACTIVATED = "DEACTIVATED",
+  BANNED = "BANNED",
+}
+
+export interface AdminUserSanction {
+  id: string;
+  reason: string;
+  type: "SUSPENSION" | "BAN";
+  status: "ACTIVE" | "EXPIRED" | "APPEALED";
+  expiresAt: string | null;
+  createdAt: string;
 }
 
 export enum PostCategory {
@@ -51,11 +68,13 @@ export interface AdminUserRow {
   email: string;
   profileImage: string | null;
   systemRole: SystemRole;
+  status: UserStatus;
   joinedAt: string;
   _count: {
     posts: number;
     comments: number;
   };
+  sanctionsReceived?: AdminUserSanction[];
 }
 
 export interface AdminPostRow {

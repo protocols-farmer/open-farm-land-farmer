@@ -46,6 +46,15 @@ router.patch(
   requireRole(["SUPER_ADMIN"]),
   adminController.updateUserRole,
 );
+
+// Add this right under the updateUserRole route
+router.patch(
+  "/users/:id/status",
+  verifyToken,
+  requireRole(["SUPER_ADMIN"]),
+  adminController.updateUserStatus,
+);
+
 router.delete(
   "/users/:id",
   verifyToken,
