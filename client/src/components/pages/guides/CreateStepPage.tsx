@@ -9,7 +9,7 @@ import { useGetPostByIdQuery } from "@/lib/features/post/postApiSlice";
 import GuideStepForm from "./GuideStepForm";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { ArrowLeft, CircleChevronLeft, Loader2, Sprout } from "lucide-react";
+import { CircleChevronLeft, Loader2, Sprout } from "lucide-react";
 
 interface CreateStepPageProps {
   postId: string;
@@ -23,15 +23,15 @@ export default function CreateStepPage({ postId }: CreateStepPageProps) {
   const totalSteps = post?.steps?.length || 0;
 
   const handleFormSubmit = async (data: any) => {
-    const promise = addStep({ postId, data }).unwrap();
-
     try {
-      await toast.promise(promise, {
+      const result = await toast.promise(addStep({ postId, data }).unwrap(), {
         loading: "Planting new step module...",
         success: "Step synchronized to the plot.",
         error: "Failed to synchronize step.",
       });
-      router.push(`/guides/${postId}`);
+
+      // Redirect back to the guide and automatically open the newly created step
+      router.push(`/guides/${postId}?activeStepId=${result.data.id}`);
     } catch (err) {
       // Error handled by toast.promise
     }
@@ -56,7 +56,7 @@ export default function CreateStepPage({ postId }: CreateStepPageProps) {
           onClick={() => router.back()}
           className="rounded-none font-bold border-3 border-double h-9 px-4"
         >
-          <CircleChevronLeft className="h-4 w-4" />
+          <CircleChevronLeft className="h-4 w-4 mr-2" />
           Return to Guide
         </Button>
 

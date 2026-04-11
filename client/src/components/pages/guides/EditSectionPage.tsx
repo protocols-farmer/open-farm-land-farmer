@@ -1,4 +1,4 @@
-//src/components/pages/guides/CreateStepPage.tsx
+//src/components/pages/guides/EditSectionPage.tsx
 "use client";
 
 import React, { useMemo } from "react";
@@ -34,15 +34,20 @@ export default function EditSectionPage({
   }, [post, stepId, sectionId]);
 
   const handleFormSubmit = async (formData: FormData) => {
-    const promise = updateSection({ sectionId, postId, formData }).unwrap();
-
     try {
-      await toast.promise(promise, {
-        loading: "Refining segment data...",
-        success: "Segment updated in the ledger.",
-        error: "Failed to update segment.",
-      });
-      router.push(`/guides/${postId}`);
+      await toast.promise(
+        updateSection({ sectionId, postId, formData }).unwrap(),
+        {
+          loading: "Refining segment data...",
+          success: "Segment updated in the ledger.",
+          error: "Failed to update segment.",
+        },
+      );
+
+      // Trade-off fix: Redirect with context to return to this specific step and section
+      router.push(
+        `/guides/${postId}?activeStepId=${stepId}&sectionId=${sectionId}`,
+      );
     } catch (err) {
       // Error handled by toast.promise
     }

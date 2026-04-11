@@ -1,4 +1,4 @@
-//src/components/pages/guides/CreateStepPage.tsx
+//src/components/pages/guides/CreateSectionPage.tsx
 "use client";
 
 import React, { useMemo } from "react";
@@ -9,7 +9,7 @@ import { useGetPostByIdQuery } from "@/lib/features/post/postApiSlice";
 import GuideSectionForm from "./GuideSectionForm";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { ArrowLeft, Loader2, Layers, CircleChevronLeft } from "lucide-react";
+import { Loader2, Layers, CircleChevronLeft } from "lucide-react";
 
 interface CreateSectionPageProps {
   postId: string;
@@ -32,15 +32,20 @@ export default function CreateSectionPage({
   const nextOrder = (stepData?.sections?.length || 0) + 1;
 
   const handleFormSubmit = async (formData: FormData) => {
-    const promise = addSection({ stepId, postId, formData }).unwrap();
-
     try {
-      await toast.promise(promise, {
-        loading: "Appending technical segment...",
-        success: "Segment synchronized to the module.",
-        error: "Failed to synchronize segment.",
-      });
-      router.push(`/guides/${postId}`);
+      const result = await toast.promise(
+        addSection({ stepId, postId, formData }).unwrap(),
+        {
+          loading: "Appending technical segment...",
+          success: "Segment synchronized to the module.",
+          error: "Failed to synchronize segment.",
+        },
+      );
+
+      // Trade-off fix: Redirect with context to open step and scroll to the new section
+      router.push(
+        `/guides/${postId}?activeStepId=${stepId}&sectionId=${result.data.id}`,
+      );
     } catch (err) {
       // Error handled by toast.promise
     }
@@ -65,7 +70,7 @@ export default function CreateSectionPage({
           onClick={() => router.back()}
           className="rounded-none font-bold border-3 border-double h-9 px-4"
         >
-          <CircleChevronLeft className="h-4 w-4" />
+          <CircleChevronLeft className="h-4 w-4 mr-2" />
           Return to Guide
         </Button>
 

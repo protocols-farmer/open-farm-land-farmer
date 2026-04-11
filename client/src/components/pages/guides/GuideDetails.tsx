@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState, useMemo } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import toast from "react-hot-toast";
@@ -72,6 +72,7 @@ const FALLBACK_IMAGE = "/fallback-project.jpg";
 
 export default function GuideDetails({ postId }: { postId: string }) {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const currentUser = useAppSelector(selectCurrentUser);
 
   const {
@@ -87,6 +88,27 @@ export default function GuideDetails({ postId }: { postId: string }) {
 
   const [activeStepId, setActiveStepId] = useState<string>("overview");
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
+
+  // Sync active step and scroll to section from URL parameters
+  useEffect(() => {
+    const stepParam = searchParams.get("activeStepId");
+    const sectionParam = searchParams.get("sectionId");
+
+    if (stepParam) {
+      setActiveStepId(stepParam);
+
+      if (sectionParam) {
+        // Delay scroll slightly to ensure the step content has finished mounting/animating
+        const timer = setTimeout(() => {
+          const element = document.getElementById(sectionParam);
+          if (element) {
+            element.scrollIntoView({ behavior: "smooth", block: "start" });
+          }
+        }, 600);
+        return () => clearTimeout(timer);
+      }
+    }
+  }, [searchParams]);
 
   // Gallery & Image State
   const [selectedImage, setSelectedImage] = useState<string | undefined>();

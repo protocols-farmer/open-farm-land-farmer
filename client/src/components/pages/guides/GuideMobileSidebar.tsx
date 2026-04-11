@@ -1,7 +1,6 @@
-//src/components/pages/guides/GuideMobileSidebar.tsx
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Sheet,
   SheetContent,
@@ -29,7 +28,7 @@ interface GuideMobileSidebarProps {
   post: PostDto;
   activeStepId: string;
   onStepChange: (id: string) => void;
-  isAuthor: boolean; // Added for mirror consistency
+  isAuthor: boolean;
 }
 
 export default function GuideMobileSidebar({
@@ -43,6 +42,46 @@ export default function GuideMobileSidebar({
   const [expandedStepIds, setExpandedStepIds] = useState<string[]>([
     activeStepId,
   ]);
+  const [activeSectionId, setActiveSectionId] = useState<string | null>(null);
+
+  // 1. Sync: Keep active step expanded
+  useEffect(() => {
+    if (activeStepId !== "overview") {
+      setExpandedStepIds((prev) =>
+        prev.includes(activeStepId) ? prev : [...prev, activeStepId],
+      );
+    }
+  }, [activeStepId]);
+
+  // 2. Track: Highlight sections while scrolling
+  useEffect(() => {
+    if (activeStepId === "overview" || !isOpen) {
+      setActiveSectionId(null);
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            setActiveSectionId(entry.target.id);
+          }
+        });
+      },
+      {
+        rootMargin: "-20% 0px -70% 0px",
+        threshold: 0,
+      },
+    );
+
+    const currentStep = post.steps?.find((s) => s.id === activeStepId);
+    currentStep?.sections?.forEach((section) => {
+      const el = document.getElementById(section.id);
+      if (el) observer.observe(el);
+    });
+
+    return () => observer.disconnect();
+  }, [activeStepId, post.steps, isOpen]);
 
   const toggleStepExpanded = (stepId: string) => {
     setExpandedStepIds((prev) =>
@@ -61,14 +100,16 @@ export default function GuideMobileSidebar({
       setTimeout(() => {
         const element = document.getElementById(sectionId);
         if (element) {
-          element.scrollIntoView({ behavior: "smooth" });
+          element.scrollIntoView({ behavior: "smooth", block: "center" });
+          setActiveSectionId(sectionId);
         }
       }, 350);
     } else {
       setTimeout(() => {
         const element = document.getElementById(sectionId);
         if (element) {
-          element.scrollIntoView({ behavior: "smooth" });
+          element.scrollIntoView({ behavior: "smooth", block: "center" });
+          setActiveSectionId(sectionId);
         }
       }, 300);
     }
@@ -87,8 +128,8 @@ export default function GuideMobileSidebar({
           </SheetDescription>
         </SheetHeader>
 
-        {/* 1. HEADER - Mirror Desktop Style */}
-        <div className="p-6 border-b border-double  bg-background/50">
+        {/* 1. HEADER */}
+        <div className="p-6 border-b border-double bg-background/50">
           <Link
             href="/guides"
             onClick={onClose}
@@ -106,7 +147,7 @@ export default function GuideMobileSidebar({
           </div>
         </div>
 
-        {/* 2. CURRICULUM LIST - Mirror Desktop Style */}
+        {/* 2. CURRICULUM LIST */}
         <div className="flex-1 overflow-y-auto py-4 px-3">
           <nav className="space-y-6">
             {/* INTRODUCTION */}
@@ -150,7 +191,7 @@ export default function GuideMobileSidebar({
               </Link>
             </div>
 
-            {/* PLOT PROGRESS - Mirror Desktop Style */}
+            {/* PLOT PROGRESS */}
             <div className="space-y-4">
               <div className="flex flex-col gap-3 px-3">
                 <h3 className="text-xs font-bold text-muted-foreground/40">
@@ -227,26 +268,43 @@ export default function GuideMobileSidebar({
                         {isExpanded && (
                           <div className="ml-7 pl-6 border-l-2 border-dashed border-border/40 py-2 space-y-3 animate-in fade-in slide-in-from-top-1 duration-300">
                             {step.sections && step.sections.length > 0 ? (
-                              step.sections.map((section: any) => (
-                                <button
-                                  key={section.id}
-                                  onClick={() =>
-                                    handleSectionNavigation(step.id, section.id)
-                                  }
-                                  className="flex items-center gap-2 text-muted-foreground/60 hover:text-primary transition-colors cursor-pointer w-full text-left bg-transparent border-none p-0"
-                                >
-                                  {section.videoUrl ? (
-                                    <PlayCircle className="h-3 w-3 shrink-0 text-primary" />
-                                  ) : section.imageUrl ? (
-                                    <ImageIcon className="h-3 w-3 shrink-0" />
-                                  ) : (
-                                    <FileText className="h-3 w-3 shrink-0" />
-                                  )}
-                                  <span className="text-xs font-semibold truncate">
-                                    {section.title || "Untitled Section"}
-                                  </span>
-                                </button>
-                              ))
+                              step.sections.map((section: any) => {
+                                const isSectionActive =
+                                  activeSectionId === section.id;
+                                return (
+                                  <button
+                                    key={section.id}
+                                    onClick={() =>
+                                      handleSectionNavigation(
+                                        step.id,
+                                        section.id,
+                                      )
+                                    }
+                                    className={cn(
+                                      "flex items-center gap-2 transition-all cursor-pointer w-full text-left bg-transparent border-none p-1 rounded-sm",
+                                      isSectionActive
+                                        ? "text-primary font-bold bg-primary/5"
+                                        : "text-muted-foreground/60 hover:text-primary",
+                                    )}
+                                  >
+                                    {section.videoUrl ? (
+                                      <PlayCircle
+                                        className={cn(
+                                          "h-3 w-3 shrink-0",
+                                          isSectionActive && "fill-primary/10",
+                                        )}
+                                      />
+                                    ) : section.imageUrl ? (
+                                      <ImageIcon className="h-3 w-3 shrink-0" />
+                                    ) : (
+                                      <FileText className="h-3 w-3 shrink-0" />
+                                    )}
+                                    <span className="text-xs truncate">
+                                      {section.title || "Untitled Section"}
+                                    </span>
+                                  </button>
+                                );
+                              })
                             ) : (
                               <p className="text-[10px] font-medium text-muted-foreground/30 italic">
                                 No sections added yet
@@ -270,7 +328,7 @@ export default function GuideMobileSidebar({
           </nav>
         </div>
 
-        {/* 3. FOOTER - Mirror Desktop Style */}
+        {/* 3. FOOTER */}
         <div className="p-6 border-t border-double border-border/80 bg-background/50 mt-auto">
           <div className="space-y-3">
             <div className="flex justify-between items-end">

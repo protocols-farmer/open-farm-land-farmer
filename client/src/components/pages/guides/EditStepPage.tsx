@@ -27,15 +27,15 @@ export default function EditStepPage({ postId, stepId }: EditStepPageProps) {
   }, [post, stepId]);
 
   const handleFormSubmit = async (data: any) => {
-    const promise = updateStep({ stepId, postId, data }).unwrap();
-
     try {
-      await toast.promise(promise, {
+      await toast.promise(updateStep({ stepId, postId, data }).unwrap(), {
         loading: "Updating step module...",
         success: "Changes synchronized to the ledger.",
         error: "Failed to update step.",
       });
-      router.push(`/guides/${postId}`);
+
+      // Redirect back to the guide and maintain focus on the edited step
+      router.push(`/guides/${postId}?activeStepId=${stepId}`);
     } catch (err) {
       // Error handled by toast.promise
     }

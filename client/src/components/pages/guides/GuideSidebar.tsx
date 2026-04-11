@@ -1,7 +1,6 @@
-//src/components/pages/guides/GuideSidebar.tsx
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import {
   Sprout,
@@ -34,6 +33,48 @@ export default function GuideSidebar({
   const [expandedStepIds, setExpandedStepIds] = useState<string[]>([
     activeStepId,
   ]);
+  const [activeSectionId, setActiveSectionId] = useState<string | null>(null);
+
+  // 1. FIX: Keep dropdown open after editing/creating
+  // This ensures that when activeStepId changes (via URL or navigation), the drawer opens
+  useEffect(() => {
+    if (activeStepId !== "overview") {
+      setExpandedStepIds((prev) =>
+        prev.includes(activeStepId) ? prev : [...prev, activeStepId],
+      );
+    }
+  }, [activeStepId]);
+
+  // 2. FIX: Highlight sections while scrolling
+  useEffect(() => {
+    if (activeStepId === "overview") {
+      setActiveSectionId(null);
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            setActiveSectionId(entry.target.id);
+          }
+        });
+      },
+      {
+        rootMargin: "-20% 0px -70% 0px", // Focus on the top-middle of the viewport
+        threshold: 0,
+      },
+    );
+
+    // Observe all sections belonging to the currently active step
+    const currentStep = post.steps?.find((s) => s.id === activeStepId);
+    currentStep?.sections?.forEach((section) => {
+      const el = document.getElementById(section.id);
+      if (el) observer.observe(el);
+    });
+
+    return () => observer.disconnect();
+  }, [activeStepId, post.steps]);
 
   const toggleStepExpanded = (stepId: string) => {
     setExpandedStepIds((prev) =>
@@ -44,21 +85,21 @@ export default function GuideSidebar({
     onStepChange(stepId);
   };
 
-  // Fixed: Navigate to step first if it's not active, then scroll
   const handleSectionNavigation = (stepId: string, sectionId: string) => {
     if (activeStepId !== stepId) {
       onStepChange(stepId);
-      // Wait for the new step's DOM to render before scrolling
       setTimeout(() => {
         const element = document.getElementById(sectionId);
         if (element) {
-          element.scrollIntoView({ behavior: "smooth" });
+          element.scrollIntoView({ behavior: "smooth", block: "center" });
+          setActiveSectionId(sectionId);
         }
       }, 150);
     } else {
       const element = document.getElementById(sectionId);
       if (element) {
-        element.scrollIntoView({ behavior: "smooth" });
+        element.scrollIntoView({ behavior: "smooth", block: "center" });
+        setActiveSectionId(sectionId);
       }
     }
   };
@@ -66,7 +107,7 @@ export default function GuideSidebar({
   return (
     <div className="flex flex-col h-full bg-sidebar/40 backdrop-blur-sm w-full group/sidebar">
       {/* 1. HEADER */}
-      <div className="p-6 border-b border-double  bg-background/50">
+      <div className="p-6 border-b border-double bg-background/50">
         <div className="space-y-1">
           <p className="text-xs font-bold text-primary">Field Guide</p>
           <h2 className="text-sm font-bold line-clamp-2 text-foreground/90">
@@ -200,29 +241,42 @@ export default function GuideSidebar({
                       {isExpanded && (
                         <div className="ml-7 pl-6 border-l-2 border-dashed border-border/40 py-2 space-y-3 animate-in fade-in slide-in-from-top-1 duration-300">
                           {step.sections && step.sections.length > 0 ? (
-                            step.sections.map((section: any) => (
-                              <button
-                                key={section.id}
-                                onClick={() =>
-                                  handleSectionNavigation(step.id, section.id)
-                                }
-                                className="flex items-center gap-2 text-muted-foreground/60 hover:text-primary transition-colors cursor-pointer w-full text-left bg-transparent border-none p-0"
-                              >
-                                {section.videoUrl ? (
-                                  <PlayCircle className="h-3 w-3 shrink-0 text-primary" />
-                                ) : section.imageUrl ? (
-                                  <ImageIcon className="h-3 w-3 shrink-0" />
-                                ) : (
-                                  <FileText className="h-3 w-3 shrink-0" />
-                                )}
+                            step.sections.map((section: any) => {
+                              const isSectionActive =
+                                activeSectionId === section.id;
+                              return (
+                                <button
+                                  key={section.id}
+                                  onClick={() =>
+                                    handleSectionNavigation(step.id, section.id)
+                                  }
+                                  className={cn(
+                                    "flex items-center gap-2 transition-all cursor-pointer w-full text-left bg-transparent border-none p-1 rounded-sm",
+                                    isSectionActive
+                                      ? "text-primary font-bold bg-primary/5"
+                                      : "text-muted-foreground/60 hover:text-primary",
+                                  )}
+                                >
+                                  {section.videoUrl ? (
+                                    <PlayCircle
+                                      className={cn(
+                                        "h-3 w-3 shrink-0",
+                                        isSectionActive && "fill-primary/10",
+                                      )}
+                                    />
+                                  ) : section.imageUrl ? (
+                                    <ImageIcon className="h-3 w-3 shrink-0" />
+                                  ) : (
+                                    <FileText className="h-3 w-3 shrink-0" />
+                                  )}
 
-                                <span className="text-xs font-semibold truncate">
-                                  {section.title || "Untitled Section"}
-                                </span>
-                              </button>
-                            ))
+                                  <span className="text-xs truncate">
+                                    {section.title || "Untitled Section"}
+                                  </span>
+                                </button>
+                              );
+                            })
                           ) : (
-                            // Fix 1: Professional placeholder for empty steps
                             <p className="text-[10px] font-medium text-muted-foreground/30 italic">
                               No sections added yet
                             </p>
