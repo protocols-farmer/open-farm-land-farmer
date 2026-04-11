@@ -155,7 +155,7 @@ export default function ProjectJourneyTab({
     <div className="space-y-8">
       {isAuthor && (
         <div className="text-center border-b pb-8">
-          <Button onClick={handleOpenCreateDialog}>
+          <Button onClick={handleOpenCreateDialog} className="rounded-none">
             <PlusCircle className="mr-2 h-4 w-4" />
             Add New Journey Update
           </Button>
@@ -164,15 +164,23 @@ export default function ProjectJourneyTab({
 
       {post.projectJourney && post.projectJourney.length > 0 ? (
         post.projectJourney.map((update) => (
-          <Card key={update.id} className="overflow-hidden">
+          <Card
+            key={update.id}
+            className="overflow-hidden p-3 rounded-none border-3 border-double"
+          >
             <div className="flex flex-col md:flex-row">
               <div className="flex flex-col items-center justify-center gap-2 p-4 text-center border-b md:border-r md:border-b-0 bg-accent/50 md:w-48">
                 {getUpdateIcon(update.category)}
-                <p className="font-bold text-lg">{update.version}</p>
+                <p className="font-bold text-lg wrap-break-words ">
+                  {update.version}
+                </p>
                 <p className="text-sm text-muted-foreground">
                   {format(new Date(update.date), "MMM dd, yyyy")}
                 </p>
-                <Badge variant="outline" className="capitalize bg-background">
+                <Badge
+                  variant="outline"
+                  className="capitalize bg-background rounded-none"
+                >
                   {update.category.replace("_", " ").toLowerCase()}
                 </Badge>
               </div>
@@ -235,16 +243,18 @@ export default function ProjectJourneyTab({
                   )}
                 </div>
                 <CardDescription>{update.description}</CardDescription>
-                {update.imageUrl && (
-                  <div className="mt-4 relative aspect-video w-full max-w-lg overflow-hidden rounded-lg border">
-                    <Image
-                      src={update.imageUrl}
-                      alt={`Image for ${update.title}`}
-                      fill
-                      className="object-cover"
-                    />
-                  </div>
-                )}
+                <div>
+                  {update.imageUrl && (
+                    <div className="mt-4 relative aspect-video w-full max-w-lg overflow-hidden border">
+                      <Image
+                        src={update.imageUrl}
+                        alt={`Image for ${update.title}`}
+                        fill
+                        className="object-cover"
+                      />
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           </Card>

@@ -46,12 +46,13 @@ export default function AllUpdatesPage() {
   return (
     <div className="container mx-auto py-12 md:py-20 animate-in fade-in duration-500">
       <div className="mb-16  space-y-4">
-        <div className="inline-flex items-center justify-center p-3  bg-primary/10 mb-2">
+        <div className="flex items-center gap-3">
           <CloudSun className="h-8 w-8 text-primary" />
+
+          <h1 className="text-4xl md:text-6xl font-black tracking-tighter text-foreground">
+            Latest updates
+          </h1>
         </div>
-        <h1 className="text-4xl md:text-6xl font-black tracking-tighter text-foreground">
-          Latest updates
-        </h1>
         <p className="text-lg text-muted-foreground max-w-2xl leading-relaxed">
           Stay updated with the latest news, features, and structural logs
           harvested from the ecosystem.

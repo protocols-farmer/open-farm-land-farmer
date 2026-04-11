@@ -69,8 +69,8 @@ export default function TiptapRenderer({ content }: TiptapRendererProps) {
     ] as any,
     editorProps: {
       attributes: {
-        // Matches the same Tailwind Prose styling used in the editor
-        class: "prose prose-lg dark:prose-invert max-w-none focus:outline-none",
+        class:
+          "prose prose-sm md:prose-base lg:prose-lg dark:prose-invert max-w-none focus:outline-none break-words",
       },
     },
     // Important for Next.js hydration
@@ -80,7 +80,8 @@ export default function TiptapRenderer({ content }: TiptapRendererProps) {
   if (!editor) return null;
 
   return (
-    <div className="tiptap-renderer-container ">
+    <div className="tiptap-renderer-container w-full overflow-x-auto overflow-y-hidden custom-scrollbar">
+      {" "}
       <EditorContent editor={editor} />
     </div>
   );

@@ -112,7 +112,8 @@ export function GuideSectionItem({
       </div>
 
       {/* --- CONTENT AREA --- */}
-      <div className="prose prose-neutral dark:prose-invert max-w-none">
+      <div className="min-w-0 w-full overflow-hidden">
+        {" "}
         <TiptapRenderer content={section.content} />
       </div>
 

@@ -315,7 +315,7 @@ export default function GuideDetails({ postId }: { postId: string }) {
                 <div className="space-y-10">
                   {post.images && post.images.length > 0 && (
                     <div className="space-y-4">
-                      <div className="relative aspect-16/10 h w-full border-3 border-double bg-muted group">
+                      <div className="relative aspect-16/10  w-full border-3 border-double bg-muted group">
                         <FlourishOrnate className="-top-2 -left-2 -rotate-90 z-20" />
                         <FlourishOrnate className="-top-2 -right-2 rotate-0 z-20" />
                         <FlourishOrnate className="-bottom-2 -right-2 rotate-90 z-20" />
@@ -353,38 +353,40 @@ export default function GuideDetails({ postId }: { postId: string }) {
                         )}
                       </div>
 
-                      {post.images.length > 1 && (
-                        <div className="grid grid-cols-5 gap-3">
-                          {post.images.map((img) => {
-                            const isSelected = mainImage === img.url;
-                            return (
-                              <button
-                                key={img.id}
-                                onClick={() => {
-                                  if (!isSelected) {
-                                    setIsMainLoading(true);
-                                    setSelectedImage(img.url);
-                                  }
-                                }}
-                                className={cn(
-                                  "relative aspect-square border-3 border-double transition-all bg-white p-0 overflow-hidden",
-                                  isSelected
-                                    ? "border-primary opacity-100 scale-95"
-                                    : "border-transparent opacity-50 hover:opacity-100",
-                                )}
-                              >
-                                <Image
-                                  src={img.url}
-                                  alt="thumbnail"
-                                  fill
-                                  sizes="100px"
-                                  className="object-cover"
-                                />
-                              </button>
-                            );
-                          })}
-                        </div>
-                      )}
+                      <div className="p-3 bg-card border-3 border-double ">
+                        {post.images.length > 1 && (
+                          <div className="grid grid-cols-5 gap-3">
+                            {post.images.map((img) => {
+                              const isSelected = mainImage === img.url;
+                              return (
+                                <button
+                                  key={img.id}
+                                  onClick={() => {
+                                    if (!isSelected) {
+                                      setIsMainLoading(true);
+                                      setSelectedImage(img.url);
+                                    }
+                                  }}
+                                  className={cn(
+                                    "relative aspect-square border-3 border-double bg-white",
+                                    isSelected
+                                      ? "border-primary opacity-100 scale-95"
+                                      : "border-transparent opacity-50 hover:opacity-100",
+                                  )}
+                                >
+                                  <Image
+                                    src={img.url}
+                                    alt="thumbnail"
+                                    fill
+                                    sizes="100px"
+                                    className="object-cover"
+                                  />
+                                </button>
+                              );
+                            })}
+                          </div>
+                        )}
+                      </div>
                     </div>
                   )}
                   <TiptapRenderer content={post.content || ""} />

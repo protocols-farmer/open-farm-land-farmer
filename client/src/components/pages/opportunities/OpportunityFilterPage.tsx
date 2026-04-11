@@ -184,7 +184,7 @@ export default function OpportunityFilterPage({
   return (
     <div className="container mx-auto py-12 md:py-20 animate-in fade-in duration-500">
       <div className="mb-12 space-y-4">
-        <h1 className="text-4xl md:text-6xl font-black tracking-tighter text-foreground flex items-center gap-4">
+        <h1 className="text-4xl md:text-6xl font-black  text-foreground flex items-center gap-4">
           <Tractor className="h-10 w-10 text-primary" />
           {title}
         </h1>
@@ -196,7 +196,7 @@ export default function OpportunityFilterPage({
       <Card className="p-4 md:p-6 bg-background/60 backdrop-blur-md border-border/50 shadow-sm  mb-8">
         <div className="flex flex-col gap-4">
           <div className="flex flex-col lg:flex-row gap-4">
-            <div className="relative flex-grow">
+            <div className="relative grow">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/50" />
               <Input
                 placeholder={searchPlaceholder}
@@ -221,7 +221,7 @@ export default function OpportunityFilterPage({
                 value={selectedType}
                 onValueChange={(val) => setSelectedType(val as any)}
               >
-                <SelectTrigger className="h-12 w-full md:w-[180px]  font-bold bg-background/50 border-border/40 px-5">
+                <SelectTrigger className="h-12 w-full md:w-45  font-bold bg-background/50 border-border/40 px-5">
                   <SelectValue placeholder="Job Type" />
                 </SelectTrigger>
                 <SelectContent className="">
@@ -229,7 +229,7 @@ export default function OpportunityFilterPage({
                     <SelectItem
                       key={t}
                       value={t}
-                      className="text-xs font-bold  tracking-wider"
+                      className="text-xs font-bold  "
                     >
                       {t.replace("_", " ")}
                     </SelectItem>
@@ -259,12 +259,12 @@ export default function OpportunityFilterPage({
           {/* 🚜 REFACTORED TAG SECTION: Fixed Height with Vertical Scroll */}
           {availableTags.length > 0 && (
             <div className="flex flex-col gap-3 pt-5 border-t border-border/40 sm:flex-row sm:items-start">
-              <h3 className="text-[10px] font-black  tracking-[0.2em] text-muted-foreground/40 mt-2.5 shrink-0">
+              <h3 className="text-[10px] font-black  0.2em] text-muted-foreground/40 mt-2.5 shrink-0">
                 Skills needed
               </h3>
               <div
                 className={cn(
-                  "overflow-y-auto max-h-[76px] pr-1 flex-1",
+                  "overflow-y-auto max-h-19 pr-1 flex-1",
                   "scrollbar-thin scrollbar-thumb-primary/20 scrollbar-track-transparent hover:scrollbar-thumb-primary/40 transition-colors",
                 )}
                 style={{ scrollbarWidth: "thin" }}
@@ -289,7 +289,7 @@ export default function OpportunityFilterPage({
       </Card>
 
       <div className="mb-6 flex items-center justify-between">
-        <p className="text-[11px] font-black  tracking-[0.2em] text-muted-foreground/60">
+        <p className="text-[11px] font-black  0.2em] text-muted-foreground/60">
           {isFetching && skip === 0
             ? "Scanning ecosystem..."
             : `${response?.pagination.totalItems ?? 0} opportunities found`}
@@ -315,9 +315,7 @@ export default function OpportunityFilterPage({
       ) : isError && skip === 0 ? (
         <div className="text-center py-20 bg-destructive/5 border border-destructive/10 ">
           <ServerCrash className="mx-auto h-12 w-12 text-destructive/30" />
-          <h2 className="text-xl font-black tracking-tighter mt-4">
-            Failed to fetch data
-          </h2>
+          <h2 className="text-xl font-black  mt-4">Failed to fetch data</h2>
           <p className="text-muted-foreground mt-2 font-medium">
             Check your connection to the farm.
           </p>
@@ -341,12 +339,12 @@ export default function OpportunityFilterPage({
           {/* 🚜 INFINITE SCROLL FOOTER */}
           <div
             ref={sentinelRef}
-            className="py-16 flex flex-col items-center justify-center min-h-[120px]"
+            className="py-16 flex flex-col items-center justify-center min-h-30"
           >
             {isFetching && hasMore && (
               <div className="flex flex-col items-center gap-3 animate-in fade-in zoom-in duration-300">
                 <Loader2 className="h-7 w-7 text-primary animate-spin" />
-                <span className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground/40">
+                <span className="text-[10px] font-black text-muted-foreground/40">
                   Acquiring next batch...
                 </span>
               </div>
@@ -361,7 +359,7 @@ export default function OpportunityFilterPage({
                   onClick={() => refetch()}
                   variant="outline"
                   size="sm"
-                  className=" rounded-none px-8 border-destructive/20 text-destructive/70 hover:bg-destructive/5 font-black text-[10px] uppercase tracking-widest shadow-sm"
+                  className=" rounded-none px-8 border-destructive/20 text-destructive/70 hover:bg-destructive/5 font-black text-[10px]   shadow-sm"
                 >
                   <RotateCcw className="mr-2 h-3.5 w-3.5" /> Refetch
                 </Button>
@@ -370,11 +368,11 @@ export default function OpportunityFilterPage({
 
             {!hasMore && opportunities.length > 0 && (
               <div className="flex items-center gap-6 w-full opacity-40">
-                <div className="h-px flex-1 bg-gradient-to-r from-transparent via-border to-transparent" />
-                <span className="text-[10px] font-black uppercase tracking-[0.5em] text-muted-foreground/30">
+                <div className="h-px flex-1 from-transparent via-border to-transparent" />
+                <span className="text-[10px] font-black  0.5em] text-muted-foreground/30">
                   All clear
                 </span>
-                <div className="h-px flex-1 bg-gradient-to-l from-transparent via-border to-transparent" />
+                <div className="h-px flex-1  from-transparent via-border to-transparent" />
               </div>
             )}
           </div>
@@ -382,9 +380,7 @@ export default function OpportunityFilterPage({
       ) : (
         <div className="flex flex-col items-center justify-center p-24 border-2 border-dashed ] bg-muted/5">
           <Frown className="h-16 w-16 text-muted-foreground/20" />
-          <h3 className="mt-6 text-2xl font-black tracking-tighter">
-            No positions found
-          </h3>
+          <h3 className="mt-6 text-2xl font-black ">No positions found</h3>
           <p className="text-muted-foreground font-medium">
             Try broadening your search or skill selection.
           </p>

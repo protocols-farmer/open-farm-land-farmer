@@ -55,6 +55,7 @@ import {
   Clock,
   AlertTriangle,
   CircleChevronLeft,
+  Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
@@ -137,10 +138,10 @@ export default function BlogDetails({ postId }: { postId: string }) {
     );
 
   return (
-    <section className=" px-3 space-y-7 max-w-10xl mx-auto ">
+    <section className="  space-y-13 max-w-10xl mx-auto ">
       {/* --- INTRO SECTION --- */}
       <div className="grid grid-cols-1 gap-13 lg:grid-cols-2">
-        <div className="flex flex-col space-y-3">
+        <div className="flex flex-col space-y-11">
           <header className="space-y-3">
             <Button
               variant="outline"
@@ -149,7 +150,7 @@ export default function BlogDetails({ postId }: { postId: string }) {
             >
               <Link
                 href="/blogs"
-                className="flex items-center justify-center gap-3 hover:underline font-bold w-fit "
+                className="flex items-center justify-center gap-3  font-bold w-fit "
               >
                 <CircleChevronLeft className="h-4 w-4" />
                 <span>Return to blogs</span>
@@ -187,7 +188,7 @@ export default function BlogDetails({ postId }: { postId: string }) {
                 </div>
               </Link>
             </div>
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-black wrap-break-words">
+            <h1 className="text-xl md:text-3xl lg:text-5xl font-black wrap-break-words">
               {post.title}
             </h1>
 
@@ -259,7 +260,7 @@ export default function BlogDetails({ postId }: { postId: string }) {
 
           <PostInteractionHub post={post} />
 
-          <div className="space-y-3 pt-3 pb-3">
+          <div className="space-y-3">
             <h3 className=" font-bold text-primary">Technical Tags</h3>
             <div className="flex flex-wrap gap-3">
               {post.tags.map((postTag) => (
@@ -399,24 +400,5 @@ export default function BlogDetails({ postId }: { postId: string }) {
         <CommentSection postId={post.id} totalComments={post.commentsCount} />
       </div>
     </section>
-  );
-}
-
-function Loader2(props: any) {
-  return (
-    <svg
-      {...props}
-      xmlns="http://www.w3.org/2000/svg"
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="M21 12a9 9 0 1 1-6.219-8.56" />
-    </svg>
   );
 }

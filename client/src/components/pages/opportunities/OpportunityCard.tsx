@@ -23,6 +23,7 @@ import {
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 
 export default function OpportunityCard({
   opportunity,
@@ -32,10 +33,10 @@ export default function OpportunityCard({
   const typeLabel = opportunity.type.replace("_", " ").toLowerCase();
 
   return (
-    <Card className="group h-full flex flex-col bg-card border-border/40 hover:border-primary/50 transition-all duration-500 hover:-translate-y-2 shadow-sm hover:shadow-2xl rounded-[2rem] overflow-hidden relative">
+    <Card className="rounded-none group h-full flex flex-col bg-card border-double border-3  transition-all duration-500   overflow-hidden relative">
       <CardHeader className="p-7 pb-5">
         <div className="flex items-start gap-5">
-          <div className="relative h-16 w-16 rounded-2xl overflow-hidden bg-muted/50 border border-border/50 shrink-0 flex items-center justify-center shadow-inner">
+          <div className="relative h-16 w-16  overflow-hidden bg-muted/50 border border-border/50 shrink-0 flex items-center justify-center shadow-inner">
             {opportunity.companyLogo ? (
               <Image
                 src={opportunity.companyLogo}
@@ -49,32 +50,27 @@ export default function OpportunityCard({
           </div>
 
           <div className="space-y-1.5 flex-1 min-w-0">
-            <CardTitle className="text-xl font-black tracking-tighter leading-tight line-clamp-2 group-hover:text-primary transition-colors duration-300">
-              <Link
-                href={`/opportunities/${opportunity.id}`}
-                className="after:absolute after:inset-0"
-              >
-                {opportunity.title}
-              </Link>
+            <CardTitle className="text-xl font-black line-clamp-2 ">
+              <h3>{opportunity.title}</h3>
             </CardTitle>
-            <CardDescription className="font-bold text-muted-foreground/80 tracking-tight flex items-center gap-1.5">
+            <CardDescription className="font-bold text-muted-foreground/80  flex items-center gap-1.5">
               {opportunity.companyName}
             </CardDescription>
           </div>
         </div>
       </CardHeader>
 
-      <CardContent className="px-7 flex-grow space-y-6">
+      <CardContent className="px-7 grow space-y-6">
         <div className="grid grid-cols-1 gap-3">
           <div className="flex items-center gap-3 text-[13px] font-bold text-muted-foreground/70">
-            <div className="p-1.5 rounded-lg bg-muted border border-border/50">
+            <div className="p-1.5  bg-muted border border-border/50">
               <MapPin className="h-3.5 w-3.5 text-primary" />
             </div>
             <span>{opportunity.location}</span>
           </div>
 
           <div className="flex items-center gap-3 text-[13px] font-bold text-muted-foreground/70">
-            <div className="p-1.5 rounded-lg bg-muted border border-border/50">
+            <div className="p-1.5  bg-muted border border-border/50">
               <Briefcase className="h-3.5 w-3.5 text-primary" />
             </div>
             <span className="capitalize">{typeLabel}</span>
@@ -82,7 +78,7 @@ export default function OpportunityCard({
 
           {opportunity.salaryRange && (
             <div className="flex items-center gap-3 text-[13px] font-bold text-primary">
-              <div className="p-1.5 rounded-lg bg-primary/10 border border-primary/20">
+              <div className="p-1.5  bg-primary/10 border border-primary/20">
                 <CircleDollarSign className="h-3.5 w-3.5" />
               </div>
               <span>{opportunity.salaryRange}</span>
@@ -90,8 +86,8 @@ export default function OpportunityCard({
           )}
 
           {opportunity.isRemote && (
-            <div className="flex items-center gap-3 text-[13px] font-black text-emerald-500 uppercase tracking-widest">
-              <div className="p-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
+            <div className="flex items-center gap-3 text-[13px] font-black text-emerald-500  ">
+              <div className="p-1.5  bg-emerald-500/10 border border-emerald-500/20">
                 <Globe className="h-3.5 w-3.5" />
               </div>
               <span>Fully Remote</span>
@@ -105,13 +101,13 @@ export default function OpportunityCard({
               <Badge
                 key={tag.tag.id}
                 variant="secondary"
-                className="text-[10px] font-black uppercase tracking-wider px-3 py-1 rounded-full bg-muted/50 border-transparent group-hover:border-primary/20 transition-all"
+                className="text-[10px] font-black  rounded-none  px-3 py-1 bg-primary/10"
               >
                 #{tag.tag.name}
               </Badge>
             ))}
             {opportunity.tags.length > 3 && (
-              <span className="text-[10px] text-muted-foreground/50 font-black uppercase tracking-tighter self-center ml-1">
+              <span className="text-[10px] text-muted-foreground/50 font-black   self-center ml-1">
                 +{opportunity.tags.length - 3} more
               </span>
             )}
@@ -119,9 +115,9 @@ export default function OpportunityCard({
         )}
       </CardContent>
 
-      <CardFooter className="p-7 pt-5 border-t border-border/40 mt-auto bg-muted/5 flex items-center justify-between">
+      <CardFooter className=" pt-5 border-t-3  flex flex-col gap-3 items-start">
         <div className="flex flex-col">
-          <span className="text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground/40 mb-0.5">
+          <span className="text-[9px] font-black  0.2em] text-muted-foreground/40 mb-0.5">
             Posted
           </span>
           <span className="text-[11px] text-muted-foreground font-bold italic">
@@ -131,10 +127,14 @@ export default function OpportunityCard({
           </span>
         </div>
 
-        <div className="flex items-center gap-2 text-primary font-black text-xs uppercase tracking-widest group-hover:translate-x-1 transition-transform">
-          Details
-          <ArrowRight className="h-4 w-4" />
-        </div>
+        <Button variant="outline" className="rounded-none w-full border-3 ">
+          <Link
+            href={`/opportunities/${opportunity.id}`}
+            className="w-full text-center"
+          >
+            View Details
+          </Link>
+        </Button>
       </CardFooter>
     </Card>
   );

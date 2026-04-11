@@ -247,7 +247,14 @@
     overflow: hidden;
     @apply border-2 border-border;
   }
-
+  .tiptap table {
+    border-collapse: collapse;
+    margin: 1.5rem 0;
+    overflow-x: auto; /* Allow the table to scroll */
+    display: block; /* Required for overflow-x to work on tables */
+    width: 100%;
+    @apply border-2 border-border;
+  }
   .tiptap td,
   .tiptap th,
   .prose td,
@@ -302,6 +309,22 @@
     color: var(--muted-foreground);
     pointer-events: none;
     height: 0;
+  }
+
+  .tiptap p,
+  .prose p {
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+    word-break: break-word;
+    hyphens: auto;
+  }
+
+  tiptap pre,
+  .prose pre {
+    max-width: 100%;
+    white-space: pre-wrap;
+    word-break: break-all;
+    overflow-x: auto !important;
   }
 }
 

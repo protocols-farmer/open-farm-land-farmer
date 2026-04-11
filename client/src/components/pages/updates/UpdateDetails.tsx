@@ -121,9 +121,7 @@ export default function UpdateDetails({ updateId }: { updateId: string }) {
         <div className="inline-flex p-4 rounded-full bg-destructive/10">
           <Terminal className="h-12 w-12 text-destructive" />
         </div>
-        <h2 className="text-3xl font-black tracking-tighter uppercase italic">
-          System log missing
-        </h2>
+        <h2 className="text-3xl font-black   italic">System log missing</h2>
         <Button variant="outline" asChild className="rounded-full px-8">
           <Link href="/updates">Back to the updates</Link>
         </Button>
@@ -134,15 +132,15 @@ export default function UpdateDetails({ updateId }: { updateId: string }) {
     <div className="mx-auto max-w-4xl py-12 md:py-20 px-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <article className="space-y-12">
         <header className="space-y-6 text-center">
-          <div className="flex flex-col items-center gap-4">
-            <div className="inline-flex items-center gap-2 rounded-full bg-secondary px-4 py-1.5 text-xs font-bold tracking-widest uppercase border border-border">
+          <div className="flex flex-col items-center gap-3">
+            <div className="gap-3 flex items-center font-bold text-primary">
               {getCategoryIcon(update.category)}
               <span>{update.category.replace("_", " ").toLowerCase()}</span>
             </div>
             {update.version && (
               <Badge
                 variant="secondary"
-                className="font-mono font-black text-primary px-3 py-1 bg-primary/10 border-none"
+                className="rounded-none font-black text-primary px-3 py-1 "
               >
                 {update.version.toLowerCase().startsWith("v")
                   ? update.version
@@ -151,11 +149,11 @@ export default function UpdateDetails({ updateId }: { updateId: string }) {
             )}
           </div>
 
-          <h1 className="text-4xl font-black tracking-tighter md:text-7xl leading-[0.9] text-foreground">
+          <h1 className="text-xl md:text-3xl lg:text-5xl  font-black  ">
             {update.title}
           </h1>
 
-          <p className="text-sm text-muted-foreground tracking-widest font-black uppercase">
+          <p className="text-sm text-muted-foreground  font-black ">
             Published {format(new Date(update.publishedAt), "MMMM dd, yyyy")}
           </p>
         </header>
@@ -165,9 +163,8 @@ export default function UpdateDetails({ updateId }: { updateId: string }) {
             <Button
               asChild
               variant="outline"
-              size="sm"
               className={cn(
-                "rounded-full font-bold px-6 border-border hover:bg-muted",
+                "rounded-none font-bold px-6 border-border hover:bg-muted",
                 !isVerified && "opacity-50 grayscale",
               )}
             >
@@ -182,10 +179,9 @@ export default function UpdateDetails({ updateId }: { updateId: string }) {
             <AlertDialog>
               <AlertDialogTrigger asChild>
                 <Button
-                  variant="ghost"
-                  size="sm"
+                  variant="outline"
                   className={cn(
-                    "rounded-full font-bold px-6 text-destructive hover:bg-destructive/10",
+                    "rounded-none font-bold px-6 text-destructive hover:bg-destructive/10",
                     !isVerified && "opacity-50",
                   )}
                   onClick={handleActionGuard}
@@ -196,7 +192,7 @@ export default function UpdateDetails({ updateId }: { updateId: string }) {
               {isVerified && (
                 <AlertDialogContent className="bg-card border-border">
                   <AlertDialogHeader>
-                    <AlertDialogTitle className="font-black tracking-tighter text-3xl italic uppercase">
+                    <AlertDialogTitle className="font-black  text-3xl italic ">
                       Purge this log?
                     </AlertDialogTitle>
                     <AlertDialogDescription className="text-muted-foreground">
@@ -229,7 +225,7 @@ export default function UpdateDetails({ updateId }: { updateId: string }) {
         <Separator className="bg-border" />
 
         <div
-          className="prose prose-lg prose-zinc dark:prose-invert mx-auto max-w-none break-words prose-p:text-muted-foreground prose-headings:font-black prose-headings:tracking-tighter"
+          className="prose prose-lg prose-zinc dark:prose-invert mx-auto max-w-none break-words prose-p:text-muted-foreground prose-headings:font-black prose-headings:"
           dangerouslySetInnerHTML={{ __html: renderedContent }}
         />
       </article>
