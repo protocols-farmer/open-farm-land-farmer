@@ -2,11 +2,9 @@
 "use client";
 
 import React from "react";
+import Link from "next/link";
 import { PlusCircle, Settings2, Trash2, Edit3, Layers } from "lucide-react";
-import {
-  GuideStepDto,
-  GuideSectionDto,
-} from "@/lib/features/guideSection/guideTypes";
+import { GuideStepDto } from "@/lib/features/guideSection/guideTypes";
 import { GuideSectionItem } from "./GuideSectionItem";
 import { Button } from "@/components/ui/button";
 import {
@@ -22,10 +20,8 @@ interface GuideStepItemProps {
   step: GuideStepDto;
   index: number;
   isAuthor: boolean;
-  onEditStep: () => void;
+  postId: string;
   onDeleteStep: () => void;
-  onAddSection: () => void;
-  onEditSection: (section: GuideSectionDto) => void;
   onDeleteSection: (sectionId: string) => void;
 }
 
@@ -33,10 +29,8 @@ export default function GuideStepItem({
   step,
   index,
   isAuthor,
-  onEditStep,
+  postId,
   onDeleteStep,
-  onAddSection,
-  onEditSection,
   onDeleteSection,
 }: GuideStepItemProps) {
   return (
@@ -72,10 +66,12 @@ export default function GuideStepItem({
                 className="rounded-none border-3 border-double"
               >
                 <DropdownMenuItem
-                  onClick={onEditStep}
+                  asChild
                   className="font-bold text-xs cursor-pointer"
                 >
-                  <Edit3 className="mr-2 h-4 w-4" /> Edit step
+                  <Link href={`/guides/${postId}/steps/${step.id}/edit`}>
+                    <Edit3 className="mr-2 h-4 w-4" /> Edit step
+                  </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   onClick={onDeleteStep}
@@ -110,7 +106,8 @@ export default function GuideStepItem({
                 section={section}
                 index={sIndex}
                 isAuthor={isAuthor}
-                onEdit={() => onEditSection(section)}
+                postId={postId}
+                stepId={step.id}
                 onDelete={() => onDeleteSection(section.id)}
               />
             ))}
@@ -126,12 +123,14 @@ export default function GuideStepItem({
         {isAuthor && (
           <div className="flex justify-center pt-6">
             <Button
+              asChild
               variant="outline"
-              onClick={onAddSection}
               className="rounded-none border-3 border-double h-11 px-8 font-bold hover:bg-primary/5 transition-colors"
             >
-              <PlusCircle className="mr-2 h-4 w-4 text-primary" />
-              Add section
+              <Link href={`/guides/${postId}/steps/${step.id}/sections/create`}>
+                <PlusCircle className="mr-2 h-4 w-4 text-primary" />
+                Add section
+              </Link>
             </Button>
           </div>
         )}

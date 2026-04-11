@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { useForm, Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -24,7 +25,6 @@ import RichTextEditor from "../posts/RichTextEditor";
 import { cn } from "@/lib/utils";
 import NextImage from "next/image";
 
-// Local type to ensure the form tracks the removal flag
 type SectionFormValues = CreateGuideSectionValues & {
   removeImage?: string;
 };
@@ -34,7 +34,7 @@ interface GuideSectionFormProps {
   initialData?: any;
   onSubmit: (data: FormData) => void;
   isSubmitting: boolean;
-  onCancel: () => void;
+  onCancel?: () => void; // Optional now as we use router.back() by default
 }
 
 export default function GuideSectionForm({
@@ -44,12 +44,12 @@ export default function GuideSectionForm({
   isSubmitting,
   onCancel,
 }: GuideSectionFormProps) {
+  const router = useRouter();
   const currentSchema =
     mode === "create" ? createGuideSectionSchema : updateGuideSectionSchema;
   const [imagePreview, setImagePreview] = useState<string | null>(null);
 
   const form = useForm<SectionFormValues>({
-    // Cast to any to handle the Zod union mismatch between Create/Update schemas
     resolver: zodResolver(currentSchema as any) as Resolver<SectionFormValues>,
     defaultValues: {
       title: initialData?.title || "",
@@ -61,10 +61,8 @@ export default function GuideSectionForm({
     },
   });
 
-  // Sync state whenever initialData changes
   useEffect(() => {
     if (initialData) {
-      // Look specifically for imageUrl from the parent
       const existingUrl = initialData.imageUrl || null;
       setImagePreview(existingUrl);
 
@@ -82,6 +80,14 @@ export default function GuideSectionForm({
   const titleWatch = form.watch("title") || "";
   const contentWatch = form.watch("content") || "";
 
+  const handleCancel = () => {
+    if (onCancel) {
+      onCancel();
+    } else {
+      router.back();
+    }
+  };
+
   const handleFormSubmit = (values: SectionFormValues) => {
     const formData = new FormData();
     formData.append("title", values.title || "");
@@ -89,7 +95,6 @@ export default function GuideSectionForm({
     formData.append("order", String(values.order));
     formData.append("videoUrl", values.videoUrl || "");
 
-    // Explicitly send the removal signal if "X" was clicked
     if (values.removeImage === "true") {
       formData.append("removeImage", "true");
     }
@@ -283,9 +288,7 @@ export default function GuideSectionForm({
                   {contentWatch.length.toLocaleString()} / 20,000
                 </span>
               </div>
-              {/* Find the div wrapping RichTextEditor in GuideSectionForm.tsx */}
               <FormControl>
-                {/* Replace your current div with this one */}
                 <div className="border-2 p-1 bg-muted/5 h-[450px] overflow-y-auto focus-within:border-primary transition-colors custom-scrollbar">
                   <RichTextEditor
                     initialContent={field.value}
@@ -302,7 +305,7 @@ export default function GuideSectionForm({
           <Button
             type="button"
             variant="ghost"
-            onClick={onCancel}
+            onClick={handleCancel}
             disabled={isSubmitting}
             className="rounded-none font-bold text-xs"
           >

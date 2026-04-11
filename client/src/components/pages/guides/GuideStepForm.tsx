@@ -1,7 +1,7 @@
-//src/components/pages/guides/GuideStepForm.tsx
 "use client";
 
 import React from "react";
+import { useRouter } from "next/navigation";
 import { useForm, Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -29,7 +29,7 @@ interface GuideStepFormProps {
   initialData?: any;
   onSubmit: (data: CreateGuideStepValues) => void;
   isSubmitting: boolean;
-  onCancel: () => void;
+  onCancel?: () => void; // Optional now as we use router.back() by default
 }
 
 export default function GuideStepForm({
@@ -39,11 +39,11 @@ export default function GuideStepForm({
   isSubmitting,
   onCancel,
 }: GuideStepFormProps) {
+  const router = useRouter();
   const currentSchema =
     mode === "create" ? createGuideStepSchema : updateGuideStepSchema;
 
   const form = useForm<CreateGuideStepValues>({
-    // We cast the resolver to bypass the optional/required mismatch between schemas
     resolver: zodResolver(currentSchema) as Resolver<CreateGuideStepValues>,
     defaultValues: {
       title: initialData?.title || "",
@@ -54,6 +54,14 @@ export default function GuideStepForm({
 
   const titleWatch = form.watch("title") || "";
   const descWatch = form.watch("description") || "";
+
+  const handleCancel = () => {
+    if (onCancel) {
+      onCancel();
+    } else {
+      router.back();
+    }
+  };
 
   return (
     <Form {...form}>
@@ -137,14 +145,12 @@ export default function GuideStepForm({
                 </span>
               </div>
               <FormControl>
-                <FormControl>
-                  <div className="border-2 p-1 bg-muted/5 h-[450px] overflow-y-auto focus-within:border-primary transition-colors custom-scrollbar">
-                    <RichTextEditor
-                      initialContent={field.value}
-                      onChange={field.onChange}
-                    />
-                  </div>
-                </FormControl>
+                <div className="border-2 p-1 bg-muted/5 h-[450px] overflow-y-auto focus-within:border-primary transition-colors custom-scrollbar">
+                  <RichTextEditor
+                    initialContent={field.value}
+                    onChange={field.onChange}
+                  />
+                </div>
               </FormControl>
               <FormMessage className="text-[10px] font-bold" />
             </FormItem>
@@ -155,7 +161,7 @@ export default function GuideStepForm({
           <Button
             type="button"
             variant="ghost"
-            onClick={onCancel}
+            onClick={handleCancel}
             disabled={isSubmitting}
             className="rounded-none font-bold text-xs"
           >

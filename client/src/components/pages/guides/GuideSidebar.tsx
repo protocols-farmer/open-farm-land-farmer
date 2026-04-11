@@ -66,15 +66,7 @@ export default function GuideSidebar({
   return (
     <div className="flex flex-col h-full bg-sidebar/40 backdrop-blur-sm w-full group/sidebar">
       {/* 1. HEADER */}
-      <div className="p-6 border-b border-double border-border/80 bg-background/50">
-        <Link
-          href="/guides"
-          className="group flex items-center gap-2 text-xs font-bold text-muted-foreground hover:text-primary transition-colors mb-6"
-        >
-          <ArrowLeft className="h-3 w-3 shrink-0 transition-transform group-hover:-translate-x-1" />
-          Back to Guides
-        </Link>
-
+      <div className="p-6 border-b border-double  bg-background/50">
         <div className="space-y-1">
           <p className="text-xs font-bold text-primary">Field Guide</p>
           <h2 className="text-sm font-bold line-clamp-2 text-foreground/90">
@@ -138,13 +130,15 @@ export default function GuideSidebar({
               </h3>
               {isAuthor && (
                 <Button
-                  onClick={onAddStep}
+                  asChild
                   variant="outline"
                   size="sm"
                   className="rounded-none border-dashed w-full h-8 flex items-center justify-center gap-2 font-bold text-xs"
                 >
-                  <Plus className="h-3 w-3 shrink-0" />
-                  Add Step
+                  <Link href={`/guides/${post.id}/steps/create`}>
+                    <Plus className="h-3 w-3 shrink-0" />
+                    Add Step
+                  </Link>
                 </Button>
               )}
             </div>

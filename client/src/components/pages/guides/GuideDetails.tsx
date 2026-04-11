@@ -1,4 +1,3 @@
-//src/components/pages/guides/GuideDetails.tsx
 "use client";
 
 import React, { useEffect, useState, useMemo } from "react";
@@ -23,32 +22,16 @@ import GuideContentStage from "./GuideContentStage";
 import GuideNavigation from "./GuideNavigation";
 import GuideMobileCurriculum from "./GuideMobileSidebar";
 import GuideStepItem from "./GuideStepItem";
-import GuideStepForm from "./GuideStepForm";
-import GuideSectionForm from "./GuideSectionForm";
 import CommentSection from "../posts/CommentSection";
 import GuideInteractionHub from "./GuideInteractionHub";
 
 // Mutations
-import {
-  useAddGuideStepMutation,
-  useUpdateGuideStepMutation,
-  useDeleteGuideStepMutation,
-} from "@/lib/features/guideSection/guideStepApiSlice";
-import {
-  useAddGuideSectionMutation,
-  useUpdateGuideSectionMutation,
-  useDeleteGuideSectionMutation,
-} from "@/lib/features/guideSection/guideSectionApiSlice";
+import { useDeleteGuideStepMutation } from "@/lib/features/guideSection/guideStepApiSlice";
+import { useDeleteGuideSectionMutation } from "@/lib/features/guideSection/guideSectionApiSlice";
 
 // UI
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -78,8 +61,6 @@ import {
   Link2,
   CircleChevronLeft,
   Loader2,
-  Terminal,
-  Link2Icon,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
@@ -101,26 +82,11 @@ export default function GuideDetails({ postId }: { postId: string }) {
 
   const [recordPostView] = useRecordPostViewMutation();
   const [deletePost] = useDeletePostMutation();
-
-  const [addGuideStep, { isLoading: isAddingStep }] = useAddGuideStepMutation();
-  const [updateGuideStep, { isLoading: isUpdatingStep }] =
-    useUpdateGuideStepMutation();
   const [deleteGuideStep] = useDeleteGuideStepMutation();
-
-  const [addGuideSection, { isLoading: isAddingSection }] =
-    useAddGuideSectionMutation();
-  const [updateGuideSection, { isLoading: isUpdatingSection }] =
-    useUpdateGuideSectionMutation();
   const [deleteGuideSection] = useDeleteGuideSectionMutation();
 
   const [activeStepId, setActiveStepId] = useState<string>("overview");
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
-
-  const [isStepDialogOpen, setIsStepDialogOpen] = useState(false);
-  const [isSectionDialogOpen, setIsSectionDialogOpen] = useState(false);
-  const [editingStep, setEditingStep] = useState<any>(null);
-  const [editingSection, setEditingSection] = useState<any>(null);
-  const [parentStepId, setParentStepId] = useState<string | null>(null);
 
   // Gallery & Image State
   const [selectedImage, setSelectedImage] = useState<string | undefined>();
@@ -128,7 +94,6 @@ export default function GuideDetails({ postId }: { postId: string }) {
   const [imageError, setImageError] = useState(false);
 
   const mainImage = selectedImage || post?.images?.[0]?.url;
-  const totalSteps = post?.steps?.length || 0;
 
   useEffect(() => {
     if (postId && currentUser) recordPostView(postId);
@@ -158,6 +123,7 @@ export default function GuideDetails({ postId }: { postId: string }) {
     setIsMobileNavOpen(false);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
+
   const handleMainDelete = async () => {
     try {
       await deletePost(postId).unwrap();
@@ -166,38 +132,6 @@ export default function GuideDetails({ postId }: { postId: string }) {
     } catch {
       toast.error("Deletion failed.");
     }
-  };
-
-  const handleStepFormSubmit = async (data: any) => {
-    const promise = editingStep
-      ? updateGuideStep({ stepId: editingStep.id, postId, data }).unwrap()
-      : addGuideStep({ postId, data }).unwrap();
-    try {
-      await toast.promise(promise, {
-        loading: "Saving step...",
-        success: "Step synchronized.",
-        error: "Failed to save step.",
-      });
-      setIsStepDialogOpen(false);
-    } catch (err) {}
-  };
-
-  const handleSectionFormSubmit = async (formData: FormData) => {
-    const promise = editingSection
-      ? updateGuideSection({
-          sectionId: editingSection.id,
-          postId,
-          formData,
-        }).unwrap()
-      : addGuideSection({ stepId: parentStepId!, postId, formData }).unwrap();
-    try {
-      await toast.promise(promise, {
-        loading: "Saving section...",
-        success: "Section synchronized.",
-        error: "Failed to save section.",
-      });
-      setIsSectionDialogOpen(false);
-    } catch (err) {}
   };
 
   const handleDeleteStep = async (stepId: string) => {
@@ -212,7 +146,7 @@ export default function GuideDetails({ postId }: { postId: string }) {
     return (
       <div className="flex h-[60vh] flex-col items-center justify-center gap-4">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        <p className="animate-pulse text-xs font-bold text-muted-foreground">
+        <p className="animate-pulse text-xs font-bold text-muted-foreground ">
           Loading Guide...
         </p>
       </div>
@@ -285,7 +219,7 @@ export default function GuideDetails({ postId }: { postId: string }) {
           </AlertDialogCancel>
           <AlertDialogAction
             onClick={handleMainDelete}
-            className="rounded-none font-bold bg-destructive text-primary  hover:bg-destructive/90 border-3 border-double"
+            className="rounded-none font-bold bg-destructive text-primary hover:bg-destructive/90 border-3 border-double"
           >
             Confirm Delete
           </AlertDialogAction>
@@ -302,6 +236,7 @@ export default function GuideDetails({ postId }: { postId: string }) {
         post={post}
         activeStepId={activeStepId}
         onStepChange={handleStepChange}
+        isAuthor={isAuthor}
       />
 
       <aside className="hidden lg:block w-80 border-r-3 border-double border-border bg-card sticky top-0 h-screen">
@@ -310,10 +245,7 @@ export default function GuideDetails({ postId }: { postId: string }) {
           activeStepId={activeStepId}
           onStepChange={handleStepChange}
           isAuthor={isAuthor}
-          onAddStep={() => {
-            setEditingStep(null);
-            setIsStepDialogOpen(true);
-          }}
+          onAddStep={() => router.push(`/guides/${postId}/steps/create`)}
         />
       </aside>
 
@@ -335,7 +267,6 @@ export default function GuideDetails({ postId }: { postId: string }) {
         </header>
 
         <div className="flex-1 p-4 md:p-8 lg:p-10 overflow-y-auto space-y-10">
-          {/* Use the Blog-inspired Header logic inside the Stage */}
           <div className="space-y-4">
             <Button
               variant="outline"
@@ -362,7 +293,7 @@ export default function GuideDetails({ postId }: { postId: string }) {
                 <div className="space-y-10">
                   {post.images && post.images.length > 0 && (
                     <div className="space-y-4">
-                      <div className="relative aspect-16/10 h w-full border-3 border-double bg-muted  group ">
+                      <div className="relative aspect-16/10 h w-full border-3 border-double bg-muted group">
                         <FlourishOrnate className="-top-2 -left-2 -rotate-90 z-20" />
                         <FlourishOrnate className="-top-2 -right-2 rotate-0 z-20" />
                         <FlourishOrnate className="-bottom-2 -right-2 rotate-90 z-20" />
@@ -443,21 +374,8 @@ export default function GuideDetails({ postId }: { postId: string }) {
                       step={currentStep}
                       index={currentStepIndex}
                       isAuthor={isAuthor}
-                      onEditStep={() => {
-                        setEditingStep(currentStep);
-                        setIsStepDialogOpen(true);
-                      }}
+                      postId={postId}
                       onDeleteStep={() => handleDeleteStep(currentStep.id)}
-                      onAddSection={() => {
-                        setEditingSection(null);
-                        setParentStepId(currentStep.id);
-                        setIsSectionDialogOpen(true);
-                      }}
-                      onEditSection={(section) => {
-                        setEditingSection(section);
-                        setParentStepId(currentStep.id);
-                        setIsSectionDialogOpen(true);
-                      }}
                       onDeleteSection={(sectionId) => {
                         toast.promise(
                           deleteGuideSection({ sectionId, postId }).unwrap(),
@@ -546,107 +464,6 @@ export default function GuideDetails({ postId }: { postId: string }) {
           </div>
         </div>
       </main>
-
-      {/* MODALS */}
-      {/* Replace the Step Dialog block with this */}
-      <Dialog open={isStepDialogOpen} onOpenChange={setIsStepDialogOpen}>
-        <DialogContent className="sm:max-w-3xl rounded-none border-3 border-double bg-card p-0 flex flex-col max-h-[90vh]">
-          <DialogHeader className="p-6 border-b border-dashed shrink-0">
-            <DialogTitle className="font-bold text-3xl">
-              {editingStep ? "Edit Step" : "New Step"}
-            </DialogTitle>
-          </DialogHeader>
-          <div className="p-6 overflow-y-auto flex-1">
-            <GuideStepForm
-              mode={editingStep ? "edit" : "create"}
-              initialData={
-                editingStep
-                  ? {
-                      title: editingStep.title,
-                      description: editingStep.description ?? "",
-                      order: editingStep.order,
-                    }
-                  : { order: totalSteps + 1, title: "", description: "" }
-              }
-              onSubmit={handleStepFormSubmit}
-              isSubmitting={isAddingStep || isUpdatingStep}
-              onCancel={() => setIsStepDialogOpen(false)}
-            />
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      {/* Replace the Section Dialog block with this */}
-      <Dialog open={isSectionDialogOpen} onOpenChange={setIsSectionDialogOpen}>
-        <DialogContent className="sm:max-w-3xl rounded-none border-3 border-double bg-card p-0 flex flex-col max-h-[90vh]">
-          <DialogHeader className="p-6 border-b border-dashed shrink-0">
-            <DialogTitle className="font-bold text-3xl">
-              {editingSection ? "Edit Section" : "Add Section"}
-            </DialogTitle>
-          </DialogHeader>
-          <div className="p-6 overflow-y-auto flex-1">
-            <GuideSectionForm
-              mode={editingSection ? "edit" : "create"}
-              initialData={
-                editingSection
-                  ? {
-                      title: editingSection.title ?? "",
-                      content: editingSection.content,
-                      order: editingSection.order,
-                      videoUrl: editingSection.videoUrl ?? "",
-                      imageUrl: editingSection.imageUrl,
-                    }
-                  : {
-                      order:
-                        (post.steps.find((s) => s.id === parentStepId)?.sections
-                          .length || 0) + 1,
-                      title: "",
-                      content: "",
-                      videoUrl: "",
-                    }
-              }
-              onSubmit={handleSectionFormSubmit}
-              isSubmitting={isAddingSection || isUpdatingSection}
-              onCancel={() => setIsSectionDialogOpen(false)}
-            />
-          </div>
-        </DialogContent>
-      </Dialog>
-      <Dialog open={isSectionDialogOpen} onOpenChange={setIsSectionDialogOpen}>
-        <DialogContent className="sm:max-w-3xl rounded-none border-3 border-double bg-card p-0 overflow-hidden">
-          <DialogHeader className="p-6 border-b border-dashed">
-            <DialogTitle className="font-bold text-3xl">
-              {editingSection ? "Edit Section" : "Add Section"}
-            </DialogTitle>
-          </DialogHeader>
-          <div className="p-6">
-            <GuideSectionForm
-              mode={editingSection ? "edit" : "create"}
-              initialData={
-                editingSection
-                  ? {
-                      title: editingSection.title ?? "",
-                      content: editingSection.content,
-                      order: editingSection.order,
-                      videoUrl: editingSection.videoUrl ?? "",
-                      imageUrl: editingSection.imageUrl,
-                    }
-                  : {
-                      order:
-                        (post.steps.find((s) => s.id === parentStepId)?.sections
-                          .length || 0) + 1,
-                      title: "",
-                      content: "",
-                      videoUrl: "",
-                    }
-              }
-              onSubmit={handleSectionFormSubmit}
-              isSubmitting={isAddingSection || isUpdatingSection}
-              onCancel={() => setIsSectionDialogOpen(false)}
-            />
-          </div>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }

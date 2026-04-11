@@ -4,6 +4,7 @@
 import React, { useMemo, useState } from "react";
 import { GuideSectionDto } from "@/lib/features/guideSection/guideTypes";
 import NextImage from "next/image";
+import Link from "next/link";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -26,7 +27,8 @@ interface GuideSectionItemProps {
   section: GuideSectionDto;
   index: number;
   isAuthor: boolean;
-  onEdit: () => void;
+  postId: string;
+  stepId: string;
   onDelete: () => void;
 }
 
@@ -45,7 +47,8 @@ export function GuideSectionItem({
   section,
   index,
   isAuthor,
-  onEdit,
+  postId,
+  stepId,
   onDelete,
 }: GuideSectionItemProps) {
   const [imageLoading, setImageLoading] = useState(true);
@@ -88,10 +91,14 @@ export function GuideSectionItem({
               className="rounded-none border-3 border-double"
             >
               <DropdownMenuItem
-                onClick={onEdit}
+                asChild
                 className="font-bold text-xs cursor-pointer"
               >
-                <Edit className="mr-2 h-3.5 w-3.5" /> Edit section
+                <Link
+                  href={`/guides/${postId}/steps/${stepId}/sections/${section.id}/edit`}
+                >
+                  <Edit className="mr-2 h-3.5 w-3.5" /> Edit section
+                </Link>
               </DropdownMenuItem>
               <DropdownMenuItem
                 onClick={onDelete}

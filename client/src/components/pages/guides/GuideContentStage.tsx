@@ -58,7 +58,7 @@ export default function GuideContentStage({
         </div>
 
         {/* --- TITLE --- */}
-        <h1 className="text-2xl md:text-4xl lg:text-5xl font-bold tracking-tight wrap-break-words leading-tight">
+        <h1 className="text-2xl md:text-4xl lg:text-5xl font-bold  wrap-break-words leading-tight">
           {title}
         </h1>
 
@@ -79,7 +79,7 @@ export default function GuideContentStage({
                 <p className="text-sm font-bold group-hover:text-primary transition-colors">
                   {post.author.name}
                 </p>
-                <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
+                <p className="text-[10px] font-semibold text-muted-foreground  ">
                   @{post.author.username}
                 </p>
               </div>
@@ -104,7 +104,7 @@ export default function GuideContentStage({
       {/* --- SEGMENT FOOTER --- */}
       {!isOverview && (
         <div className="flex justify-center w-full bg-card h-12 items-center border-3 border-double shadow-sm">
-          <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">
+          <p className="text-xs font-bold text-muted-foreground  ">
             End of Segment
           </p>
         </div>
