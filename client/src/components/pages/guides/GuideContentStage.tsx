@@ -96,9 +96,7 @@ export default function GuideContentStage({
           "min-h-75",
         )}
       >
-        <div className="prose prose-neutral dark:prose-invert max-w-none">
-          {children}
-        </div>
+        <div className=" max-w-none">{children}</div>
       </div>
 
       {/* --- SEGMENT FOOTER --- */}

@@ -340,11 +340,10 @@ export default function PostCard({ post }: PostCardProps) {
         <CardFooter className="p-3 border-t-3 border-double ">
           <Button
             variant="outline"
-            className=" cursor-pointer mt-3 rounded-none w-full h-10  font-black group/btn transition-all  "
+            className=" cursor-pointer mt-3 rounded-none w-full h-10 border-3 border-double font-bold group/btn transition-all  "
             onClick={() => router.push(href)}
           >
             {smartActionText}
-            <ArrowRight className="ml-2 h-3.5 w-3.5 transition-transform group-hover/btn:translate-x-2" />
           </Button>
         </CardFooter>
       </Card>

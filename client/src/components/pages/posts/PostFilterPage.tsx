@@ -54,7 +54,7 @@ interface PostFilterPageProps {
 
 const PostCardSkeleton = () => (
   <div className="flex flex-col space-y-3">
-    <Skeleton className="h-[180px] w-full " />
+    <Skeleton className="h-45 w-full " />
     <div className="space-y-2">
       <Skeleton className="h-4 w-3/4" />
       <Skeleton className="h-3 w-1/2" />
@@ -223,7 +223,7 @@ export default function PostFilterPage({
   return (
     <section className="space-y-6">
       <div className="mb-4">
-        <h1 className="text-2xl md:text-4xl font-black tracking-tighter text-foreground flex items-center gap-2.5">
+        <h1 className="text-2xl md:text-4xl font-black  text-foreground flex items-center gap-2.5">
           {React.createElement(
             getCategoryIcon(selectedCategory) || DefaultPageIcon,
             { className: "text-primary h-7 w-7 md:h-9 md:w-9" },
@@ -235,14 +235,14 @@ export default function PostFilterPage({
         </p>
       </div>
 
-      <Card className="p-3 md:p-5 bg-background/60 backdrop-blur-md relative border-border/50 shadow-sm ">
+      <Card className="border-3 border-double rounded-none p-3 md:p-5 bg-background/60  relative ">
         <div className="flex flex-col gap-3">
           <div className="flex flex-col md:flex-row gap-3">
-            <div className="relative flex-grow">
+            <div className="relative grow">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/50" />
               <Input
                 placeholder={searchPlaceholder}
-                className="pl-9 h-11 text-sm  border-border/40 bg-background/50"
+                className="pl-9 h-11 text-sm  border-3 border-double bg-background/50 rounded-none"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
@@ -264,7 +264,7 @@ export default function PostFilterPage({
                   value={selectedCategory}
                   onValueChange={(val) => setSelectedCategory(val as any)}
                 >
-                  <SelectTrigger className="h-11 text-xs md:w-[150px]  font-bold bg-background/50 border-border/40">
+                  <SelectTrigger className="h-11 text-xs md:w-37  font-bold bg-background/50 border-border/40">
                     <Tags className="mr-2 h-3.5 w-3.5 text-primary" />
                     <SelectValue placeholder="Category" />
                   </SelectTrigger>
@@ -282,7 +282,7 @@ export default function PostFilterPage({
                 </Select>
               )}
               <Select value={sortOrder} onValueChange={setSortOrder}>
-                <SelectTrigger className="h-11 text-xs md:w-[150px]  font-bold bg-background/50 border-border/40">
+                <SelectTrigger className="h-11 text-xs md:w-37  font-bold bg-background/50 border-border/40">
                   <Calendar className="mr-2 h-3.5 w-3.5 text-primary" />
                   <SelectValue placeholder="Sort" />
                 </SelectTrigger>
@@ -303,13 +303,13 @@ export default function PostFilterPage({
 
           {availableTags.length > 0 && (
             <div className="flex flex-col sm:flex-row gap-4 sm:items-start pt-4 border-t border-border/40">
-              <h3 className="text-[10px] font-black  tracking-[0.2em] text-muted-foreground/40 shrink-0">
+              <h3 className="text-[10px] font-black   text-muted-foreground/40 shrink-0">
                 Trending tags
               </h3>
 
               <div
                 className={cn(
-                  "overflow-y-auto max-h-[76px] pr-1",
+                  "overflow-y-auto max-h-19 pr-1",
                   "scrollbar-thin scrollbar-thumb-primary/20 scrollbar-track-transparent hover:scrollbar-thumb-primary/40 transition-colors",
                 )}
                 style={{ scrollbarWidth: "thin" }}
@@ -335,7 +335,7 @@ export default function PostFilterPage({
 
       <div>
         <div className="mb-4 flex items-center justify-between">
-          <p className="text-[11px] font-bold  tracking-widest text-muted-foreground/60">
+          <p className="text-[11px] font-bold   text-muted-foreground/60">
             {isFetching && page === 1
               ? "Syncing results..."
               : `${postsResponse?.pagination.totalItems ?? 0} items found`}
@@ -361,9 +361,7 @@ export default function PostFilterPage({
         ) : isError && page === 1 ? (
           <div className="flex flex-col items-center justify-center p-12 border border-dashed  bg-muted/20">
             <ServerCrash className="h-10 w-10 text-destructive/30" />
-            <h3 className="mt-4 font-black tracking-tighter">
-              Connection error
-            </h3>
+            <h3 className="mt-4 font-black ">Connection error</h3>
             <p className="text-xs text-muted-foreground mt-1 font-medium">
               Failed to fetch data from the farm.
             </p>
@@ -387,12 +385,12 @@ export default function PostFilterPage({
             {/* 🚜 INFINITE SCROLL FOOTER */}
             <div
               ref={sentinelRef}
-              className="py-10 flex flex-col items-center justify-center min-h-[100px]"
+              className="py-10 flex flex-col items-center justify-center min-h-25"
             >
               {isFetching && hasMore && (
                 <div className="flex flex-col items-center gap-2 animate-in fade-in zoom-in duration-300">
                   <Loader2 className="h-6 w-6 text-primary animate-spin" />
-                  <span className="text-[10px] font-black  tracking-widest text-muted-foreground/40">
+                  <span className="text-[10px] font-black   text-muted-foreground/40">
                     Loading more...
                   </span>
                 </div>
@@ -406,7 +404,7 @@ export default function PostFilterPage({
                     onClick={() => refetch()}
                     variant="outline"
                     size="sm"
-                    className="rounded-none px-6 border-destructive/20 text-destructive/70 hover:bg-destructive/5 font-black text-[10px]  tracking-wider"
+                    className="rounded-none px-6 border-destructive/20 text-destructive/70 hover:bg-destructive/5 font-black text-[10px]  "
                   >
                     <RotateCcw className="mr-2 h-3 w-3" /> Refetch
                   </Button>
@@ -414,11 +412,11 @@ export default function PostFilterPage({
               )}
               {!hasMore && posts.length > 0 && (
                 <div className="flex items-center gap-4 w-full">
-                  <div className="h-[1px] flex-1 bg-border/30" />
-                  <span className="text-[10px] font-black  tracking-[0.3em] text-muted-foreground/20">
+                  <div className="h-px flex-1 bg-border/30" />
+                  <span className="text-[10px] font-black  0.3em] text-muted-foreground/20">
                     End of the line
                   </span>
-                  <div className="h-[1px] flex-1 bg-border/30" />
+                  <div className="h-px flex-1 bg-border/30" />
                 </div>
               )}
             </div>
@@ -426,9 +424,7 @@ export default function PostFilterPage({
         ) : (
           <div className="flex flex-col items-center justify-center p-16 border-2 border-dashed  bg-muted/10">
             <Frown className="h-12 w-12 text-muted-foreground/20" />
-            <h3 className="mt-4 text-lg font-black tracking-tighter">
-              No results
-            </h3>
+            <h3 className="mt-4 text-lg font-black ">No results</h3>
             <p className="text-sm text-muted-foreground font-medium">
               Try adjusting your filters or search terms.
             </p>

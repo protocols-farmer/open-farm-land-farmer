@@ -368,7 +368,7 @@ export default function GuideDetails({ postId }: { postId: string }) {
                                     }
                                   }}
                                   className={cn(
-                                    "relative aspect-square border-3 border-double bg-white",
+                                    "relative aspect-square border-3 border-double ",
                                     isSelected
                                       ? "border-primary opacity-100 scale-95"
                                       : "border-transparent opacity-50 hover:opacity-100",

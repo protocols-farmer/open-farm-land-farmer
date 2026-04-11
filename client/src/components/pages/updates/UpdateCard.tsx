@@ -23,7 +23,7 @@ import { Button } from "@/components/ui/button";
 //   };
 export default function UpdateCard({ update }: { update: UpdateDto }) {
   return (
-    <Card className="group h-full rounded-none border-3 border-double flex flex-col bg-card   transition-all duration-300 hover:-translate-y-1.5    overflow-hidden relative">
+    <Card className="group h-full rounded-none border-3 border-double flex flex-col bg-card   transition-all duration-300 relative">
       <CardHeader className="p-6 pb-4">
         <div className="flex justify-between items-start mb-4">
           <Badge
@@ -43,7 +43,7 @@ export default function UpdateCard({ update }: { update: UpdateDto }) {
             </Badge>
           )}
         </div>
-        <CardTitle className="text-xl font-bold  group-hover:text-primary transition-colors leading-snug">
+        <CardTitle className="text-xl font-bold ">
           <h3>{update.title}</h3>
         </CardTitle>
         <CardDescription className="text-xs font-medium text-muted-foreground pt-1">

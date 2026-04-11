@@ -86,8 +86,8 @@ export default function OpportunityCard({
           )}
 
           {opportunity.isRemote && (
-            <div className="flex items-center gap-3 text-[13px] font-black text-emerald-500  ">
-              <div className="p-1.5  bg-emerald-500/10 border border-emerald-500/20">
+            <div className="flex items-center gap-3 text-[13px] font-bold text-primary">
+              <div className="p-1.5  bg-primary/10 border border-primary/20">
                 <Globe className="h-3.5 w-3.5" />
               </div>
               <span>Fully Remote</span>
@@ -120,7 +120,7 @@ export default function OpportunityCard({
           <span className="text-[9px] font-black  0.2em] text-muted-foreground/40 mb-0.5">
             Posted
           </span>
-          <span className="text-[11px] text-muted-foreground font-bold italic">
+          <span className="text-[11px] text-muted-foreground font-bold ">
             {formatDistanceToNow(new Date(opportunity.postedAt), {
               addSuffix: true,
             })}
