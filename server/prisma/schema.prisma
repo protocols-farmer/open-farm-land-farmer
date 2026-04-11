@@ -31,17 +31,18 @@ model User {
   bio            String?
   title          String?
   location       String?
+
   profileImage   String?   @default("https://res.cloudinary.com/djtww0vax/image/upload/v1747766773/xi-biooid_bstapi.jpg")
   profileImagePublicId String?
   bannerImage    String?   @default("https://res.cloudinary.com/djtww0vax/image/upload/v1747766773/xi-biooid_bstapi.jpg")
   bannerImagePublicId  String?
+
   joinedAt       DateTime  @default(now()) @map("joined_at")
   updatedAt      DateTime  @updatedAt
 
   // --- Deactivation / Soft Delete ---
   status        UserStatus @default(ACTIVE)
   systemRole    SystemRole @default(USER)
-  deactivatedAt DateTime?
 
   // --- Social links ---
   twitterUrl  String?
@@ -146,7 +147,7 @@ model UserSanction {
   adminId     String?
   admin       User?    @relation("AdminSanctions", fields: [adminId], references: [id], onDelete: SetNull)
   appeal      Appeal?
-  @@index([userId])
+  @@index([userId, status])
   @@index([status, expiresAt]) 
   @@map("user_sanctions")
 }
@@ -503,7 +504,7 @@ model PageViewLog {
 }
 
 model SystemConfig {
-  id                String   @id @default(cuid())
+  id                String   @id @default(uuid())
   maintenanceMode   Boolean  @default(false)
   maintenanceMessage String?  @default("Open farm land is currently undergoing a structural update. We're making the soil richer for your projects and posts.")
   updatedAt         DateTime @default(now()) @updatedAt
@@ -517,22 +518,18 @@ model SystemConfig {
 
 model Appeal {
   id          String       @id @default(uuid())
-  reason      String       @db.Text // The user's explanation/defense
+  reason      String       @db.Text 
   status      AppealStatus @default(PENDING)
-  adminNotes  String?      @db.Text // Internal notes from the reviewing admin
+  adminNotes  String?      @db.Text 
   
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
 
-  // The user who is appealing
+  
   userId      String
   user        User         @relation("UserAppeals", fields: [userId], references: [id], onDelete: Cascade)
-
-  // The specific sanction being appealed (1-to-1 so they can't spam appeals for the same ban)
   sanctionId  String       @unique 
   sanction    UserSanction @relation(fields: [sanctionId], references: [id], onDelete: Cascade)
-
-  // The admin who reviewed/decided the appeal
   reviewerId  String?
   reviewer    User?        @relation("AdminAppeals", fields: [reviewerId], references: [id], onDelete: SetNull)
 

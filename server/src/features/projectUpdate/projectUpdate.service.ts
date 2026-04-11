@@ -1,3 +1,4 @@
+//src/features/projectUpdate/projectUpdate.service.ts
 import prisma from "@/db/prisma.js";
 import { Prisma, ProjectUpdate } from "@prisma-client";
 import { createHttpError } from "@/utils/error.factory.js";
@@ -18,13 +19,13 @@ class ProjectUpdateService {
     userId: string,
     postId: string,
     data: CreateProjectUpdateDto,
-    imageFile?: Express.Multer.File
+    imageFile?: Express.Multer.File,
   ): Promise<ProjectUpdate> {
     const parentPost = await prisma.post.findUnique({ where: { id: postId } });
     if (!parentPost || parentPost.authorId !== userId) {
       throw createHttpError(
         403,
-        "You are not authorized to update this project."
+        "You are not authorized to update this project.",
       );
     }
 
@@ -37,7 +38,7 @@ class ProjectUpdateService {
     if (imageFile) {
       const result = await uploadToCloudinary(
         imageFile.path,
-        "project_updates"
+        "project_updates",
       );
       createData.imageUrl = result.secure_url;
       createData.imagePublicId = result.public_id;
@@ -48,12 +49,13 @@ class ProjectUpdateService {
 
   /**
    * Update an existing project update entry.
+   * Handles text updates, image replacements, and explicit image removal.
    */
   async update(
     userId: string,
     updateId: string,
-    data: UpdateProjectUpdateDto,
-    imageFile?: Express.Multer.File
+    data: UpdateProjectUpdateDto & { removeImage?: string },
+    imageFile?: Express.Multer.File,
   ): Promise<ProjectUpdate> {
     const projectUpdate = await prisma.projectUpdate.findUnique({
       where: { id: updateId },
@@ -65,17 +67,31 @@ class ProjectUpdateService {
     }
 
     const updateData: Prisma.ProjectUpdateUpdateInput = { ...data };
-    if (data.date) updateData.date = new Date(data.date);
 
-    if (imageFile) {
-      // If a new image is uploaded, delete the old one first
+    if (data.date) {
+      updateData.date = new Date(data.date);
+    }
+
+    delete (updateData as any).removeImage;
+
+    if (data.removeImage === "true" && !imageFile) {
       if (projectUpdate.imagePublicId) {
         await deleteFromCloudinary(projectUpdate.imagePublicId);
       }
+      updateData.imageUrl = null;
+      updateData.imagePublicId = null;
+    }
+
+    if (imageFile) {
+      if (projectUpdate.imagePublicId) {
+        await deleteFromCloudinary(projectUpdate.imagePublicId);
+      }
+
       const result = await uploadToCloudinary(
         imageFile.path,
-        "project_updates"
+        "project_updates",
       );
+
       updateData.imageUrl = result.secure_url;
       updateData.imagePublicId = result.public_id;
     }
@@ -85,7 +101,6 @@ class ProjectUpdateService {
       data: updateData,
     });
   }
-
   /**
    * Delete a project update entry.
    */
@@ -98,7 +113,7 @@ class ProjectUpdateService {
     if (!projectUpdate || projectUpdate.post.authorId !== userId) {
       throw createHttpError(
         403,
-        "You are not authorized to delete this entry."
+        "You are not authorized to delete this entry.",
       );
     }
 

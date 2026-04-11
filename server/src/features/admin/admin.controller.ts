@@ -107,12 +107,14 @@ class AdminController {
 
   deleteUser = asyncHandler(async (req: Request, res: Response) => {
     const { id } = req.params;
+
     if (req.user?.id === id) {
       throw createHttpError(
         400,
-        "Admins cannot delete their own account via this route.",
+        "Admins cannot delete their own account via this route. Use the 'Me' route instead.",
       );
     }
+
     await adminService.deleteUser(id);
     res.status(204).send();
   });

@@ -2,7 +2,10 @@
 
 import { Router } from "express";
 import { postController } from "@/features/post/post.controller.js";
-import { verifyToken } from "@/middleware/auth.middleware.js";
+import {
+  optionalVerifyToken,
+  verifyToken,
+} from "@/middleware/auth.middleware.js";
 import { validate } from "@/middleware/validate.js";
 import {
   createPostSchema,
@@ -13,8 +16,8 @@ import { uploadImage } from "@/middleware/multer.config.js";
 const router: Router = Router();
 
 // public routes
-router.get("/", postController.getAllPosts);
-router.get("/:id", postController.getPost);
+router.get("/", optionalVerifyToken, postController.getAllPosts);
+router.get("/:id", optionalVerifyToken, postController.getPost);
 
 // protected routes
 router.post(

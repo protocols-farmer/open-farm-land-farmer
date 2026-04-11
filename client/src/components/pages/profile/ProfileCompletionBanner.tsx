@@ -33,13 +33,13 @@ export default function ProfileCompletionBanner({
       { label: "Title", weight: 10, completed: !!user.title },
       {
         label: "Profile Picture",
-        weight: 20,
+        weight: 15, // 🚜 Adjusted from 20
         completed:
           !!user.profileImage && !user.profileImage.includes(DEFAULT_IMAGE_ID),
       },
       {
         label: "Cover Banner",
-        weight: 15,
+        weight: 10, // 🚜 Adjusted from 15
         completed:
           !!user.bannerImage && !user.bannerImage.includes(DEFAULT_IMAGE_ID),
       },
@@ -47,6 +47,12 @@ export default function ProfileCompletionBanner({
         label: "Social Links",
         weight: 15,
         completed: !!(user.githubUrl || user.twitterUrl || user.websiteUrl),
+      },
+      {
+        // 🚜 NEW: The final step to a "True Identity"
+        label: "Email Verified",
+        weight: 10,
+        completed: user.isEmailVerified,
       },
     ];
 

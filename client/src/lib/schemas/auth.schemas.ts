@@ -1,16 +1,8 @@
 //src/lib/schemas/auth.schemas.ts
 import { z } from "zod";
 
-/**
- * Shared constants to match backend 'user.shared.schema.ts'
- */
 const usernameRegex = /^[a-zA-Z0-9_]+$/;
 
-/**
- * Strict Password Rules
- * We define this once to reuse it in both Signup and Change Password
- * to prevent users from setting weak passwords later.
- */
 const passwordRules = z
   .string()
   .min(8, "Password must be at least 8 characters.")
@@ -19,11 +11,6 @@ const passwordRules = z
   .regex(/[0-9]/, "Include at least one number.")
   .regex(/[^A-Za-z0-9]/, "Include at least one special character.");
 
-/**
- * 1. LOGIN SCHEMA
- * Added trim() and toLowerCase() to prevent login failures
- * caused by auto-capitalization or stray spaces.
- */
 export const loginSchema = z.object({
   email: z
     .string()
@@ -34,11 +21,6 @@ export const loginSchema = z.object({
   password: z.string().min(1, "Password is required."),
 });
 
-/**
- * 2. SIGNUP SCHEMA (LEAN)
- * Only contains Email, Password, and Terms.
- * Name/Username generation is handled by the backend.
- */
 export const signUpSchema = z.object({
   email: z
     .string()
@@ -52,10 +34,6 @@ export const signUpSchema = z.object({
   }),
 });
 
-/**
- * 3. CHANGE PASSWORD SCHEMA
- * Now uses the same strict 'passwordRules' as signup to ensure security.
- */
 export const changePasswordSchema = z
   .object({
     currentPassword: z.string().min(1, "Current password is required."),
@@ -71,52 +49,64 @@ export const changePasswordSchema = z
     path: ["newPassword"],
   });
 
-/**
- * 4. UPDATE PROFILE SCHEMA
- * Fully synced with backend limits (Name: 50, Username: 50, Title: 100, Location: 100).
- */
 export const updateProfileSchema = z.object({
   name: z
     .string()
     .min(1, "Name is required.")
-    .max(50, "Name is too long.")
-    .optional(),
+    .max(50, "Name cannot exceed 50 characters."),
+
   username: z
     .string()
     .min(3, "Username must be at least 3 characters.")
     .max(50, "Username cannot exceed 50 characters.")
-    .regex(usernameRegex, "Letters, numbers, and underscores only.")
-    .optional(),
+    .regex(usernameRegex, "Letters, numbers, and underscores only."),
+
   bio: z
     .string()
     .max(250, "Bio cannot exceed 250 characters.")
     .optional()
+    .or(z.literal(""))
     .nullable(),
-  title: z.string().max(100, "Title is too long.").optional().nullable(),
-  location: z.string().max(100, "Location is too long.").optional().nullable(),
 
-  // Social Links (Synced to allow clearing via empty string or null)
+  title: z
+    .string()
+    .max(100, "Title cannot exceed 100 characters.")
+    .optional()
+    .or(z.literal(""))
+    .nullable(),
+
+  location: z
+    .string()
+    .max(100, "Location cannot exceed 100 characters.")
+    .optional()
+    .or(z.literal(""))
+    .nullable(),
+
   twitterUrl: z
     .string()
     .url("Invalid Twitter URL")
+    .max(255, "URL is too long.")
     .optional()
     .or(z.literal(""))
     .nullable(),
+
   githubUrl: z
     .string()
     .url("Invalid GitHub URL")
+    .max(255, "URL is too long.")
     .optional()
     .or(z.literal(""))
     .nullable(),
+
   websiteUrl: z
     .string()
     .url("Invalid Website URL")
+    .max(255, "URL is too long.")
     .optional()
     .or(z.literal(""))
     .nullable(),
 });
 
-// Types inferred from schemas
 export type LoginFormValues = z.infer<typeof loginSchema>;
 export type SignUpFormValues = z.infer<typeof signUpSchema>;
 export type ChangePasswordFormValues = z.infer<typeof changePasswordSchema>;

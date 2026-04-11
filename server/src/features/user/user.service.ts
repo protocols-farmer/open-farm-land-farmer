@@ -1,6 +1,6 @@
 //src/features/user/user.service.ts
 import bcrypt from "bcryptjs";
-import { Prisma, User } from "@prisma-client";
+import { User } from "@prisma-client";
 import prisma, { ExtendedPrismaClient } from "@/db/prisma.js";
 import { SignUpInputDto } from "@/features/auth/auth.types.js";
 import { createHttpError } from "@/utils/error.factory.js";
@@ -25,6 +25,24 @@ interface UserProfileUpdateData {
 }
 
 export class UserService {
+  public getPublicProfile(user: any) {
+    const {
+      hashedPassword,
+      email,
+      emailVerifyToken,
+      passwordResetToken,
+      passwordResetExpires,
+      status,
+      deactivatedAt,
+      settings,
+      ...publicData
+    } = user;
+
+    return {
+      ...publicData,
+      joinedAt: user.joinedAt,
+    };
+  }
   private get userDelegate() {
     return (prisma as ExtendedPrismaClient).user;
   }
@@ -61,7 +79,7 @@ export class UserService {
           status: { in: ["ACTIVE", "APPEALED"] },
         },
         orderBy: { createdAt: "desc" },
-        include: { appeal: true }, // 🚜 NEW: Fetch the attached appeal history
+        include: { appeal: true },
       });
 
       if (sanction) {
@@ -90,7 +108,7 @@ export class UserService {
             expiresAt: sanction.expiresAt,
             type: sanction.type,
             status: sanction.status,
-            appealStatus: sanction.appeal?.status || null, // 🚜 NEW: Pass the appeal status specifically
+            appealStatus: sanction.appeal?.status || null,
           };
         }
       }
@@ -176,32 +194,22 @@ export class UserService {
     }
   }
 
-  /**
-   * Scenario Fix: Handle Username Conflict (P2002).
-   * Throws a 409 Conflict with a helpful message for the user.
-   */
   public async updateUserProfile(
     userId: string,
     data: UserProfileUpdateData,
   ): Promise<SafeUser> {
-    const existingUser = await this.findUserById(userId);
-    if (!existingUser) throw createHttpError(404, "User not found.");
-
     try {
       const updatedUser = await this.userDelegate.update({
         where: { id: userId },
         data,
       });
 
-      return updatedUser as unknown as SafeUser;
-    } catch (e: any) {
-      if (
-        e.code === "P2002" ||
-        (e instanceof Prisma.PrismaClientKnownRequestError &&
-          e.code === "P2002")
-      ) {
+      const { hashedPassword, ...safeUser } = updatedUser;
+      return safeUser as unknown as SafeUser;
+    } catch (error: any) {
+      if (error.code === "P2002") {
         logger.info(
-          { userId, target: e.meta?.target },
+          { userId, target: error.meta?.target },
           "Conflict: Username change rejected.",
         );
         throw createHttpError(
@@ -210,7 +218,11 @@ export class UserService {
         );
       }
 
-      logger.error({ err: e, userId }, "❌ Profile update failed.");
+      if (error.code === "P2025") {
+        throw createHttpError(404, "User profile not found.");
+      }
+
+      logger.error({ err: error, userId }, "❌ Profile update failed.");
       throw createHttpError(500, "Could not update profile.");
     }
   }

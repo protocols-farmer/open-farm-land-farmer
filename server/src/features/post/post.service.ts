@@ -499,9 +499,24 @@ export class PostService {
     return updatedPost;
   }
 
-  public async recordPostView(userId: string, postId: string): Promise<void> {
+  public async recordPostView(
+    postId: string,
+    userId?: string,
+    anonymousId?: string,
+  ): Promise<void> {
+    if (!userId && !anonymousId) return;
+
+    const whereClause = userId
+      ? { userId_postId: { userId, postId } }
+      : {
+          anonymousVisitorId_postId: {
+            anonymousVisitorId: anonymousId!,
+            postId,
+          },
+        };
+
     const existingView = await prisma.postView.findUnique({
-      where: { userId_postId: { userId, postId } },
+      where: whereClause as any,
     });
 
     if (existingView) {
@@ -512,7 +527,13 @@ export class PostService {
     } else {
       try {
         await prisma.$transaction([
-          prisma.postView.create({ data: { userId, postId } }),
+          prisma.postView.create({
+            data: {
+              postId,
+              userId: userId ?? null,
+              anonymousVisitorId: userId ? null : (anonymousId ?? null),
+            },
+          }),
           prisma.post.update({
             where: { id: postId },
             data: { viewsCount: { increment: 1 } },

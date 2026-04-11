@@ -65,10 +65,19 @@ export const postApiSlice = createApi({
           : [{ type: "Posts", id: "LIST" }],
     }),
 
+    // ... inside postApiSlice.ts
     getPostById: builder.query<PostDto, string>({
       query: (postId) => `/posts/${postId}`,
-      transformResponse: (response: GetPostApiResponse) => response.data,
-      providesTags: (result, error, id) => [{ type: "Post", id }],
+      transformResponse: (response: GetPostApiResponse) => {
+        return response.data;
+      },
+      providesTags: (result, error, arg) =>
+        result
+          ? [
+              { type: "Post", id: result.id }, // The UUID from the DB (crucial for mutations)
+              { type: "Post", id: arg }, // The ID or Slug used in the URL
+            ]
+          : [{ type: "Post", id: arg }],
     }),
 
     // =================================================================

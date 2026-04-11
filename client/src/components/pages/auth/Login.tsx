@@ -10,7 +10,7 @@ import {
   AlertCircle,
   CheckCircle,
   Info,
-  Ban, // 🚜 ADDED: Ban icon for the suspension message
+  Ban,
 } from "lucide-react";
 import { useForm, SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -58,7 +58,20 @@ const LoginFormContent = () => {
     const error = searchParams.get("error");
     const status = searchParams.get("status");
 
-    // 🚜 ADDED: Check for the "banned" status flag from the interceptor
+    if (status === "AccountDeleted") {
+      return {
+        type: "success" as const,
+        text: "Your account has been successfully deleted. We're sorry to see you go!",
+        icon: CheckCircle,
+      };
+    }
+    if (status === "session_expired") {
+      return {
+        type: "info" as const,
+        text: "Your session has timed out. Please log in again to continue.",
+        icon: Info,
+      };
+    }
     if (status === "banned") {
       return {
         type: "error" as const,
@@ -122,7 +135,7 @@ const LoginFormContent = () => {
         password: data.password,
       }).unwrap();
 
-      window.location.assign("/");
+      window.location.assign(callbackUrl);
     } catch (error: any) {
       setSubmissionError(getApiErrorMessage(error));
     }

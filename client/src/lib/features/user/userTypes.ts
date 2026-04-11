@@ -1,6 +1,4 @@
-// =================================================================
-// FILE: src/lib/features/user/userTypes.ts
-// =================================================================
+//src/lib/features/user/userTypes.ts
 
 export enum SystemRole {
   USER = "USER",
@@ -46,11 +44,7 @@ export type SanitizedUserDto = {
 };
 
 export interface UserProfile extends SanitizedUserDto {
-  _count: {
-    followers: number;
-    following: number;
-    posts: number;
-  };
+  postsCount: number;
   isFollowedByCurrentUser: boolean;
 }
 

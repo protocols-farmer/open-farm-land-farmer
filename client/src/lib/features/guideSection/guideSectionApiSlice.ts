@@ -1,6 +1,3 @@
-// =================================================================
-// FILE: src/lib/features/guideSection/guideSectionApiSlice.ts
-// =================================================================
 import { createApi } from "@reduxjs/toolkit/query/react";
 import { baseQueryWithReauth } from "../../api/baseQueryWithReauth";
 import { postApiSlice } from "../post/postApiSlice";
@@ -9,6 +6,8 @@ import { GuideSectionApiResponse } from "./guideTypes";
 export const guideSectionApiSlice = createApi({
   reducerPath: "guideSectionApi",
   baseQuery: baseQueryWithReauth,
+  // 🚜 REQUIRED: Enables tag invalidation to fix the Reload Bug
+  tagTypes: ["Post"],
   endpoints: (builder) => ({
     addGuideSection: builder.mutation<
       GuideSectionApiResponse,
@@ -19,6 +18,10 @@ export const guideSectionApiSlice = createApi({
         method: "POST",
         body: formData,
       }),
+      // 🚜 FIX: Safety net refetch if manual update misses the cache key
+      invalidatesTags: (result, error, { postId }) => [
+        { type: "Post", id: postId },
+      ],
       async onQueryStarted({ postId }, { dispatch, queryFulfilled }) {
         try {
           const { data: result } = await queryFulfilled;
@@ -28,20 +31,31 @@ export const guideSectionApiSlice = createApi({
               postId,
               (draft) => {
                 const step = draft.steps.find(
-                  (s) => s.id === result.data.stepId
+                  (s) => s.id === result.data.stepId,
                 );
                 if (step) {
-                  step.sections.push(result.data);
-                  step.sections.sort((a, b) => a.order - b.order);
+                  if (!step.sections) step.sections = [];
+                  // Prevent duplicate entries if refetch happens simultaneously
+                  const exists = step.sections.find(
+                    (sec) => sec.id === result.data.id,
+                  );
+                  if (!exists) {
+                    step.sections.push(result.data);
+                    step.sections.sort((a, b) => a.order - b.order);
+                  }
                 }
-              }
-            )
+              },
+            ),
           );
         } catch (error) {
-          console.error("Failed to add section:", error);
+          console.error(
+            "Manual cache update failed for addGuideSection:",
+            error,
+          );
         }
       },
     }),
+
     updateGuideSection: builder.mutation<
       GuideSectionApiResponse,
       { sectionId: string; postId: string; formData: FormData }
@@ -51,6 +65,10 @@ export const guideSectionApiSlice = createApi({
         method: "PUT",
         body: formData,
       }),
+      // 🚜 FIX: Safety net refetch
+      invalidatesTags: (result, error, { postId }) => [
+        { type: "Post", id: postId },
+      ],
       async onQueryStarted({ postId }, { dispatch, queryFulfilled }) {
         try {
           const { data: result } = await queryFulfilled;
@@ -60,25 +78,30 @@ export const guideSectionApiSlice = createApi({
               postId,
               (draft) => {
                 const step = draft.steps.find(
-                  (s) => s.id === result.data.stepId
+                  (s) => s.id === result.data.stepId,
                 );
                 if (step) {
                   const sectionIndex = step.sections.findIndex(
-                    (sec) => sec.id === result.data.id
+                    (sec) => sec.id === result.data.id,
                   );
                   if (sectionIndex !== -1) {
-                    step.sections[sectionIndex] = result.data;
+                    // Use Object.assign to merge updates and preserve fields
+                    Object.assign(step.sections[sectionIndex], result.data);
+                    step.sections.sort((a, b) => a.order - b.order);
                   }
-                  step.sections.sort((a, b) => a.order - b.order);
                 }
-              }
-            )
+              },
+            ),
           );
         } catch (error) {
-          console.error("Failed to update section:", error);
+          console.error(
+            "Manual cache update failed for updateGuideSection:",
+            error,
+          );
         }
       },
     }),
+
     deleteGuideSection: builder.mutation<
       void,
       { sectionId: string; postId: string }
@@ -87,22 +110,26 @@ export const guideSectionApiSlice = createApi({
         url: `/sections/${sectionId}`,
         method: "DELETE",
       }),
+      // 🚜 FIX: Safety net refetch
+      invalidatesTags: (result, error, { postId }) => [
+        { type: "Post", id: postId },
+      ],
       async onQueryStarted(
         { postId, sectionId },
-        { dispatch, queryFulfilled }
+        { dispatch, queryFulfilled },
       ) {
         const patchResult = dispatch(
           postApiSlice.util.updateQueryData("getPostById", postId, (draft) => {
             for (const step of draft.steps) {
               const sectionIndex = step.sections.findIndex(
-                (s) => s.id === sectionId
+                (s) => s.id === sectionId,
               );
               if (sectionIndex !== -1) {
                 step.sections.splice(sectionIndex, 1);
                 break;
               }
             }
-          })
+          }),
         );
         try {
           await queryFulfilled;

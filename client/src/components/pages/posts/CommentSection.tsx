@@ -4,7 +4,12 @@
 import React from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { MessageSquare, Loader2, AlertCircle } from "lucide-react";
+import {
+  MessageSquare,
+  Loader2,
+  AlertCircle,
+  AlertTriangle,
+} from "lucide-react";
 import {
   useGetCommentsForPostQuery,
   useCreateCommentOnPostMutation,
@@ -67,8 +72,11 @@ const CommentSection: React.FC<CommentSectionProps> = ({
 
   if (isError) {
     return (
-      <Alert variant="destructive" className="mt-8">
-        <AlertCircle className="h-5 w-5" />
+      <Alert
+        variant="destructive"
+        className="rounded-none border-3 border-double"
+      >
+        <AlertTriangle className="h-5 w-5" />
         <AlertTitle>Error Loading Comments</AlertTitle>
         <AlertDescription>
           {(error as any)?.data?.message || "An unknown error occurred."}
@@ -81,49 +89,48 @@ const CommentSection: React.FC<CommentSectionProps> = ({
   const pagination = commentsResponse?.pagination;
 
   return (
-    <section aria-labelledby="comments-heading" className="mt-10 pt-8 border-t">
-      <h2
-        id="comments-heading"
-        className="text-2xl font-bold mb-6 flex items-center gap-3"
-      >
-        <MessageSquare className="h-7 w-7 text-primary" />
-        Comments ({totalComments})
-      </h2>
+    <section
+      aria-labelledby="comments-heading "
+      className="w-full flex flex-col gap-9"
+    >
+      <div className="bg-card border-3 border-double p-3 ">
+        {currentUser ? (
+          <CommentForm
+            onSubmit={handleCreateComment}
+            isLoading={isCreating}
+            submitError={(createError as any)?.data?.message}
+          />
+        ) : (
+          <Card className="text-center rounded-none border-3 border-double">
+            <CardContent className="p-6 ">
+              <p className="text-muted-foreground">
+                You are not logged in. Please{" "}
+                <Link
+                  href="/auth/login"
+                  className="text-primary font-medium underline"
+                >
+                  Log in
+                </Link>{" "}
+                to post a comment.
+              </p>
+            </CardContent>
+          </Card>
+        )}
+      </div>
 
-      {currentUser ? (
-        <CommentForm
-          onSubmit={handleCreateComment}
-          isLoading={isCreating}
-          submitError={(createError as any)?.data?.message}
-        />
-      ) : (
-        <Card className="mb-8 text-center">
-          <CardContent className="p-6">
-            <p className="text-muted-foreground">
-              <Link
-                href="/auth/login"
-                className="text-primary font-medium hover:underline"
-              >
-                Log in
-              </Link>{" "}
-              to post a comment.
-            </p>
-          </CardContent>
-        </Card>
-      )}
-
-      <div className="mt-8 space-y-6 relative">
+      <div className=" space-y-6 relative">
         {comments.length > 0 ? (
           comments.map((comment) => (
             <CommentItem key={comment.id} comment={comment} />
           ))
         ) : (
-          <p className="text-center text-muted-foreground py-8">
+          <p className="text-center text-muted-foreground ">
             Be the first to share your thoughts!
           </p>
         )}
       </div>
 
+      {/*
       {pagination && pagination.totalPages > 1 && (
         <div className="mt-8 flex justify-center items-center gap-4">
           <Button asChild variant="outline" size="sm" className="rounded-none">
@@ -150,7 +157,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({
             </Link>
           </Button>
         </div>
-      )}
+      )} */}
     </section>
   );
 };

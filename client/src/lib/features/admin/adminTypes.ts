@@ -70,13 +70,12 @@ export interface AdminUserRow {
   systemRole: SystemRole;
   status: UserStatus;
   joinedAt: string;
-  _count: {
-    posts: number;
-    comments: number;
-  };
+  postsCount: number;
+  commentsCount: number;
+  followersCount?: number;
+  followingCount?: number;
   sanctionsReceived?: AdminUserSanction[];
 }
-
 export interface AdminPostRow {
   id: string;
   title: string;
@@ -145,18 +144,17 @@ export interface AdminUpdateRow {
   };
 }
 
-// --- API Query Arguments ---
-
 export interface AdminApiQuery {
   page?: number;
   limit?: number;
   q?: string;
   sortBy?: string;
   order?: "asc" | "desc";
+  filterByRole?: SystemRole;
+  filterByStatus?: UserStatus;
   filterByCategory?: PostCategory;
-  filterByUpdateCategory?: UpdateCategory; // Added
+  filterByUpdateCategory?: UpdateCategory;
 }
-
 // --- Full API Response Shapes ---
 
 export interface PaginationInfo {

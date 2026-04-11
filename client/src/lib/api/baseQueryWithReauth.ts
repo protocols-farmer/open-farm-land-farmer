@@ -1,3 +1,4 @@
+// src/lib/api/baseQueryWithReauth.ts
 import { fetchBaseQuery } from "@reduxjs/toolkit/query";
 import type {
   BaseQueryFn,
@@ -5,67 +6,58 @@ import type {
   FetchBaseQueryError,
 } from "@reduxjs/toolkit/query";
 import { setCredentials, clearCredentials } from "../features/auth/authSlice";
-import { RootState } from "../store";
 
 let isRefreshing = false;
 
 /**
- * Custom base query that handles automatic JWT token injection
- * and manual Refresh Token Rotation.
+ * Custom base query that handles automatic secure cookie transmission
+ * and silent Refresh Token Rotation.
+ * * FIX: Removed aggressive redirects to allow guests/new users to browse freely.
  */
 export const baseQueryWithReauth: BaseQueryFn<
   string | FetchArgs,
   unknown,
   FetchBaseQueryError
 > = async (args, api, extraOptions) => {
-  const state = api.getState() as RootState;
-  const token = state.auth.token;
-
+  // 🛡️ CONFIGURATION:
+  // "credentials: include" ensures the browser automatically sends HttpOnly cookies.
   const rawBaseQuery = fetchBaseQuery({
     baseUrl: process.env.NEXT_PUBLIC_BACKEND_API_URL,
-    prepareHeaders: (headers) => {
-      if (token) {
-        headers.set("authorization", `Bearer ${token}`);
-      }
-      return headers;
-    },
     credentials: "include",
   });
 
   let result = await rawBaseQuery(args, api, extraOptions);
 
+  // 1. Handle 403 Forbidden (Permissions issue - no refresh needed)
   if (result.error && result.error.status === 403) {
     return result;
   }
 
+  // 2. Handle 401 Unauthorized (Token missing or expired)
   if (result.error && result.error.status === 401) {
     const isRefreshRequest =
       (typeof args === "string" && args.includes("/auth/refresh")) ||
       (typeof args !== "string" && args.url === "/auth/refresh");
 
     /**
-     * THE UNIVERSAL GUARD:
-     * 1. If the refresh request itself failed (401), stop immediately.
-     * 2. If no token exists in Redux, it's a guest request. Do not attempt refresh.
-     * This kills loops on the Login page AND all other pages.
+     * SCENARIO A: The Refresh Request itself failed.
+     * This happens for guests (no cookies) or users with expired sessions.
+     * We clear local state, but we DO NOT force a redirect.
      */
-    if (isRefreshRequest || !token) {
-      if (token || isRefreshRequest) {
-        api.dispatch(clearCredentials());
-
-        if (typeof window !== "undefined") {
-          const currentPath = window.location.pathname;
-          if (!currentPath.includes("/auth/login")) {
-            window.location.replace("/auth/login?status=session_expired");
-          }
-        }
-      }
+    if (isRefreshRequest) {
+      api.dispatch(clearCredentials());
       return result;
     }
 
+    /**
+     * SCENARIO B: A standard API request failed.
+     * We attempt a "Silent Refresh" in the background.
+     */
     if (!isRefreshing) {
       isRefreshing = true;
-      console.warn("Access token expired. Attempting manual refresh...");
+      console.warn(
+        "Access token expired/missing. Attempting silent refresh...",
+      );
 
       const refreshResult = await rawBaseQuery(
         { url: "/auth/refresh", method: "POST" },
@@ -74,29 +66,22 @@ export const baseQueryWithReauth: BaseQueryFn<
       );
 
       if (refreshResult.data) {
-        const data = refreshResult.data as any;
-        const newToken = data.data?.accessToken;
+        console.log(
+          "Token cookies rotated successfully. Retrying original request...",
+        );
 
-        if (newToken) {
-          console.log("Token refreshed successfully.");
-          api.dispatch(setCredentials({ token: newToken }));
+        // Signal that we are authenticated (Proof is in the new cookies)
+        api.dispatch(setCredentials());
 
-          const retryBaseQuery = fetchBaseQuery({
-            baseUrl: process.env.NEXT_PUBLIC_BACKEND_API_URL,
-            prepareHeaders: (h) => h.set("authorization", `Bearer ${newToken}`),
-            credentials: "include",
-          });
-          result = await retryBaseQuery(args, api, extraOptions);
-        }
+        // Retry the original query with the fresh cookies
+        result = await rawBaseQuery(args, api, extraOptions);
       } else {
-        console.error("Session expired or DB reset. Logging out.");
+        /**
+         * Refresh Failed: Either a new user (guest) or the session is truly dead.
+         * We clear state so the UI knows they are a guest.
+         * Navigation is left to the UI/Protected Routes.
+         */
         api.dispatch(clearCredentials());
-
-        if (typeof window !== "undefined") {
-          if (!window.location.pathname.includes("/auth/login")) {
-            window.location.replace("/auth/login?status=session_expired");
-          }
-        }
       }
       isRefreshing = false;
     }

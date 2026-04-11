@@ -49,7 +49,7 @@ export default function CommentForm({
   return (
     <form
       onSubmit={handleSubmit}
-      className={cn("space-y-3", compact ? "mt-2" : "p-4")}
+      className={cn("space-y-3 ", compact ? "mt-2" : "")}
     >
       <div className="relative">
         <Textarea
@@ -58,7 +58,7 @@ export default function CommentForm({
           placeholder={placeholder}
           rows={compact ? 2 : 3}
           maxLength={maxCharacters}
-          className="w-full resize-none pr-12 text-sm"
+          className="w-full resize-none pr-12 text-sm rounded-none border-3 border-double"
           disabled={isLoading}
           required
         />
@@ -76,7 +76,7 @@ export default function CommentForm({
         {onCancel && (
           <Button
             type="button"
-            variant="ghost"
+            variant="outline"
             size="sm"
             onClick={onCancel}
             disabled={isLoading}

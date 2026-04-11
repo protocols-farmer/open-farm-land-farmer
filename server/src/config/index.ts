@@ -57,7 +57,7 @@ interface Config {
     accessSecret: string;
     accessExpiresInSeconds: number;
     refreshSecret: string;
-    refreshExpiresInDays: number;
+    refreshExpiresInSeconds: number;
   };
   cloudinary: {
     cloudName: string;
@@ -124,8 +124,9 @@ try {
         true,
       ),
       refreshSecret: getEnvVariable("REFRESH_TOKEN_SECRET", true),
-      refreshExpiresInDays: getEnvVariableAsInt(
-        "REFRESH_TOKEN_EXPIRES_IN_DAYS",
+
+      refreshExpiresInSeconds: getEnvVariableAsInt(
+        "REFRESH_TOKEN_EXPIRES_IN_SECONDS",
         true,
       ),
     },

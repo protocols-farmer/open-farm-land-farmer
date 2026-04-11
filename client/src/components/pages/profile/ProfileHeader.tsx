@@ -126,6 +126,10 @@ export default function ProfileHeader({ user, onEdit }: ProfileHeaderProps) {
               >
                 <b className="text-xl">{user.followingCount ?? 0}</b> Following
               </button>
+
+              <span className="text-foreground">
+                <b className="text-xl">{(user as any).postsCount ?? 0}</b> Posts
+              </span>
             </div>
             <div className="flex items-center gap-6">
               {user.location && (
@@ -135,7 +139,9 @@ export default function ProfileHeader({ user, onEdit }: ProfileHeaderProps) {
               )}
               <span className="flex items-center gap-1.5">
                 <Calendar className="h-4 w-4 text-primary" /> Joined{" "}
-                {format(new Date(user.joinedAt), "MMMM yyyy")}
+                {user.joinedAt
+                  ? format(new Date(user.joinedAt), "MMMM yyyy")
+                  : "Recently"}
               </span>
             </div>
           </div>

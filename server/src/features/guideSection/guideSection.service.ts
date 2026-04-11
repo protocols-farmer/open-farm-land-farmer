@@ -78,11 +78,12 @@ class GuideSectionService {
 
   /**
    * Update an existing guide section.
+   * Handles image replacement and explicit image removal via 'removeImage' flag.
    */
   async update(
     userId: string,
     sectionId: string,
-    data: UpdateGuideSectionDto,
+    data: UpdateGuideSectionDto & { removeImage?: string },
     imageFile?: Express.Multer.File,
   ): Promise<GuideSection> {
     const guideSection = await this.verifyAuthorshipBySection(
@@ -103,7 +104,19 @@ class GuideSectionService {
       updateData.title = data.title?.trim() ? data.title : null;
     }
 
+    // 1. HANDLE EXPLICIT REMOVAL (When user clicks 'X' in UI)
+    // We check for the string "true" because Multer/FormData converts booleans to strings.
+    if (data.removeImage === "true" && !imageFile) {
+      if (guideSection.imagePublicId) {
+        await deleteFromCloudinary(guideSection.imagePublicId);
+      }
+      updateData.imageUrl = null;
+      updateData.imagePublicId = null;
+    }
+
+    // 2. HANDLE IMAGE REPLACEMENT (New file uploaded)
     if (imageFile) {
+      // Clean up the old asset first
       if (guideSection.imagePublicId) {
         await deleteFromCloudinary(guideSection.imagePublicId);
       }
@@ -117,7 +130,6 @@ class GuideSectionService {
       data: updateData,
     });
   }
-
   /**
    * Delete a guide section.
    */

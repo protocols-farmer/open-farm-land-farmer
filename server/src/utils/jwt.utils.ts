@@ -29,17 +29,14 @@ export const generateAccessToken = (user: User): string => {
   });
 };
 
-/**
- * Generates and stores a refresh token.
- * Uses ExtendedTransactionClient to remain compatible with your extended Prisma instance.
- */
 export const generateAndStoreRefreshToken = async (
   userId: string,
   tx: ExtendedTransactionClient = prisma,
 ): Promise<{ token: string; expiresAt: Date }> => {
   const jti = crypto.randomUUID();
-  const expiresAt = new Date();
-  expiresAt.setDate(expiresAt.getDate() + config.jwt.refreshExpiresInDays);
+
+  const expiresInSeconds = config.jwt.refreshExpiresInSeconds;
+  const expiresAt = new Date(Date.now() + expiresInSeconds * 1000);
 
   await tx.refreshToken.create({
     data: { jti, userId, expiresAt },
@@ -49,14 +46,13 @@ export const generateAndStoreRefreshToken = async (
     { id: userId, type: "refresh" },
     config.jwt.refreshSecret,
     {
-      expiresIn: `${config.jwt.refreshExpiresInDays}d`,
+      expiresIn: expiresInSeconds,
       jwtid: jti,
     },
   );
 
   return { token, expiresAt };
 };
-
 export const verifyAndValidateRefreshToken = async (
   token: string,
 ): Promise<DecodedRefreshTokenPayload> => {

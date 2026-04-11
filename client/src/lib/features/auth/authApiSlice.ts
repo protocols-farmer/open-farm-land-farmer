@@ -1,5 +1,4 @@
 //src/lib/features/auth/authApiSlice.ts
-
 import { createApi } from "@reduxjs/toolkit/query/react";
 import { baseQueryWithReauth } from "../../api/baseQueryWithReauth";
 import { setCredentials, clearCredentials } from "./authSlice";
@@ -8,10 +7,9 @@ import type {
   SignUpInputDto,
   ChangePasswordInputDto,
   LoginApiResponse,
-  ForgotPasswordInputDto, // NEW
-  ResetPasswordInputDto, // NEW
-  VerifyEmailInputDto, // NEW
-  GeneralAuthResponse, // NEW
+  ForgotPasswordInputDto,
+  ResetPasswordInputDto,
+  GeneralAuthResponse,
 } from "./authTypes";
 
 export const authApiSlice = createApi({
@@ -20,6 +18,7 @@ export const authApiSlice = createApi({
   endpoints: (builder) => ({
     /**
      * Standard Email/Password Login
+     * The backend now sets the Access and Refresh tokens via HttpOnly cookies.
      */
     login: builder.mutation<LoginApiResponse, LoginInputDto>({
       query: (credentials) => ({
@@ -30,22 +29,24 @@ export const authApiSlice = createApi({
       async onQueryStarted(_, { dispatch, queryFulfilled }) {
         try {
           const { data } = await queryFulfilled;
-          const token = data?.data?.tokens?.accessToken;
 
-          if (token) {
-            dispatch(setCredentials({ token }));
+          // If the request succeeded, the cookies are already in the browser.
+          // We just signal to the authSlice that we are now authenticated.
+          if (data.status === "success") {
+            dispatch(setCredentials());
           }
         } catch (error) {
-          // Error handled by component
+          // Errors are handled by the global error handler or component
         }
       },
     }),
+
     /**
      * Standard Email/Password Signup
      */
     signup: builder.mutation<LoginApiResponse, SignUpInputDto>({
       query: (credentials) => ({
-        url: "/auth/register",
+        url: "/auth/signup",
         method: "POST",
         body: credentials,
       }),
@@ -53,18 +54,18 @@ export const authApiSlice = createApi({
         try {
           const { data } = await queryFulfilled;
 
-          const token = data?.data?.tokens?.accessToken;
-
-          if (data.status === "success" && token) {
-            dispatch(setCredentials({ token }));
+          if (data.status === "success" || data.status === "warning") {
+            dispatch(setCredentials());
           }
         } catch (error) {
-          // Error handled by component
+          // Errors handled elsewhere
         }
       },
     }),
+
     /**
      * Logout of current session
+     * The backend clearAuthCookies() will handle the cookie removal.
      */
     logout: builder.mutation<{ message: string }, void>({
       query: () => ({
@@ -75,10 +76,9 @@ export const authApiSlice = createApi({
         try {
           await queryFulfilled;
         } catch (error) {
-          // Fallback: Clear locally even if server call fails
+          // Even if the server-side logout fails, we clear local state
         } finally {
           dispatch(clearCredentials());
-          // CRITICAL: Wipe the entire API cache so the next user starts fresh
           dispatch(authApiSlice.util.resetApiState());
 
           if (typeof window !== "undefined") {
@@ -154,7 +154,6 @@ export const authApiSlice = createApi({
 
     /**
      * Verify email via token (GET)
-     * Triggered when clicking the link in the verification email
      */
     verifyEmail: builder.query<GeneralAuthResponse, string>({
       query: (token) => ({

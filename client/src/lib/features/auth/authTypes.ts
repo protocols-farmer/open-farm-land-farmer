@@ -35,14 +35,12 @@ export interface VerifyEmailInputDto {
 
 // --- API Response Shapes ---
 export interface LoginApiResponse {
-  status: "success" | "error" | "warning" | string;
+  status: "success" | "error" | "warning" | "social_account" | string;
   message: string;
   data: {
     user: SanitizedUserDto;
     tokens?: {
       accessToken: string;
-      refreshToken: string;
-      refreshTokenExpiresAt: string;
     };
   };
 }

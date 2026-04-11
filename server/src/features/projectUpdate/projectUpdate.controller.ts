@@ -1,3 +1,4 @@
+//src/features/projectUpdate/projectUpdate.controller.ts
 import { asyncHandler } from "@/middleware/asyncHandler.js";
 import { Request, Response } from "express";
 import { projectUpdateService } from "./projectUpdate.service.js";
@@ -13,15 +14,13 @@ class ProjectUpdateController {
       userId,
       postId,
       data,
-      imageFile
+      imageFile,
     );
-    res
-      .status(201)
-      .json({
-        status: "success",
-        message: "Project update added.",
-        data: newUpdate,
-      });
+    res.status(201).json({
+      status: "success",
+      message: "Project update added.",
+      data: newUpdate,
+    });
   });
 
   update = asyncHandler(async (req: Request, res: Response) => {
@@ -34,15 +33,13 @@ class ProjectUpdateController {
       userId,
       updateId,
       data,
-      imageFile
+      imageFile,
     );
-    res
-      .status(200)
-      .json({
-        status: "success",
-        message: "Project update modified.",
-        data: updated,
-      });
+    res.status(200).json({
+      status: "success",
+      message: "Project update modified.",
+      data: updated,
+    });
   });
 
   delete = asyncHandler(async (req: Request, res: Response) => {

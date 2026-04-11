@@ -12,16 +12,24 @@ export const verifyToken = asyncHandler(
   async (req: Request, _res: Response, next: NextFunction) => {
     logger.debug({ path: req.path }, "[Auth Middleware] verifyToken triggered");
 
-    const authHeader = req.headers.authorization;
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      return next(
-        createHttpError(401, "Unauthorized: No Bearer token provided."),
-      );
+    /**
+     * 🔐 TOKEN RETRIEVAL
+     * Priority 1: HttpOnly Cookie (accessToken) - New Secure Way
+     * Priority 2: Authorization Header (Bearer) - Fallback/Legacy/Postman
+     */
+    let token = req.cookies?.accessToken;
+
+    if (!token) {
+      const authHeader = req.headers.authorization;
+      if (authHeader && authHeader.startsWith("Bearer ")) {
+        token = authHeader.split(" ")[1];
+      }
     }
 
-    const token = authHeader.split(" ")[1];
     if (!token) {
-      return next(createHttpError(401, "Unauthorized: Token not found."));
+      return next(
+        createHttpError(401, "Unauthorized: No authentication token provided."),
+      );
     }
 
     try {
@@ -61,11 +69,7 @@ export const verifyToken = asyncHandler(
         return next(createHttpError(401, "Unauthorized: User not found."));
       }
 
-      // 🚜 CHANGE 2: Removed the Auto-Restore $transaction database writes
-
       if (userFromDb.status !== "ACTIVE") {
-        // Allow specific routes for suspended/banned users so the frontend can render the SanctionGuard
-        // and allow the user to logout or appeal their ban.
         const allowedPaths = ["/user/me", "/appeals", "/auth/logout"];
         const isAllowed = allowedPaths.some(
           (path) => req.originalUrl.includes(path) || req.path.includes(path),
@@ -84,20 +88,20 @@ export const verifyToken = asyncHandler(
         }
       }
 
-      // 🚜 CHANGE 3: Simplified the req.user object (No activeSanction passed here)
+      // 🚜 CHANGE 3: Simplified the req.user object
       req.user = {
         id: userFromDb.id,
-        systemRole: userFromDb.systemRole,
-        username: userFromDb.username,
         name: userFromDb.name,
-        profileImage: userFromDb.profileImage || "",
-        bannerImage: userFromDb.bannerImage || "",
-        status: userFromDb.status,
+        username: userFromDb.username,
         email: userFromDb.email,
         isEmailVerified: userFromDb.isEmailVerified,
-        bio: userFromDb.bio || "",
-        title: userFromDb.title || "",
-        location: userFromDb.location || "",
+        profileImage: userFromDb.profileImage,
+        bannerImage: userFromDb.bannerImage,
+        bio: userFromDb.bio,
+        title: userFromDb.title,
+        location: userFromDb.location,
+        systemRole: userFromDb.systemRole,
+        status: userFromDb.status,
         joinedAt: userFromDb.joinedAt,
         updatedAt: userFromDb.updatedAt,
       };
@@ -116,19 +120,20 @@ export const verifyToken = asyncHandler(
 
 /**
  * 🚜 OPTIONAL AUTH: The "Soft Guard"
- * Validates the token if present to populate req.user, but allows
- * guests (no token) to proceed without a 401 error.
+ * Now also checks cookies for the token to populate guest state.
  */
 export const optionalVerifyToken = asyncHandler(
   async (req: Request, _res: Response, next: NextFunction) => {
-    const authHeader = req.headers.authorization;
+    // Check cookie first, then header
+    let token = req.cookies?.accessToken;
 
-    // If no token, just proceed as guest
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      return next();
+    if (!token) {
+      const authHeader = req.headers.authorization;
+      if (authHeader && authHeader.startsWith("Bearer ")) {
+        token = authHeader.split(" ")[1];
+      }
     }
 
-    const token = authHeader.split(" ")[1];
     if (!token) return next();
 
     try {
@@ -146,24 +151,23 @@ export const optionalVerifyToken = asyncHandler(
       if (userFromDb && userFromDb.status === "ACTIVE") {
         req.user = {
           id: userFromDb.id,
-          systemRole: userFromDb.systemRole,
-          username: userFromDb.username,
           name: userFromDb.name,
-          profileImage: userFromDb.profileImage || "",
-          bannerImage: userFromDb.bannerImage || "",
-          status: userFromDb.status,
+          username: userFromDb.username,
           email: userFromDb.email,
           isEmailVerified: userFromDb.isEmailVerified,
-          bio: userFromDb.bio || "",
-          title: userFromDb.title || "",
-          location: userFromDb.location || "",
+          profileImage: userFromDb.profileImage,
+          bannerImage: userFromDb.bannerImage,
+          bio: userFromDb.bio,
+          title: userFromDb.title,
+          location: userFromDb.location,
+          systemRole: userFromDb.systemRole,
+          status: userFromDb.status,
           joinedAt: userFromDb.joinedAt,
           updatedAt: userFromDb.updatedAt,
         };
       }
       next();
     } catch (err) {
-      // Token exists but is invalid/expired; we still let them through as a guest
       next();
     }
   },

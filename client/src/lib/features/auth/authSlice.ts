@@ -1,15 +1,16 @@
 //src/lib/features/auth/authSlice.ts
-import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { authStorage } from "@/lib/auth/authStorage";
+import { createSlice } from "@reduxjs/toolkit";
 
 interface AuthState {
-  token: string | null;
   isAuthenticated: boolean;
+
+  /**
+   * Tracks if the application has finished its initial session check.
+   */
   isHydrated: boolean;
 }
 
 const initialState: AuthState = {
-  token: null,
   isAuthenticated: false,
   isHydrated: false,
 };
@@ -19,36 +20,30 @@ const authSlice = createSlice({
   initialState,
   reducers: {
     /**
-     * Updates the access token in both Redux and LocalStorage.
-     * Also marks hydration as complete.
+     * Marks the user as logged in.
+     * The actual "proof" of authentication is the HttpOnly cookie
+     * stored in the browser, not a string in Redux.
      */
-    setCredentials(state, action: PayloadAction<{ token: string | null }>) {
-      const { token } = action.payload;
-      state.token = token;
-      state.isAuthenticated = !!token;
+    setCredentials(state) {
+      state.isAuthenticated = true;
       state.isHydrated = true;
-
-      if (token) {
-        authStorage.setToken(token);
-      }
     },
 
     /**
-     * Specifically used during app boot if no token is found,
-     * to signal that the initial check is finished.
+     * Signals that the app boot process (session check) is complete,
+     * regardless of whether the user is logged in or a guest.
      */
     completeHydration(state) {
       state.isHydrated = true;
     },
 
     /**
-     * Clears all authentication state.
+     * Clears local authentication flags.
+     * Note: The server-side cookies are cleared via the logout API call.
      */
     clearCredentials(state) {
-      state.token = null;
       state.isAuthenticated = false;
       state.isHydrated = true;
-      authStorage.clearStorage();
     },
   },
 });
@@ -56,8 +51,7 @@ const authSlice = createSlice({
 export const { setCredentials, clearCredentials, completeHydration } =
   authSlice.actions;
 
-export const selectCurrentToken = (state: { auth: AuthState }) =>
-  state.auth.token;
+// Selectors
 export const selectIsAuthenticated = (state: { auth: AuthState }) =>
   state.auth.isAuthenticated;
 export const selectIsHydrated = (state: { auth: AuthState }) =>

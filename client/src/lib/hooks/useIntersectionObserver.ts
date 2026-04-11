@@ -1,3 +1,4 @@
+//src/lib/hooks/useIntersectionObserver.tsa
 import { useEffect, useState, useCallback } from "react";
 
 interface UseIntersectionObserverProps {
@@ -13,8 +14,6 @@ export const useIntersectionObserver = ({
   rootMargin = "200px",
   threshold = 0.1,
 }: UseIntersectionObserverProps) => {
-  // 🚜 CHANGE: Use state instead of useRef. This forces a re-render
-  // and re-runs the useEffect when the DOM element actually attaches.
   const [target, setTarget] = useState<HTMLDivElement | null>(null);
 
   const observerCallback = useCallback(
@@ -28,7 +27,6 @@ export const useIntersectionObserver = ({
   );
 
   useEffect(() => {
-    // 🚜 Now 'target' will safely trigger this effect once it's set
     if (!enabled || !target) return;
 
     const observer = new IntersectionObserver(observerCallback, {
@@ -42,8 +40,7 @@ export const useIntersectionObserver = ({
     return () => {
       observer.unobserve(target);
     };
-  }, [enabled, rootMargin, threshold, observerCallback, target]); // 🚜 target added to dependencies
+  }, [enabled, rootMargin, threshold, observerCallback, target]);
 
-  // Return the state setter. React will call this function with the DOM node when it renders.
   return setTarget;
 };

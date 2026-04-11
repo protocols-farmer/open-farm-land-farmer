@@ -4,31 +4,24 @@ import { Request, Response } from "express";
 import { authService } from "./auth.service.js";
 import { config } from "@/config/index.js";
 import { createHttpError } from "@/utils/error.factory.js";
+import {
+  setAuthCookies, // Updated Helper
+  clearAuthCookies, // Updated Helper
+} from "@/utils/cookie.utils.js";
 
 class AuthController {
   /**
-   * REFINED: Centralized helper to manage the refresh token cookie.
-   * This ensures consistency across all auth methods.
-   */
-  private setRefreshTokenCookie(res: Response, token: string, expiresAt: Date) {
-    res.cookie(config.cookies.refreshTokenName, token, {
-      httpOnly: true,
-      secure: config.nodeEnv === "production",
-      sameSite: "strict",
-      expires: expiresAt,
-    });
-  }
-
-  /**
-   * Scenario Fix: Handle 'USER_CREATED_BUT_EMAIL_FAILED'
-   * Updated: Now reflects the "Welcome Guide" flow instead of the "Verification Link" flow.
+   * Scenario: Standard Email/Password Registration.
+   * Updates: Sets both Access and Refresh cookies; removes tokens from JSON body.
    */
   signup = asyncHandler(async (req: Request, res: Response) => {
     try {
       const { user, tokens } = await authService.registerUser(req.body);
 
-      this.setRefreshTokenCookie(
+      // Set both cookies securely
+      setAuthCookies(
         res,
+        tokens.accessToken,
         tokens.refreshToken,
         tokens.refreshTokenExpiresAt,
       );
@@ -37,10 +30,9 @@ class AuthController {
         status: "success",
         message:
           "Welcome to the guild! We've sent a quick start guide to your inbox. Please check it out to begin your journey.",
-        data: { user, tokens },
+        data: { user }, // 🛡️ Tokens removed
       });
     } catch (error: any) {
-      // 🚜 Scenario: Account created, but Welcome Email failed to send
       if (error.message === "USER_CREATED_BUT_EMAIL_FAILED") {
         return res.status(201).json({
           status: "warning",
@@ -51,11 +43,18 @@ class AuthController {
       throw error;
     }
   });
+
+  /**
+   * Scenario: Standard Login.
+   * Updates: Sets both cookies; removes tokens from JSON body.
+   */
   login = asyncHandler(async (req: Request, res: Response) => {
     const { user, tokens } = await authService.loginUser(req.body);
 
-    this.setRefreshTokenCookie(
+    // Set both cookies securely
+    setAuthCookies(
       res,
+      tokens.accessToken,
       tokens.refreshToken,
       tokens.refreshTokenExpiresAt,
     );
@@ -63,24 +62,30 @@ class AuthController {
     res.status(200).json({
       status: "success",
       message: "Logged in successfully.",
-      data: { user, tokens },
+      data: { user }, // 🛡️ Tokens removed
     });
   });
 
+  /**
+   * Scenario: Token Rotation (Silent Refresh).
+   * Updates: Rotates BOTH cookies; removes accessToken from JSON body.
+   */
   refreshAccessToken = asyncHandler(async (req: Request, res: Response) => {
     const incomingRefreshToken =
       req.cookies?.[config.cookies.refreshTokenName] || req.body?.refreshToken;
 
     if (!incomingRefreshToken) {
-      res.clearCookie(config.cookies.refreshTokenName);
       throw createHttpError(401, "No refresh token provided.");
     }
+
     try {
       const { newAccessToken, newRefreshToken, newRefreshTokenExpiresAt } =
         await authService.handleRefreshTokenRotation({ incomingRefreshToken });
 
-      this.setRefreshTokenCookie(
+      // Rotate both cookies
+      setAuthCookies(
         res,
+        newAccessToken,
         newRefreshToken,
         newRefreshTokenExpiresAt,
       );
@@ -88,49 +93,55 @@ class AuthController {
       res.status(200).json({
         status: "success",
         message: "Token refreshed successfully.",
-        data: {
-          accessToken: newAccessToken,
-          refreshToken: newRefreshToken,
-        },
+        data: {}, // 🛡️ AccessToken removed
       });
     } catch (error) {
-      res.clearCookie(config.cookies.refreshTokenName, {
-        httpOnly: true,
-        secure: config.nodeEnv === "production",
-        sameSite: "strict",
-      });
-
+      // If refresh fails, wipe any stale credentials immediately
+      clearAuthCookies(res);
       throw error;
     }
   });
 
+  /**
+   * Scenario: Logout of current session.
+   * Updates: Uses unified clearAuthCookies.
+   */
   logout = asyncHandler(async (req: Request, res: Response) => {
     const incomingRefreshToken = req.cookies[config.cookies.refreshTokenName];
     await authService.handleUserLogout({ incomingRefreshToken });
 
-    res.clearCookie(config.cookies.refreshTokenName);
+    clearAuthCookies(res);
     res
       .status(200)
       .json({ status: "success", message: "Logged out successfully." });
   });
 
+  /**
+   * Scenario: Google/GitHub OAuth.
+   * Updates: Sets both cookies; removes tokens from JSON body.
+   */
   handleOAuth = asyncHandler(async (req: Request, res: Response) => {
     const { user, tokens } = await authService.findOrCreateOAuthUser(req.body);
 
-    this.setRefreshTokenCookie(
+    setAuthCookies(
       res,
+      tokens.accessToken,
       tokens.refreshToken,
       tokens.refreshTokenExpiresAt,
     );
 
-    res.status(200).json({ status: "success", data: { user, tokens } });
+    res.status(200).json({ status: "success", data: { user } }); // 🛡️ Tokens removed
   });
 
+  /**
+   * Scenario: Password Change.
+   * Updates: Clears cookies (requires fresh login with new password).
+   */
   changePassword = asyncHandler(async (req: Request, res: Response) => {
     const userId = req.user!.id;
     await authService.changeUserPassword(userId, req.body);
 
-    res.clearCookie(config.cookies.refreshTokenName);
+    clearAuthCookies(res);
     res.status(200).json({
       status: "success",
       message:
@@ -138,11 +149,15 @@ class AuthController {
     });
   });
 
+  /**
+   * Scenario: Security Logout (All devices).
+   * Updates: Uses unified clearAuthCookies.
+   */
   logoutAll = asyncHandler(async (req: Request, res: Response) => {
     const userId = req.user!.id;
     await authService.revokeAllRefreshTokensForUser(userId);
 
-    res.clearCookie(config.cookies.refreshTokenName);
+    clearAuthCookies(res);
     res.status(200).json({
       status: "success",
       message: "Successfully logged out of all devices.",
@@ -150,8 +165,7 @@ class AuthController {
   });
 
   /**
-   * Scenario Fix: Handle SOCIAL_ACCOUNT_DETECTED.
-   * Catches the 400 from service and returns a specific status for the frontend.
+   * Scenario: Forgot Password request.
    */
   forgotPassword = asyncHandler(async (req: Request, res: Response) => {
     const { email } = req.body;
@@ -166,7 +180,6 @@ class AuthController {
           "If an account exists with that email, a reset link has been sent.",
       });
     } catch (error: any) {
-      // 🚜 Scenario: User signed up with Google/Github
       if (error.message === "SOCIAL_ACCOUNT_DETECTED") {
         return res.status(400).json({
           status: "social_account",
@@ -188,9 +201,15 @@ class AuthController {
     }
   });
 
+  /**
+   * Scenario: Resetting password via email link.
+   * Updates: Clears cookies after reset to ensure a fresh session.
+   */
   resetPassword = asyncHandler(async (req: Request, res: Response) => {
     const { token, password } = req.body;
     await authService.resetUserPassword(token, password);
+
+    clearAuthCookies(res);
 
     res.status(200).json({
       status: "success",
@@ -199,6 +218,9 @@ class AuthController {
     });
   });
 
+  /**
+   * Scenario: Email verification link.
+   */
   verifyEmail = asyncHandler(async (req: Request, res: Response) => {
     const { token } = req.query;
     if (typeof token !== "string") throw createHttpError(400, "Invalid token.");
@@ -212,7 +234,7 @@ class AuthController {
   });
 
   /**
-   * Scenario Fix: Rate Limiting & Already Verified feedback.
+   * Scenario: Resending the verification link.
    */
   resendVerification = asyncHandler(async (req: Request, res: Response) => {
     const userId = req.user!.id;
@@ -225,7 +247,6 @@ class AuthController {
         message: "A fresh verification link has been sent to your inbox.",
       });
     } catch (error: any) {
-      // 🚜 Scenario: User clicked 'resend' but they are already verified
       if (error.message === "ALREADY_VERIFIED") {
         return res.status(200).json({
           status: "success",
@@ -233,8 +254,6 @@ class AuthController {
         });
       }
 
-      // 🚜 Scenario: Rate limiter caught them (This usually happens in middleware,
-      // but we handle the error message here if it propagates)
       if (error.statusCode === 429) {
         const retryAfter = res.getHeader("Retry-After") || "a few";
         throw createHttpError(

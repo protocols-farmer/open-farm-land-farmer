@@ -1,5 +1,5 @@
 //src/app/(app)/guides/[slug]/page.tsx
-import GuideDetails from "@/components/pages/lessons/GuideDetails";
+import GuideDetails from "@/components/pages/guides/GuideDetails";
 
 async function GuideDetailsPage({
   params,

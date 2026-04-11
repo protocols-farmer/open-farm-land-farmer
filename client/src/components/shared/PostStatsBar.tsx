@@ -1,3 +1,4 @@
+//src/components/shared/PostStatsBar.tsx
 "use client";
 
 import {

@@ -166,28 +166,27 @@ export default function CommentItem({ comment }: CommentItemProps) {
   }, [comment.text]);
 
   return (
-    <div className="flex items-start space-x-3">
+    <div className="flex items-start gap-3 bg-card border-3 border-double p-3 rounded-none">
       <Link href={`/profile/${comment.author?.username}`}>
-        <Avatar className="h-8 w-8 hover:opacity-80 transition-opacity">
+        <Avatar className="h-8 w-8 hover:opacity-80 transition-opacity rounded-none border-3 border-double">
           <AvatarImage src={comment.author?.profileImage || undefined} />
-          <AvatarFallback>
-            {comment.author?.username?.charAt(0).toUpperCase()}
-          </AvatarFallback>
+          <AvatarFallback>{comment.author?.username?.charAt(0)}</AvatarFallback>
         </Avatar>
       </Link>
 
       <div className="flex-1">
-        <div className="bg-muted  px-4 py-2">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
+        <div className=" ">
+          <div className="flex  justify-between">
+            <div className="flex items-center gap-3 ">
               <Link
                 href={`/profile/${comment.author?.username}`}
-                className="font-semibold text-sm hover:text-primary transition-colors"
+                className="font-bold text-sm hover:text-primary transition-colors"
               >
                 {comment.author?.username || "Anonymous"}
               </Link>
               <p className="text-xs text-muted-foreground">{timeAgo}</p>
             </div>
+
             {isOwner && !isEditing && (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -196,23 +195,26 @@ export default function CommentItem({ comment }: CommentItemProps) {
                     size="icon"
                     className="h-7 w-7 rounded-none"
                   >
-                    <MoreHorizontal className="h-4 w-4" />
+                    <MoreHorizontal className="h-3 w-3" />
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent>
-                  <DropdownMenuItem onClick={() => setIsEditing(true)}>
+                <DropdownMenuContent className="rounded-none border-3 border-double">
+                  <DropdownMenuItem
+                    onClick={() => setIsEditing(true)}
+                    className="font-bold"
+                  >
                     <Edit className="mr-2 h-4 w-4" /> Edit
                   </DropdownMenuItem>
                   <AlertDialog>
                     <AlertDialogTrigger asChild>
                       <DropdownMenuItem
                         onSelect={(e) => e.preventDefault()}
-                        className="text-destructive focus:text-destructive"
+                        className="text-destructive focus:text-destructive font-bold"
                       >
                         <Trash2 className="mr-2 h-4 w-4" /> Delete
                       </DropdownMenuItem>
                     </AlertDialogTrigger>
-                    <AlertDialogContent>
+                    <AlertDialogContent className="rounded-none border-3 border-double">
                       <AlertDialogHeader>
                         <AlertDialogTitle>Delete Comment?</AlertDialogTitle>
                         <AlertDialogDescription>
@@ -220,10 +222,12 @@ export default function CommentItem({ comment }: CommentItemProps) {
                         </AlertDialogDescription>
                       </AlertDialogHeader>
                       <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogCancel className="font-bold rounded-none text-primary">
+                          Cancel
+                        </AlertDialogCancel>
                         <AlertDialogAction
                           onClick={handleDelete}
-                          className="bg-destructive hover:bg-destructive/90"
+                          className="bg-destructive hover:bg-destructive/90 font-bold rounded-none text-primary"
                           disabled={isDeleting}
                         >
                           {isDeleting && (
@@ -249,7 +253,7 @@ export default function CommentItem({ comment }: CommentItemProps) {
               compact
             />
           ) : (
-            <p className="text-sm mt-1 whitespace-pre-wrap">{processedText}</p>
+            <p className="text-sm">{processedText}</p>
           )}
         </div>
 
@@ -333,7 +337,7 @@ export default function CommentItem({ comment }: CommentItemProps) {
           >
             <ChevronDown
               className={cn(
-                "h-4 w-4 mr-1 transition-transform",
+                "h-3 w-3 mr-1 transition-transform",
                 showReplies && "rotate-180",
               )}
             />

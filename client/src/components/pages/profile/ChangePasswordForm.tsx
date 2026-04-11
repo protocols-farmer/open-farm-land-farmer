@@ -32,8 +32,7 @@ import {
   Info,
   LogOut,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
-
+import { cn, getApiErrorMessage } from "@/lib/utils";
 export default function ChangePasswordForm() {
   const [changePassword, { isLoading }] = useChangePasswordMutation();
   const [logout] = useLogoutMutation();
@@ -70,7 +69,10 @@ export default function ChangePasswordForm() {
     } catch (err: any) {
       setUiMessage({
         type: "error",
-        text: err?.data?.message || "Verification of current password failed.",
+        text: getApiErrorMessage(
+          err,
+          "Verification of current password failed.",
+        ),
       });
     }
   };

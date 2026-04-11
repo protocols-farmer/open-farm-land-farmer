@@ -27,7 +27,7 @@ export interface SanitizedUser {
 declare global {
   namespace Express {
     interface Request {
-      user?: SanitizedUser | UserJWTPayload | null;
+      user?: SanitizedUser | null;
     }
   }
 }

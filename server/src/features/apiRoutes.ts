@@ -1,6 +1,5 @@
 //apiRoutes
 import { Router } from "express";
-import { deserializeUser } from "./post/deserializeUser.js";
 import authRoutes from "./auth/auth.routes.js";
 import userRoutes from "./user/user.routes.js";
 import postRoutes from "./post/post.routes.js";
@@ -20,7 +19,6 @@ import settingsRoutes from "./settings/settings.routes.js";
 import appealRoutes from "../features/appeals/appeal.routes.js";
 
 const router: Router = Router();
-router.use(deserializeUser);
 
 router.get("/health", (_req, res) => {
   res

@@ -39,7 +39,9 @@ export const adminApiSlice = createApi({
       query: (args) => {
         const params = new URLSearchParams();
         Object.entries(args).forEach(([key, value]) => {
-          if (value) params.append(key, String(value));
+          if (value !== undefined && value !== null && value !== "") {
+            params.append(key, String(value));
+          }
         });
         return `/admin/users?${params.toString()}`;
       },

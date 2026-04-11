@@ -98,7 +98,7 @@ export default function ProjectJourneyTab({
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   // State to hold the update being edited. If null, dialog is in "create" mode.
   const [editingUpdate, setEditingUpdate] = useState<ProjectUpdateDto | null>(
-    null
+    null,
   );
 
   // RTK Query mutation hooks

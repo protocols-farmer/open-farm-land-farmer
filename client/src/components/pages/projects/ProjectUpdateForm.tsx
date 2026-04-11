@@ -1,21 +1,20 @@
-//src/components/pages/projects/ProjectUpdateForm.tsx
 "use client";
 
-import React from "react";
-import { useForm } from "react-hook-form";
+import React, { useState, useEffect } from "react";
+import { useForm, Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
-  projectUpdateSchema,
-  ProjectUpdateFormValues,
+  createProjectUpdateSchema,
+  updateProjectUpdateSchema,
+  CreateProjectUpdateValues,
+  UpdateProjectUpdateValues,
 } from "@/lib/schemas/projectUpdate.schemas";
 
-// === UPDATED: Import categories from the types file ===
 import {
   ProjectUpdateDto,
   projectUpdateCategories,
 } from "@/lib/features/projectUpdate/projectUpdateTypes";
 
-// Other imports
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -34,7 +33,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Loader2 } from "lucide-react";
+import { Loader2, ImageIcon, X, Eye } from "lucide-react";
+import NextImage from "next/image";
+import { cn } from "@/lib/utils";
+
+// Define a local type to track the removal flag in the form state
+type ProjectFormValues = (
+  | CreateProjectUpdateValues
+  | UpdateProjectUpdateValues
+) & {
+  removeImage?: string;
+};
 
 interface ProjectUpdateFormProps {
   mode: "create" | "edit";
@@ -51,8 +60,12 @@ export default function ProjectUpdateForm({
   isSubmitting,
   onCancel,
 }: ProjectUpdateFormProps) {
-  const form = useForm<ProjectUpdateFormValues>({
-    resolver: zodResolver(projectUpdateSchema),
+  const currentSchema =
+    mode === "create" ? createProjectUpdateSchema : updateProjectUpdateSchema;
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+
+  const form = useForm<ProjectFormValues>({
+    resolver: zodResolver(currentSchema as any) as Resolver<ProjectFormValues>,
     defaultValues: {
       version: initialData?.version || "",
       title: initialData?.title || "",
@@ -61,104 +74,204 @@ export default function ProjectUpdateForm({
         ? new Date(initialData.date).toISOString().split("T")[0]
         : new Date().toISOString().split("T")[0],
       category: initialData?.category || "FEATURE",
+      image: undefined,
+      removeImage: "false",
     },
   });
 
-  const handleSubmit = (values: ProjectUpdateFormValues) => {
+  // Watchers for real-time counters
+  const versionWatch = form.watch("version") || "";
+  const titleWatch = form.watch("title") || "";
+  const descWatch = form.watch("description") || "";
+
+  // Sync image preview and form state when initialData changes
+  useEffect(() => {
+    if (initialData) {
+      setImagePreview(initialData.imageUrl || null);
+      form.reset({
+        version: initialData.version || "",
+        title: initialData.title || "",
+        description: initialData.description || "",
+        date: new Date(initialData.date).toISOString().split("T")[0],
+        category: initialData.category,
+        image: undefined,
+        removeImage: "false",
+      });
+    }
+  }, [initialData, form]);
+
+  const handleSubmit = (values: ProjectFormValues) => {
     const formData = new FormData();
-    Object.entries(values).forEach(([key, value]) => {
-      if (key !== "image") {
-        formData.append(key, value as string);
-      }
-    });
+
+    // Append text fields
+    formData.append("version", values.version || "");
+    formData.append("title", values.title || "");
+    formData.append("description", values.description || "");
+    formData.append("date", values.date || "");
+    formData.append("category", values.category || "");
+
+    // Handle Image Removal flag
+    if (values.removeImage === "true") {
+      formData.append("removeImage", "true");
+    }
+
+    // Handle New Image File
     const imageFile = values.image?.[0];
     if (imageFile instanceof File) {
       formData.append("image", imageFile);
     }
+
     onSubmit(formData);
   };
 
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Version Field */}
           <FormField
             control={form.control}
             name="version"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Version</FormLabel>
+                <div className="flex justify-between items-center">
+                  <FormLabel className="text-[10px] font-black uppercase tracking-widest">
+                    Version{" "}
+                    <span className="text-destructive font-bold">*</span>
+                  </FormLabel>
+                  <span
+                    className={cn(
+                      "text-[9px] font-bold",
+                      versionWatch.length > 45
+                        ? "text-destructive"
+                        : "text-muted-foreground",
+                    )}
+                  >
+                    {versionWatch.length} / 50
+                  </span>
+                </div>
                 <FormControl>
-                  <Input placeholder="e.g., v1.2.0" {...field} />
+                  <Input
+                    placeholder="e.g., v1.2.0"
+                    {...field}
+                    className="rounded-none border-2"
+                  />
                 </FormControl>
-                <FormMessage />
+                <FormMessage className="text-[10px] font-bold" />
               </FormItem>
             )}
           />
+
+          {/* Date Field */}
           <FormField
             control={form.control}
             name="date"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Date</FormLabel>
+                <FormLabel className="text-[10px] font-black uppercase tracking-widest">
+                  Log Date <span className="text-destructive font-bold">*</span>
+                </FormLabel>
                 <FormControl>
-                  <Input type="date" {...field} />
+                  <Input
+                    type="date"
+                    {...field}
+                    className="rounded-none border-2"
+                  />
                 </FormControl>
-                <FormMessage />
+                <FormMessage className="text-[10px] font-bold" />
               </FormItem>
             )}
           />
         </div>
+
+        {/* Title Field */}
         <FormField
           control={form.control}
           name="title"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Title</FormLabel>
+              <div className="flex justify-between items-center">
+                <FormLabel className="text-[10px] font-black uppercase tracking-widest">
+                  Headline <span className="text-destructive font-bold">*</span>
+                </FormLabel>
+                <span
+                  className={cn(
+                    "text-[9px] font-bold",
+                    titleWatch.length > 240
+                      ? "text-destructive"
+                      : "text-muted-foreground",
+                  )}
+                >
+                  {titleWatch.length} / 255
+                </span>
+              </div>
               <FormControl>
                 <Input
-                  placeholder="What's the headline for this update?"
+                  placeholder="What's the main update?"
                   {...field}
+                  className="rounded-none border-2"
                 />
               </FormControl>
-              <FormMessage />
+              <FormMessage className="text-[10px] font-bold" />
             </FormItem>
           )}
         />
+
+        {/* Description Field */}
         <FormField
           control={form.control}
           name="description"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Description</FormLabel>
+              <div className="flex justify-between items-center">
+                <FormLabel className="text-[10px] font-black uppercase tracking-widest">
+                  Technical details{" "}
+                  <span className="text-destructive font-bold">*</span>
+                </FormLabel>
+                <span
+                  className={cn(
+                    "text-[9px] font-bold",
+                    descWatch.length > 1900
+                      ? "text-destructive"
+                      : "text-muted-foreground",
+                  )}
+                >
+                  {descWatch.length.toLocaleString()} / 2,000
+                </span>
+              </div>
               <FormControl>
                 <Textarea
-                  placeholder="Describe the changes in this update..."
-                  className="min-h-[100px]"
+                  placeholder="Describe the milestone or changes..."
+                  className="min-h-[120px] rounded-none border-2"
                   {...field}
                 />
               </FormControl>
-              <FormMessage />
+              <FormMessage className="text-[10px] font-bold" />
             </FormItem>
           )}
         />
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Category Field */}
           <FormField
             control={form.control}
             name="category"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Category</FormLabel>
+                <FormLabel className="text-[10px] font-black uppercase tracking-widest">
+                  Update Type{" "}
+                  <span className="text-destructive font-bold">*</span>
+                </FormLabel>
                 <Select
                   onValueChange={field.onChange}
                   defaultValue={field.value}
                 >
                   <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select a category" />
+                    <SelectTrigger className="rounded-none border-2">
+                      <SelectValue placeholder="Select type" />
                     </SelectTrigger>
                   </FormControl>
-                  <SelectContent>
+                  <SelectContent className="rounded-none">
                     {projectUpdateCategories.map((cat) => (
                       <SelectItem key={cat} value={cat}>
                         {cat.replace("_", " ")}
@@ -166,41 +279,110 @@ export default function ProjectUpdateForm({
                     ))}
                   </SelectContent>
                 </Select>
-                <FormMessage />
+                <FormMessage className="text-[10px] font-bold" />
               </FormItem>
             )}
           />
+
+          {/* Image Upload Area */}
           <FormField
             control={form.control}
             name="image"
             render={({ field: { onChange, value, ...rest } }) => (
               <FormItem>
-                <FormLabel>Image (Optional)</FormLabel>
-                <FormControl>
-                  <Input
-                    type="file"
-                    accept="image/*"
-                    onChange={(e) => onChange(e.target.files)}
-                    {...rest}
-                  />
-                </FormControl>
-                <FormMessage />
+                <FormLabel className="text-[10px] font-black uppercase tracking-widest flex items-center gap-2">
+                  <ImageIcon className="h-3 w-3" /> Visual Proof (Optional)
+                </FormLabel>
+                <div className="space-y-4">
+                  {imagePreview && (
+                    <div className="relative group aspect-video w-full border-[3px] border-double border-primary/40 bg-muted overflow-hidden">
+                      <NextImage
+                        src={imagePreview}
+                        alt="Update Preview"
+                        fill
+                        className="object-cover"
+                      />
+                      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                        <Eye className="text-white h-6 w-6" />
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="flex items-center gap-2">
+                    <FormControl>
+                      <div className="relative flex-1">
+                        <Input
+                          type="file"
+                          accept="image/*"
+                          onChange={(e) => {
+                            const files = e.target.files;
+                            if (files?.length) {
+                              onChange(files);
+                              setImagePreview(URL.createObjectURL(files[0]));
+                              form.setValue("removeImage", "false");
+                            }
+                          }}
+                          className="hidden"
+                          id="update-image-upload"
+                          {...rest}
+                        />
+                        <label
+                          htmlFor="update-image-upload"
+                          className="flex items-center justify-center h-10 px-4 border-2 border-dashed cursor-pointer hover:bg-muted transition-colors text-[10px] font-black uppercase tracking-widest w-full"
+                        >
+                          {imagePreview ? "Replace Plot" : "Upload Plot"}
+                        </label>
+                      </div>
+                    </FormControl>
+                    {imagePreview && (
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        type="button"
+                        onClick={() => {
+                          setImagePreview(null);
+                          form.setValue("image", undefined);
+                          form.setValue("removeImage", "true");
+                        }}
+                        className="rounded-none border-2 h-10 w-10 text-destructive border-destructive/20 hover:bg-destructive/5"
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    )}
+                  </div>
+                </div>
+                <FormMessage className="text-[10px] font-bold" />
               </FormItem>
             )}
           />
         </div>
-        <div className="flex justify-end gap-4 pt-4">
+
+        {/* Action Buttons */}
+        <div className="flex justify-end gap-3 pt-6 border-t border-dashed">
           <Button
             type="button"
             variant="ghost"
             onClick={onCancel}
             disabled={isSubmitting}
+            className="rounded-none font-bold text-xs"
           >
             Cancel
           </Button>
-          <Button type="submit" disabled={isSubmitting}>
-            {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            {mode === "create" ? "Add Update" : "Save Changes"}
+          <Button
+            type="submit"
+            disabled={isSubmitting}
+            className="rounded-none font-black text-[10px] uppercase tracking-widest px-8 h-11"
+          >
+            {isSubmitting ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Processing
+              </>
+            ) : mode === "create" ? (
+              "Append Record"
+            ) : (
+              "Save Changes"
+            )}
           </Button>
         </div>
       </form>

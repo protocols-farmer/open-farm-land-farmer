@@ -1,15 +1,21 @@
 //src/features/user/user.routes.ts
 import { Router } from "express";
 import { userController } from "@/features/user/user.controller.js";
-import { verifyToken } from "@/middleware/auth.middleware.js";
+import {
+  verifyToken,
+  optionalVerifyToken,
+} from "@/middleware/auth.middleware.js";
 import { uploadImage } from "@/middleware/multer.config.js";
 import { validate } from "@/middleware/validate.js";
 import { updateUserProfileSchema } from "@/features/user/user.validation.js";
-import { extractUser } from "@/middleware/extractUser.js";
 
 const router: Router = Router();
 
-router.get("/profile/:username", extractUser, userController.getUserByUsername);
+router.get(
+  "/profile/:username",
+  optionalVerifyToken,
+  userController.getUserByUsername,
+);
 
 router.use(verifyToken);
 

@@ -32,10 +32,8 @@ export interface AdminDashboardStats {
 
 // Data shape for a user row
 export type AdminUserRow = SanitizedUser & {
-  _count: {
-    posts: number;
-    comments: number;
-  };
+  postsCount: number; // Flattened
+  commentsCount: number; // Flattened
   sanctionsReceived?: UserSanction[];
 };
 

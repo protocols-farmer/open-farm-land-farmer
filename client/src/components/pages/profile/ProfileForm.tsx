@@ -1,7 +1,7 @@
-//src/components/pages/profile/ProfileForm.tsx
 "use client";
 
-import React, { useState, useRef, useMemo } from "react";
+import { cn, getApiErrorMessage } from "@/lib/utils";
+import React, { useState, useRef, useEffect } from "react";
 import Image from "next/image";
 import { useForm, SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -34,20 +34,17 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogDescription,
 } from "@/components/ui/dialog";
 import { Progress } from "@/components/ui/progress";
 import {
   Camera,
   Loader2,
   Save,
-  X,
   CheckCircle,
   Info,
   ImageIcon,
 } from "lucide-react";
 import ImageCropper from "@/components/shared/ImageCropper";
-import { cn } from "@/lib/utils";
 
 interface ProfileFormProps {
   user: SanitizedUserDto;
@@ -74,17 +71,12 @@ export default function ProfileForm({
     text: string;
   } | null>(null);
 
-  const pImage = user.profileImage;
-  const bImage = user.bannerImage;
-  const uAt = user.updatedAt;
-
   const [bannerPreview, setBannerPreview] = useState<string | undefined>(
     user.bannerImage || undefined,
   );
   const [avatarPreview, setAvatarPreview] = useState<string | undefined>(
     user.profileImage || undefined,
   );
-
   const [croppingImage, setCroppingImage] = useState<{
     src: string;
     type: "profile" | "banner";
@@ -99,9 +91,11 @@ export default function ProfileForm({
   const {
     register,
     handleSubmit,
+    watch,
     formState: { errors, isDirty },
   } = useForm<UpdateProfileFormValues>({
     resolver: zodResolver(updateProfileSchema),
+    mode: "onChange", // 🚜 Real-time enforcement
     defaultValues: {
       name: user.name || "",
       username: user.username || "",
@@ -114,16 +108,12 @@ export default function ProfileForm({
     },
   });
 
-  React.useEffect(() => {
-    return () => {
-      if (avatarPreview?.startsWith("blob:")) {
-        URL.revokeObjectURL(avatarPreview);
-      }
-      if (bannerPreview?.startsWith("blob:")) {
-        URL.revokeObjectURL(bannerPreview);
-      }
-    };
-  }, [avatarPreview, bannerPreview]);
+  // Watch fields for real-time counters
+  const nameChars = watch("name")?.length || 0;
+  const userChars = watch("username")?.length || 0;
+  const bioChars = watch("bio")?.length || 0;
+  const titleChars = watch("title")?.length || 0;
+  const locChars = watch("location")?.length || 0;
 
   const handleFileSelect = (
     e: React.ChangeEvent<HTMLInputElement>,
@@ -140,23 +130,11 @@ export default function ProfileForm({
     if (e.target) e.target.value = "";
   };
 
-  React.useEffect(() => {
-    if (uiMessage?.type === "success" || uiMessage?.type === "info") {
-      const timer = setTimeout(() => setUiMessage(null), 5000);
-      return () => clearTimeout(timer);
-    }
-  }, [uiMessage]);
-
   const handleCropComplete = async (croppedImageBase64: string) => {
     if (!croppingImage) return;
     const { type } = croppingImage;
     const croppedFile = dataURLtoFile(croppedImageBase64, `${type}.png`);
-
-    if (!croppedFile) {
-      setUiMessage({ type: "error", text: "Could not process image." });
-      setCroppingImage(null);
-      return;
-    }
+    if (!croppedFile) return;
 
     setUiMessage(null);
     const formData = new FormData();
@@ -169,21 +147,16 @@ export default function ProfileForm({
     try {
       await updateProfile(formData).unwrap();
       const blobUrl = URL.createObjectURL(croppedFile);
-
-      if (type === "profile") {
-        setAvatarPreview(blobUrl);
-      } else {
-        setBannerPreview(blobUrl);
-      }
-
+      if (type === "profile") setAvatarPreview(blobUrl);
+      else setBannerPreview(blobUrl);
       setUiMessage({
         type: "success",
-        text: `${type === "profile" ? "Avatar" : "Banner"} updated successfully!`,
+        text: `${type === "profile" ? "Avatar" : "Banner"} updated!`,
       });
     } catch (err: any) {
       setUiMessage({
         type: "error",
-        text: err?.data?.message || "Image upload failed.",
+        text: getApiErrorMessage(err, "Image upload failed."),
       });
     }
   };
@@ -193,29 +166,21 @@ export default function ProfileForm({
     const formData = new FormData();
     let hasChanges = false;
 
-    const nullableFields = [
-      "bio",
-      "title",
-      "location",
-      "twitterUrl",
-      "githubUrl",
-      "websiteUrl",
-    ];
-
     (Object.keys(data) as Array<keyof UpdateProfileFormValues>).forEach(
       (key) => {
-        const newValue = data[key]?.trim() || "";
+        const newValue = (data[key] as string)?.trim() || "";
         const oldValue = (user as any)[key] || "";
 
         if (newValue !== oldValue) {
-          formData.append(key, newValue);
+          // Explicitly send "null" string if field is emptied to trigger backend normalization
+          formData.append(key, newValue === "" ? "null" : newValue);
           hasChanges = true;
         }
       },
     );
 
     if (!hasChanges) {
-      setUiMessage({ type: "info", text: "No profile changes detected." });
+      setUiMessage({ type: "info", text: "No changes detected." });
       return;
     }
 
@@ -223,37 +188,59 @@ export default function ProfileForm({
       const response = await updateProfile(formData).unwrap();
       setUiMessage({
         type: "success",
-        text: response.message || "Profile updated!",
+        text: response.message || "Profile synchronized!",
       });
-
       setTimeout(() => onFinishedEditing(), 1500);
     } catch (err: any) {
       setUiMessage({
         type: "error",
-        text: err?.data?.message || "Failed to update profile details.",
+        text: getApiErrorMessage(err, "Update failed."),
       });
     }
   };
+
+  // Helper for consistent label + counter UI
+  const CounterField = ({
+    label,
+    current,
+    max,
+  }: {
+    label: string;
+    current: number;
+    max: number;
+  }) => (
+    <div className="flex justify-between items-center mb-1">
+      <Label className="text-[10px] font-black uppercase tracking-widest">
+        {label}
+      </Label>
+      <span
+        className={cn(
+          "text-[9px] font-bold",
+          current > max ? "text-destructive" : "text-muted-foreground",
+        )}
+      >
+        {current} / {max}
+      </span>
+    </div>
+  );
+
   return (
     <>
-      <Card className="overflow-hidden border-none shadow-md">
+      <Card className="overflow-hidden border-none shadow-md rounded-none">
         <form onSubmit={handleSubmit(onTextSubmit)}>
-          <div className="bg-muted/30 border-b pt-6 pb-6">
-            {" "}
-            <CardHeader>
-              <CardTitle>Edit Profile</CardTitle>
-              <CardDescription>
-                Update your public identity and social links.
-              </CardDescription>
-            </CardHeader>
+          <div className="bg-muted/30 border-b-2 border-dashed pt-6 pb-6 px-6">
+            <CardTitle className="text-2xl font-black uppercase tracking-tighter text-foreground">
+              Archive Update
+            </CardTitle>
+            <CardDescription className="text-xs font-bold uppercase tracking-tight">
+              Synchronizing identity with the central guild records.
+            </CardDescription>
           </div>
 
           <CardContent className="p-0 relative">
-            {/* --- Banner Section with Mobile-Friendly Camera Icon --- */}
-            <div className="relative aspect-[3/1] w-full bg-muted group overflow-hidden">
+            <div className="relative aspect-[3/1] w-full bg-slate-900 group overflow-hidden border-b-2">
               {bannerPreview ? (
                 <Image
-                  key={bannerPreview}
                   src={bannerPreview}
                   alt="Banner"
                   fill
@@ -262,21 +249,20 @@ export default function ProfileForm({
                 />
               ) : (
                 <div className="flex items-center justify-center h-full">
-                  <ImageIcon className="w-12 h-12 text-muted-foreground/20" />
+                  <ImageIcon className="w-12 h-12 text-white/10" />
                 </div>
               )}
-
-              {/* Persistent Edit Button for Banner (Mobile Friendly) */}
               <div className="absolute bottom-4 right-4 z-20">
                 <Button
                   type="button"
                   size="sm"
-                  className="rounded-none shadow-lg border-2 border-background bg-primary/90 hover:bg-primary"
+                  className="rounded-none shadow-lg border-2 border-background"
                   onClick={() => bannerInputRef.current?.click()}
-                  disabled={isUpdating}
                 >
                   <Camera className="h-4 w-4 mr-2" />
-                  <span className="text-xs font-semibold">Edit Banner</span>
+                  <span className="text-[10px] font-black uppercase">
+                    Banner
+                  </span>
                 </Button>
               </div>
               <input
@@ -288,30 +274,22 @@ export default function ProfileForm({
               />
             </div>
 
-            {/* --- Avatar Section with Mobile-Friendly Camera Icon --- */}
-            <div className="px-6 relative">
-              <div className="relative -mt-16 h-32 w-32 shrink-0 group">
-                <Avatar
-                  className="h-full w-full border-4 border-background ring-2 ring-primary shadow-xl"
-                  key={avatarPreview}
-                >
+            <div className="px-8 relative -mt-16 mb-8">
+              <div className="relative h-32 w-32 shrink-0 group">
+                <Avatar className="h-full w-full border-4 border-background ring-2 ring-primary shadow-2xl rounded-none">
                   <AvatarImage
                     src={avatarPreview || undefined}
-                    alt="Avatar"
                     className="object-cover"
                   />
-                  <AvatarFallback className="text-2xl">
+                  <AvatarFallback className="text-2xl font-black">
                     {getInitials(user.name)}
                   </AvatarFallback>
                 </Avatar>
-
-                {/* Persistent Edit Button for Avatar (Mobile Friendly) */}
                 <Button
                   type="button"
                   size="icon"
-                  className=" rounded-none absolute bottom-0 right-0 h-10 w-10  border-4 border-background shadow-lg bg-primary hover:bg-primary/90 z-20"
+                  className="rounded-none absolute bottom-0 right-0 h-10 w-10 border-4 border-background bg-primary hover:bg-primary/90 z-20"
                   onClick={() => avatarInputRef.current?.click()}
-                  disabled={isUpdating}
                 >
                   <Camera className="h-5 w-5 text-white" />
                 </Button>
@@ -326,164 +304,208 @@ export default function ProfileForm({
             </div>
           </CardContent>
 
-          <CardContent className="p-6 space-y-6">
-            {/* Upload Progress */}
+          <CardContent className="p-8 space-y-8">
             {uploadState.isUploading && (
-              <div className="space-y-2 bg-primary/5 p-4  border border-primary/10 animate-pulse">
-                <div className="flex justify-between text-xs font-bold  tracking-wider text-primary">
+              <div className="space-y-2 bg-primary/5 p-4 border border-primary/10">
+                <div className="flex justify-between text-[10px] font-black uppercase text-primary">
                   <span>Uploading {uploadState.fileName}...</span>
                   <span>{uploadState.progress}%</span>
                 </div>
-                <Progress value={uploadState.progress} className="h-2" />
+                <Progress
+                  value={uploadState.progress}
+                  className="h-1 rounded-none"
+                />
               </div>
             )}
 
             {uiMessage && (
               <Alert
                 variant={uiMessage.type === "error" ? "destructive" : "default"}
-                className={cn(
-                  uiMessage.type === "success" &&
-                    "border-green-500/50 bg-green-50 text-green-700",
-                )}
+                className="rounded-none border-2 border-double"
               >
-                {uiMessage.type === "success" ? (
-                  <CheckCircle className="h-4 w-4" />
-                ) : (
-                  <Info className="h-4 w-4" />
-                )}
-                <AlertDescription>{uiMessage.text}</AlertDescription>
+                <AlertDescription className="font-bold text-xs uppercase">
+                  {uiMessage.text}
+                </AlertDescription>
               </Alert>
             )}
 
-            {/* Form Fields */}
-            <div className="grid sm:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="name">Full Name</Label>
+            {/* Basic Info */}
+            <div className="grid sm:grid-cols-2 gap-8">
+              <div className="space-y-1">
+                <CounterField label="Full Name" current={nameChars} max={50} />
                 <Input
-                  id="name"
                   {...register("name")}
-                  disabled={isUpdating}
-                  placeholder="Your display name"
+                  className={cn(
+                    "rounded-none border-2",
+                    errors.name && "border-destructive",
+                  )}
                 />
                 {errors.name && (
-                  <p className="text-destructive text-xs">
+                  <p className="text-destructive text-[10px] font-bold uppercase">
                     {errors.name.message}
                   </p>
                 )}
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="username">Username</Label>
+              <div className="space-y-1">
+                <CounterField
+                  label="Guild Handle"
+                  current={userChars}
+                  max={50}
+                />
                 <Input
-                  id="username"
                   {...register("username")}
-                  disabled={isUpdating}
-                  placeholder="unique_handle"
+                  className={cn(
+                    "rounded-none border-2",
+                    errors.username && "border-destructive",
+                  )}
                 />
                 {errors.username && (
-                  <p className="text-destructive text-xs">
+                  <p className="text-destructive text-[10px] font-bold uppercase">
                     {errors.username.message}
                   </p>
                 )}
               </div>
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="title">Professional Title</Label>
-              <Input
-                id="title"
-                {...register("title")}
-                placeholder="e.g. Creative Lead & Nomad"
-                disabled={isUpdating}
-              />
+            <div className="grid sm:grid-cols-2 gap-8">
+              <div className="space-y-1">
+                <CounterField
+                  label="Professional Title"
+                  current={titleChars}
+                  max={100}
+                />
+                <Input
+                  {...register("title")}
+                  className="rounded-none border-2"
+                />
+                {errors.title && (
+                  <p className="text-destructive text-[10px] font-bold uppercase">
+                    {errors.title.message}
+                  </p>
+                )}
+              </div>
+              <div className="space-y-1">
+                <CounterField label="Location" current={locChars} max={100} />
+                <Input
+                  {...register("location")}
+                  className="rounded-none border-2"
+                />
+                {errors.location && (
+                  <p className="text-destructive text-[10px] font-bold uppercase">
+                    {errors.location.message}
+                  </p>
+                )}
+              </div>
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="bio">Bio</Label>
+            <div className="space-y-1">
+              <CounterField label="Biography" current={bioChars} max={250} />
               <Textarea
-                id="bio"
                 {...register("bio")}
-                placeholder="Write a short introduction..."
-                className="resize-none h-24"
-                disabled={isUpdating}
+                className="rounded-none border-2 min-h-[100px] resize-none"
               />
+              {errors.bio && (
+                <p className="text-destructive text-[10px] font-bold uppercase">
+                  {errors.bio.message}
+                </p>
+              )}
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="location">Location</Label>
-              <Input
-                id="location"
-                {...register("location")}
-                placeholder="e.g. Lisbon, Portugal"
-                disabled={isUpdating}
-              />
-            </div>
-
-            <div className="grid sm:grid-cols-3 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="githubUrl">GitHub</Label>
-                <Input
-                  id="githubUrl"
-                  {...register("githubUrl")}
-                  placeholder="https://github.com/..."
-                  disabled={isUpdating}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="twitterUrl">Twitter (X)</Label>
-                <Input
-                  id="twitterUrl"
-                  {...register("twitterUrl")}
-                  placeholder="https://x.com/..."
-                  disabled={isUpdating}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="websiteUrl">Website</Label>
-                <Input
-                  id="websiteUrl"
-                  {...register("websiteUrl")}
-                  placeholder="https://..."
-                  disabled={isUpdating}
-                />
+            {/* Social Hardening */}
+            <div className="pt-6 border-t-2 border-double">
+              <h3 className="text-[10px] font-black uppercase tracking-[0.3em] mb-6 text-primary">
+                External Web Connections
+              </h3>
+              <div className="grid sm:grid-cols-3 gap-6">
+                <div className="space-y-1">
+                  <Label className="text-[10px] font-black uppercase tracking-widest">
+                    GitHub URL
+                  </Label>
+                  <Input
+                    {...register("githubUrl")}
+                    className={cn(
+                      "rounded-none border-2",
+                      errors.githubUrl && "border-destructive",
+                    )}
+                    placeholder="https://..."
+                  />
+                  {errors.githubUrl && (
+                    <p className="text-destructive text-[10px] font-bold uppercase leading-tight">
+                      {errors.githubUrl.message}
+                    </p>
+                  )}
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-[10px] font-black uppercase tracking-widest">
+                    Twitter (X) URL
+                  </Label>
+                  <Input
+                    {...register("twitterUrl")}
+                    className={cn(
+                      "rounded-none border-2",
+                      errors.twitterUrl && "border-destructive",
+                    )}
+                    placeholder="https://..."
+                  />
+                  {errors.twitterUrl && (
+                    <p className="text-destructive text-[10px] font-bold uppercase leading-tight">
+                      {errors.twitterUrl.message}
+                    </p>
+                  )}
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-[10px] font-black uppercase tracking-widest">
+                    Website URL
+                  </Label>
+                  <Input
+                    {...register("websiteUrl")}
+                    className={cn(
+                      "rounded-none border-2",
+                      errors.websiteUrl && "border-destructive",
+                    )}
+                    placeholder="https://..."
+                  />
+                  {errors.websiteUrl && (
+                    <p className="text-destructive text-[10px] font-bold uppercase leading-tight">
+                      {errors.websiteUrl.message}
+                    </p>
+                  )}
+                </div>
               </div>
             </div>
           </CardContent>
 
-          <CardFooter className="bg-muted/30 border-t p-6 flex justify-between items-center">
+          <CardFooter className="bg-muted/30 border-t-2 p-8 flex justify-between items-center">
             <Button
               type="button"
               variant="ghost"
               onClick={onFinishedEditing}
               disabled={isUpdating}
-              className="rounded-none"
+              className="rounded-none font-bold text-xs"
             >
-              Cancel
+              Cancel Update
             </Button>
             <Button
               type="submit"
               disabled={isUpdating || !isDirty}
-              className="min-w-[140px] rounded-none"
+              className="min-w-[180px] rounded-none font-black text-[10px] uppercase tracking-widest h-12"
             >
               {isUpdating ? (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               ) : (
                 <Save className="mr-2 h-4 w-4" />
               )}
-              Save Changes
+              Synchronize Data
             </Button>
           </CardFooter>
         </form>
       </Card>
 
-      {/* Cropping Dialog */}
       <Dialog
         open={!!croppingImage}
         onOpenChange={(open) => !open && setCroppingImage(null)}
       >
-        <DialogContent className="sm:max-w-lg p-0 overflow-hidden border-none shadow-2xl">
-          <DialogHeader className="p-6 border-b bg-muted/20">
-            <DialogTitle>Adjust Image</DialogTitle>
-          </DialogHeader>
+        <DialogContent className="sm:max-w-lg p-0 overflow-hidden border-none shadow-2xl rounded-none">
           {croppingImage && (
             <ImageCropper
               imageSrc={croppingImage.src}

@@ -13,19 +13,47 @@ export function cn(...inputs: ClassValue[]) {
  * Extracts a human-readable error message from backend API responses.
  * Specifically tuned to handle the refined Global Error Handler on our backend.
  */
-
-export const getApiErrorMessage = (error: any): string => {
-  if (error?.data?.message) return error.data.message;
-
-  if (Array.isArray(error?.data?.errors) && error.data.errors.length > 0) {
-    return error.data.errors[0].message || "Validation failed.";
+export const getApiErrorMessage = (error: any, fallback?: string): string => {
+  if (error?.status === "FETCH_ERROR")
+    return "Network error. Please check your connection.";
+  if (error?.data?.status === "social_account") {
+    return "This email is linked to a social provider. Please log in with Google or GitHub.";
   }
 
-  if (typeof error === "string") return error;
+  // 2. Extract the raw message/code from various possible locations in the error object
+  let rawMessage = error?.data?.message;
 
-  if (error?.message) return error.message;
+  if (
+    !rawMessage &&
+    Array.isArray(error?.data?.errors) &&
+    error.data.errors.length > 0
+  ) {
+    rawMessage = error.data.errors[0].message;
+  }
 
-  return "An unexpected error occurred. Please try again.";
+  if (!rawMessage) {
+    rawMessage = error?.message || (typeof error === "string" ? error : null);
+  }
+
+  // 3. Translation Map: Swap machine codes for human sentences
+  const ERROR_MAP: Record<string, string> = {
+    SOCIAL_ACCOUNT_DETECTED:
+      "This email is linked to a social provider. Please log in with Google or GitHub.",
+    ALREADY_VERIFIED: "Your email is already verified. You're all set!",
+    USER_CREATED_BUT_EMAIL_FAILED:
+      "Account created! We couldn't send the welcome guide, but you can explore the platform now.",
+    INVALID_VERIFICATION_TOKEN:
+      "The link has expired or is invalid. Please request a new one.",
+  };
+
+  if (rawMessage && ERROR_MAP[rawMessage]) {
+    return ERROR_MAP[rawMessage];
+  }
+
+  // 4. Final fallback
+  return (
+    rawMessage || fallback || "An unexpected error occurred. Please try again."
+  );
 };
 
 /**

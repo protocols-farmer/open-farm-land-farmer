@@ -11,6 +11,8 @@ import {
   AdminUpdateRow,
   SanitizedUser,
 } from "./admin.types.js";
+import { userService } from "../user/user.service.js";
+import { deleteFromCloudinary } from "@/config/cloudinary.js";
 
 class AdminService {
   /**
@@ -87,7 +89,14 @@ class AdminService {
       prisma.user.count({ where }),
     ]);
 
-    return { users: users as AdminUserRow[], total };
+    const flattenedUsers = users.map((user) => ({
+      ...user,
+      postsCount: user._count.posts,
+      commentsCount: user._count.comments,
+      _count: undefined, // Clean up the payload
+    }));
+
+    return { users: flattenedUsers as any, total };
   }
   /**
    * Fetches a paginated, searchable list of all posts.
@@ -290,10 +299,22 @@ class AdminService {
   }
 
   public async deleteUser(userId: string): Promise<void> {
-    await prisma.user.delete({ where: { id: userId } });
+    await userService.deleteUserAccount(userId);
   }
 
   public async deletePost(postId: string): Promise<void> {
+    const post = await prisma.post.findUnique({
+      where: { id: postId },
+      include: { images: true },
+    });
+
+    if (post && post.images.length > 0) {
+      // Clean up Cloudinary assets
+      await Promise.allSettled(
+        post.images.map((img) => deleteFromCloudinary(img.publicId)),
+      );
+    }
+
     await prisma.post.delete({ where: { id: postId } });
   }
 

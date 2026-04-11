@@ -22,44 +22,19 @@ class UserController {
     });
   });
 
-  /**
-   * Updates the authenticated user's profile information and images.
-   * Handles Cloudinary uploads and cleans up old assets using stored public IDs.
-   */
-  /**
-   * Updates the authenticated user's profile information and images.
-   * Handles Cloudinary uploads and cleans up old assets only after DB confirmation.
-   */
   updateMyProfile = asyncHandler(async (req: Request, res: Response) => {
     const userId = req.user!.id;
     const updateData = { ...req.body };
     const files = req.files as { [fieldname: string]: Express.Multer.File[] };
 
-    // 1. Fetch current user to have the old public IDs ready for cleanup
     const currentUser = await userService.findUserById(userId);
     if (!currentUser) throw createHttpError(404, "User not found.");
 
     const newlyUploadedPublicIds: string[] = [];
 
-    // 2. Normalize empty strings/nulls from FormData to maintain DB integrity
-    const fieldsToNullify = [
-      "bio",
-      "title",
-      "location",
-      "twitterUrl",
-      "githubUrl",
-      "websiteUrl",
-    ];
-    fieldsToNullify.forEach((field) => {
-      if (updateData[field] === "" || updateData[field] === "null") {
-        updateData[field] = null;
-      }
-    });
-
     try {
       const version = Date.now();
 
-      // 3. Handle New Profile Image Upload
       if (files?.profileImage?.[0]) {
         const result = await uploadToCloudinary(
           files.profileImage[0].path,
@@ -71,7 +46,6 @@ class UserController {
         newlyUploadedPublicIds.push(result.public_id);
       }
 
-      // 4. Handle New Banner Image Upload
       if (files?.bannerImage?.[0]) {
         const result = await uploadToCloudinary(
           files.bannerImage[0].path,
@@ -83,22 +57,17 @@ class UserController {
         newlyUploadedPublicIds.push(result.public_id);
       }
 
-      // 5. Update Database - This is the "Point of No Return"
       const updatedUser = await userService.updateUserProfile(
         userId,
         updateData,
       );
 
-      // 6. SAFE CLEANUP: Only delete old assets from Cloudinary if the DB update succeeded
-      // We check if a NEW image was provided AND if the user had an OLD one to remove
       const cleanupPromises = [];
-
       if (updateData.profileImage && currentUser.profileImagePublicId) {
         cleanupPromises.push(
           deleteFromCloudinary(currentUser.profileImagePublicId),
         );
       }
-
       if (updateData.bannerImage && currentUser.bannerImagePublicId) {
         cleanupPromises.push(
           deleteFromCloudinary(currentUser.bannerImagePublicId),
@@ -107,28 +76,25 @@ class UserController {
 
       if (cleanupPromises.length > 0) {
         Promise.allSettled(cleanupPromises).then((results) => {
-          results.forEach((res, _idx) => {
+          results.forEach((res) => {
             if (res.status === "rejected") {
-              logger.warn(
+              logger.error(
                 { err: res.reason },
-                `Non-critical: Failed to delete old asset during profile update.`,
+                "⚠️ Cloudinary Orphan: Failed to delete old asset.",
               );
             }
           });
         });
       }
 
-      return res.status(200).json({
-        status: "success",
-        message: "Profile updated successfully.",
-        data: { user: updatedUser },
-      });
+      return res
+        .status(200)
+        .json({ status: "success", data: { user: updatedUser } });
     } catch (error) {
-      // 7. ROLLBACK: If DB update fails, delete the images we just uploaded to Cloudinary
       if (newlyUploadedPublicIds.length > 0) {
-        logger.warn(
+        logger.fatal(
           { userId, assetIds: newlyUploadedPublicIds },
-          "🔄 Rollback: Deleting newly uploaded assets due to DB failure.",
+          "🚨 ROLLBACK FAILURE: Manual Cloudinary cleanup required.",
         );
         await Promise.allSettled(
           newlyUploadedPublicIds.map((id) => deleteFromCloudinary(id)),
@@ -138,6 +104,10 @@ class UserController {
     }
   });
 
+  /**
+   * Fetches a public user profile by username.
+   * Flattens counts and enforces privacy/moderation rules.
+   */
   getUserByUsername = asyncHandler(async (req: Request, res: Response) => {
     const { username } = req.params;
     const currentUserId = req.user?.id;
@@ -146,12 +116,14 @@ class UserController {
       where: { username },
       include: {
         _count: {
-          select: { followers: true, following: true, posts: true },
+          select: { posts: true },
         },
       },
     });
 
-    if (!user) throw createHttpError(404, "User not found.");
+    if (!user || user.status === "BANNED" || user.status === "DEACTIVATED") {
+      throw createHttpError(404, "User not found.");
+    }
 
     let isFollowedByCurrentUser = false;
     if (currentUserId) {
@@ -166,22 +138,35 @@ class UserController {
       isFollowedByCurrentUser = !!followRecord;
     }
 
+    const publicProfile = userService.getPublicProfile(user);
+
+    const finalUser = {
+      ...publicProfile,
+      postsCount: user._count.posts,
+      isFollowedByCurrentUser,
+    };
+
     res.status(200).json({
       status: "success",
-      data: {
-        ...user,
-        isFollowedByCurrentUser,
-      },
+      data: { user: finalUser },
     });
   });
-
   getUserById = asyncHandler(async (req: Request, res: Response) => {
     const user = await userService.findUserById(req.params.id);
-    if (!user) throw createHttpError(404, "User not found.");
+
+    if (!user || user.status === "BANNED") {
+      throw createHttpError(404, "User not found.");
+    }
+
+    const isOwner = req.user?.id === user.id;
+    const isAdmin = req.user?.systemRole === "SUPER_ADMIN";
+
+    const responseData =
+      isOwner || isAdmin ? user : userService.getPublicProfile(user);
 
     res.status(200).json({
       status: "success",
-      data: user,
+      data: responseData,
     });
   });
 

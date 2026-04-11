@@ -47,23 +47,23 @@
 
 /* Light Mode: Old White Papers & Aged Parchment */
 :root {
-  --radius: 0.5rem; /* Slightly sharper edges for a "paper" feel */
-  --background: oklch(0.95 0.02 85); /* Parchment beige */
-  --foreground: oklch(0.28 0.03 60); /* Dark ink */
-  --card: oklch(0.97 0.01 85); /* Cleaned aged paper */
+  --radius: 0.5rem;
+  --background: oklch(0.95 0.02 85);
+  --foreground: oklch(0.28 0.03 60);
+  --card: oklch(0.97 0.01 85);
   --card-foreground: oklch(0.28 0.03 60);
   --popover: oklch(0.97 0.01 85);
   --popover-foreground: oklch(0.28 0.03 60);
-  --primary: oklch(0.53 0.1 75); /* Antique brass / Brass gold */
-  --primary-foreground: oklch(0.95 0.02 85); /* Parchment text */
-  --secondary: oklch(0.9 0.03 85); /* Stained/dusty paper */
+  --primary: oklch(0.53 0.1 75);
+  --primary-foreground: oklch(0.95 0.02 85);
+  --secondary: oklch(0.9 0.03 85);
   --secondary-foreground: oklch(0.3 0.03 60);
   --muted: oklch(0.9 0.03 85);
-  --muted-foreground: oklch(0.55 0.04 70); /* Faded ink */
-  --accent: oklch(0.88 0.04 80); /* Antique accent */
+  --muted-foreground: oklch(0.55 0.04 70);
+  --accent: oklch(0.88 0.04 80);
   --accent-foreground: oklch(0.28 0.03 60);
-  --destructive: oklch(0.55 0.12 25); /* Oxidized red ink */
-  --border: oklch(0.85 0.03 80); /* Paper edge / page border */
+  --destructive: oklch(0.55 0.12 25);
+  --border: oklch(0.85 0.03 80);
   --input: oklch(0.85 0.03 80);
   --ring: oklch(0.53 0.1 75);
   --chart-1: oklch(0.646 0.222 41.116);
@@ -71,7 +71,7 @@
   --chart-3: oklch(0.398 0.07 227.392);
   --chart-4: oklch(0.828 0.189 84.429);
   --chart-5: oklch(0.769 0.188 70.08);
-  --sidebar: oklch(0.92 0.03 85); /* Slightly darker parchment for sidebar */
+  --sidebar: oklch(0.92 0.03 85);
   --sidebar-foreground: oklch(0.28 0.03 60);
   --sidebar-primary: oklch(0.53 0.1 75);
   --sidebar-primary-foreground: oklch(0.95 0.02 85);
@@ -83,32 +83,30 @@
 
 /* Dark Mode: Dark Dustish, Dirty Yellowish & Brownish */
 .dark {
-  --background: oklch(0.18 0.01 60); /* Very dark brownish black (#120e0b) */
-  --foreground: oklch(0.82 0.04 80); /* Aged parchment text (#d4c0a1) */
-  --card: oklch(0.22 0.015 60); /* Card background (#241b14) */
+  --background: oklch(0.18 0.01 60);
+  --foreground: oklch(0.82 0.04 80);
+  --card: oklch(0.22 0.015 60);
   --card-foreground: oklch(0.82 0.04 80);
   --popover: oklch(0.22 0.015 60);
   --popover-foreground: oklch(0.82 0.04 80);
-  --primary: oklch(0.65 0.1 75); /* Antique brass (#b88d52) */
-  --primary-foreground: oklch(0.18 0.01 60); /* Dark text on brass */
-  --secondary: oklch(0.25 0.02 60); /* Card hover / dusty brown (#2e231b) */
-  --secondary-foreground: oklch(
-    0.88 0.03 80
-  ); /* Brighter parchment text (#e6cea3) */
+  --primary: oklch(0.65 0.1 75);
+  --primary-foreground: oklch(0.18 0.01 60);
+  --secondary: oklch(0.25 0.02 60);
+  --secondary-foreground: oklch(0.88 0.03 80);
   --muted: oklch(0.25 0.02 60);
-  --muted-foreground: oklch(0.65 0.03 80); /* Dimmed aged text */
-  --accent: oklch(0.3 0.03 60); /* Dark ink accent (#3b2b20) */
+  --muted-foreground: oklch(0.65 0.03 80);
+  --accent: oklch(0.3 0.03 60);
   --accent-foreground: oklch(0.88 0.03 80);
-  --destructive: oklch(0.45 0.12 25); /* Dark rust red */
-  --border: oklch(0.32 0.02 60); /* Dirty yellowish/brownish border */
+  --destructive: oklch(0.45 0.12 25);
+  --border: oklch(0.32 0.02 60);
   --input: oklch(0.32 0.02 60);
-  --ring: oklch(0.65 0.1 75); /* Antique brass ring */
+  --ring: oklch(0.65 0.1 75);
   --chart-1: oklch(0.488 0.243 264.376);
   --chart-2: oklch(0.696 0.17 162.48);
   --chart-3: oklch(0.769 0.188 70.08);
   --chart-4: oklch(0.627 0.265 303.9);
   --chart-5: oklch(0.645 0.246 16.439);
-  --sidebar: oklch(0.2 0.01 60); /* Sidebar bg (#1a1410) */
+  --sidebar: oklch(0.2 0.01 60);
   --sidebar-foreground: oklch(0.82 0.04 80);
   --sidebar-primary: oklch(0.65 0.1 75);
   --sidebar-primary-foreground: oklch(0.18 0.01 60);
@@ -126,39 +124,107 @@
     @apply bg-background text-foreground;
   }
 
-  /* Target BOTH the Editor (.tiptap) and the Rendered Detail View (.prose) */
+  /* --- TYPOGRAPHY COLOR FIX (AGGRESSIVE) --- */
+  /* This maps the Typography plugin variables to your actual theme colors */
+  .tiptap,
+  .prose {
+    --tw-prose-body: var(--foreground) !important;
+    --tw-prose-headings: var(--foreground) !important;
+    --tw-prose-lead: var(--foreground) !important;
+    --tw-prose-links: var(--primary) !important;
+    --tw-prose-bold: var(--foreground) !important;
+    --tw-prose-counters: var(--foreground) !important;
+    --tw-prose-bullets: var(--foreground) !important;
+    --tw-prose-hr: var(--border) !important;
+    --tw-prose-quotes: var(--foreground) !important;
+    --tw-prose-captions: var(--muted-foreground) !important;
+    --tw-prose-th-borders: var(--border) !important;
+    --tw-prose-td-borders: var(--border) !important;
+    color: var(--foreground) !important;
+  }
+
+  /* Forced overrides for specific tags to ensure inheritance */
+  .tiptap p,
+  .prose p,
+  .tiptap h1,
+  .prose h1,
+  .tiptap h2,
+  .prose h2,
+  .tiptap h3,
+  .prose h3,
+  .tiptap li,
+  .prose li,
+  .tiptap strong,
+  .prose strong {
+    color: var(--foreground) !important;
+  }
+
+  /* Ensures spans inside the editor (like those from formatting) follow the theme, 
+     but skips the syntax highlighting spans in your code blocks. 
+  */
+  .tiptap span:not([class^="hljs-"]) {
+    color: var(--foreground) !important;
+  }
+
+  /* --- CODE BLOCKS (SYNTAX HIGHLIGHTING) - UNTOUCHED --- */
   .tiptap pre,
   .prose pre {
-    /* Vintage dark ink background instead of VS Code gray */
     background: #241b14 !important;
-    color: #d4c0a1 !important; /* Parchment text */
+    color: #e8e0cc !important; /* A warm, vintage parchment cream */
     font-family: var(--font-mono);
-    padding: 1rem;
+    padding: 1.25rem;
     border-radius: 0.5rem;
     margin: 1.5rem 0;
     overflow-x: auto;
     border: 1px solid oklch(1 0 0 / 10%);
   }
 
-  .tiptap code,
-  .prose code {
-    color: inherit;
-    padding: 0;
-    background: none;
-    font-size: 0.9rem;
-    border: none;
+  .hljs-comment,
+  .hljs-quote {
+    color: oklch(0.55 0.02 70);
+    font-style: italic;
   }
 
-  /* Inline code (code not inside a <pre>) */
+  .hljs-keyword,
+  .hljs-selector-tag {
+    color: oklch(0.65 0.1 75);
+    font-weight: bold;
+  }
+
+  .hljs-string,
+  .hljs-doctag {
+    color: oklch(0.7 0.08 95);
+  }
+
+  .hljs-title,
+  .hljs-section,
+  .hljs-name {
+    color: oklch(0.75 0.04 80);
+    font-weight: bold;
+  }
+
+  .hljs-attr,
+  .hljs-number,
+  .hljs-literal {
+    color: oklch(0.7 0.12 60);
+  }
+
+  /* Strip Tailwind's annoying backticks from prose code */
+  .prose code::before,
+  .prose code::after {
+    content: "" !important;
+  }
+
   .prose :not(pre) > code {
-    @apply bg-muted px-1.5 py-0.5 rounded text-primary text-sm font-semibold;
+    @apply bg-muted px-1.5 py-0.5 rounded text-primary text-sm font-semibold border;
   }
 
-  /* Task List Styles */
+  /* --- TASK LISTS --- */
   .tiptap ul[data-type="taskList"],
   .prose ul[data-type="taskList"] {
     list-style: none;
     padding: 0;
+    margin: 1.5rem 0;
   }
 
   .tiptap ul[data-type="taskList"] li,
@@ -166,11 +232,74 @@
     @apply flex items-start gap-3 my-2;
   }
 
-  /* Placeholder for empty lines in Editor */
+  .tiptap ul[data-type="taskList"] input[type="checkbox"],
+  .prose ul[data-type="taskList"] input[type="checkbox"] {
+    @apply mt-1.5 cursor-pointer accent-primary h-4 w-4 rounded border-2 border-primary;
+  }
+
+  /* --- TABLES --- */
+  .tiptap table,
+  .prose table {
+    border-collapse: collapse;
+    table-layout: fixed;
+    width: 100%;
+    margin: 1.5rem 0;
+    overflow: hidden;
+    @apply border-2 border-border;
+  }
+
+  .tiptap td,
+  .tiptap th,
+  .prose td,
+  .prose th {
+    min-width: 1em;
+    @apply border-2 border-border p-2 relative text-left align-top;
+  }
+
+  .tiptap th,
+  .prose th {
+    @apply bg-muted font-black;
+  }
+
+  /* Selected Table Cells in Editor */
+  .tiptap .selectedCell:after {
+    z-index: 2;
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    background: oklch(var(--primary) / 10%);
+    pointer-events: none;
+  }
+
+  /* Table Column Resizer */
+  .tiptap .column-resize-handle {
+    @apply absolute right-[-2px] top-0 bottom-[-2px] w-1 bg-primary pointer-events-none;
+  }
+
+  /* --- EDITOR SPECIFICS --- */
+  .tiptap:focus {
+    outline: none;
+  }
+
+  /* Horizontal Rule */
+  .tiptap hr,
+  .prose hr {
+    @apply my-8 border-t-2 border-double border-border;
+  }
+
+  /* Floating/Bubble Menus Z-Index */
+  .tiptap-renderer-container {
+    @apply relative w-full;
+  }
+
+  /* Placeholder for Editor */
   .tiptap p.is-editor-empty:first-child::before {
     content: attr(data-placeholder);
     float: left;
-    color: var(--color-muted-foreground);
+    color: var(--muted-foreground);
     pointer-events: none;
     height: 0;
   }

@@ -4,9 +4,9 @@
 import React, { useState, useMemo, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/navigation"; // 🚜 ADDED
+import { useRouter } from "next/navigation";
 import { formatDistanceToNow } from "date-fns";
-import toast from "react-hot-toast"; // 🚜 ADDED
+import toast from "react-hot-toast";
 import DOMPurify from "dompurify";
 import "highlight.js/styles/github-dark.css";
 
@@ -14,7 +14,7 @@ import "highlight.js/styles/github-dark.css";
 import {
   useGetPostByIdQuery,
   useRecordPostViewMutation,
-  useDeletePostMutation, // 🚜 ADDED
+  useDeletePostMutation,
 } from "@/lib/features/post/postApiSlice";
 import { useAppSelector } from "@/lib/hooks/hooks";
 import { selectCurrentUser } from "@/lib/features/user/userSlice";
@@ -41,13 +41,13 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@/components/ui/alert-dialog"; // 🚜 ADDED
+} from "@/components/ui/alert-dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"; // 🚜 ADDED
+} from "@/components/ui/dropdown-menu";
 import {
   Github,
   ExternalLink,
@@ -55,7 +55,7 @@ import {
   Loader2,
   Trash2,
   MoreHorizontal,
-} from "lucide-react"; // 🚜 UPDATED
+} from "lucide-react";
 
 /**
  * 1. MAIN EXPORT (Fetching & Error Handling)
@@ -104,8 +104,8 @@ interface ProjectDetailViewProps {
 }
 
 function ProjectDetailView({ post, currentUser }: ProjectDetailViewProps) {
-  const router = useRouter(); // 🚜 ADDED
-  const [deletePost, { isLoading: isDeleting }] = useDeletePostMutation(); // 🚜 ADDED
+  const router = useRouter();
+  const [deletePost, { isLoading: isDeleting }] = useDeletePostMutation();
 
   const [selectedImage, setSelectedImage] = useState<string | undefined>(
     post.images?.[0]?.url,
@@ -123,7 +123,6 @@ function ProjectDetailView({ post, currentUser }: ProjectDetailViewProps) {
 
   const isAuthor = currentUser?.id === post.authorId;
 
-  // 🚜 DELETE HANDLER
   const handleDelete = async () => {
     try {
       await deletePost(post.id).unwrap();

@@ -85,7 +85,7 @@ export default function SanctionGuard({
   if (currentUser.status === "BANNED") {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center bg-background p-6 animate-in fade-in duration-500">
-        <div className="mx-auto flex w-full max-w-[480px] flex-col items-center space-y-8 text-center">
+        <div className="mx-auto flex w-full max-w-105 flex-col items-center space-y-8 text-center">
           {/* Banned Icon using Shadcn 'destructive' variables */}
           <div className="flex h-24 w-24 items-center justify-center rounded-full bg-destructive/10 border-8 border-destructive/20">
             <Ban className="h-12 w-12 text-destructive" />
@@ -139,7 +139,7 @@ export default function SanctionGuard({
   if (currentUser.status === "SUSPENDED") {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center bg-background p-6 animate-in fade-in duration-500">
-        <div className="mx-auto flex w-full max-w-[480px] flex-col items-center space-y-8 text-center">
+        <div className="mx-auto flex w-full max-w-105 flex-col items-center space-y-8 text-center">
           {/* Suspended Icon using Shadcn 'secondary' and 'muted' variables to avoid hardcoded oranges */}
           <div className="flex h-24 w-24 items-center justify-center rounded-full bg-secondary border-8 border-secondary/50">
             <AlertTriangle className="h-12 w-12 text-secondary-foreground" />

@@ -38,16 +38,6 @@ const RETRIABLE_PRISMA_ERROR_CODES: string[] = [
 ];
 
 const prisma = prismaClient.$extends({
-  result: {
-    user: {
-      hashedPassword: {
-        compute() {
-          return undefined;
-        },
-      },
-    },
-  },
-
   query: {
     $allModels: {
       $allOperations: async ({ model, operation, args, query }) => {
@@ -152,4 +142,3 @@ export type ExtendedTransactionClient = Parameters<
   Parameters<ExtendedPrismaClient["$transaction"]>[0]
 >[0];
 export default prisma;
-export const rawPrisma = prismaClient;

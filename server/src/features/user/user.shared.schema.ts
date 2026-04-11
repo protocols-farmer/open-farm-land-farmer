@@ -1,14 +1,16 @@
-// src/features/user/user.shared.schema.ts
+//src/features/user/user.shared.schema.ts
 import { z } from "zod";
 
 /**
- * Shared validation rules to ensure consistency across the app.
+ * Shared validation rules to ensure total consistency.
+ * If you change a character limit here, it updates everywhere.
  */
 export const userValidationRules = {
   email: z
     .string()
     .min(1, "Email is required.")
     .email("Please enter a valid email address.")
+    .max(255, "Email is too long.")
     .trim()
     .toLowerCase(),
 
@@ -18,7 +20,7 @@ export const userValidationRules = {
     .max(50, "Username cannot exceed 50 characters.")
     .regex(
       /^[a-zA-Z0-9_]+$/,
-      "Username can only contain letters, numbers, and underscores."
+      "Username can only contain letters, numbers, and underscores.",
     )
     .trim(),
 
@@ -32,7 +34,14 @@ export const userValidationRules = {
     .min(1, "Name is required.")
     .max(50, "Name is too long.")
     .trim(),
-  title: z.string().max(100, "Title is too long.").optional().nullable(),
-  location: z.string().max(100, "Location is too long.").optional().nullable(),
-  bio: z.string().max(250, "Bio cannot exceed 250 characters.").optional(),
+
+  title: z.string().max(100, "Title is too long.").trim(),
+  location: z.string().max(100, "Location is too long.").trim(),
+  bio: z.string().max(250, "Bio cannot exceed 250 characters.").trim(),
+
+  socialUrl: z
+    .string()
+    .url("Please provide a valid URL.")
+    .max(255, "URL cannot exceed 255 characters.")
+    .trim(),
 };

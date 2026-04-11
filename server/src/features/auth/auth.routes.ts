@@ -19,7 +19,7 @@ const router: Router = Router();
 // ==========================================
 
 router.post(
-  "/register",
+  "/signup",
   authLimiter,
   validate(signupSchema),
   authController.signup,

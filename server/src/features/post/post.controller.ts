@@ -191,10 +191,13 @@ class PostController {
   });
 
   recordPostView = asyncHandler(async (req: Request, res: Response) => {
-    const userId = req.user!.id;
     const { id: postId } = req.params;
+    const userId = req.user?.id;
 
-    await postService.recordPostView(userId, postId);
+    const anonymousId =
+      (req.headers["x-visitor-id"] as string) || req.cookies?.["visitor_id"];
+
+    await postService.recordPostView(postId, userId, anonymousId);
 
     res.status(204).send();
   });

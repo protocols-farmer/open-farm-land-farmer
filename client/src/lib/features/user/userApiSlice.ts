@@ -2,14 +2,12 @@
 import { createApi, retry } from "@reduxjs/toolkit/query/react";
 import { baseQueryWithReauth } from "../../api/baseQueryWithReauth";
 import { clearCredentials } from "../auth/authSlice";
-import { authStorage } from "@/lib/auth/authStorage";
 import {
   uploadStarted,
   uploadProgressUpdated,
   uploadSucceeded,
   uploadFailed,
 } from "../upload/uploadProgressSlice";
-import type { RootState } from "../../store";
 import type {
   SanitizedUserDto,
   GetMeApiResponse,
@@ -32,19 +30,19 @@ export const userApiSlice = createApi({
   baseQuery: baseQueryWithRetry,
   tagTypes: ["Me", "User", "Followers", "Following"],
   endpoints: (builder) => ({
-    // Inside userApiSlice endpoints...
-
     getMe: builder.query<SanitizedUserDto, void>({
       query: () => "/user/me",
-
       transformResponse: (response: GetMeApiResponse) => response.data.user,
       providesTags: ["Me"],
       keepUnusedDataFor: 60,
     }),
+
     getUserByUsername: builder.query<UserProfile, string>({
       query: (username) => `/user/profile/${username}`,
-      transformResponse: (response: { status: string; data: UserProfile }) =>
-        response.data,
+      transformResponse: (response: {
+        status: string;
+        data: { user: UserProfile };
+      }) => response.data.user,
       providesTags: (result, _error, username) =>
         result
           ? [
@@ -101,22 +99,23 @@ export const userApiSlice = createApi({
 
     updateMyProfile: builder.mutation<UpdateProfileApiResponse, FormData>({
       queryFn: async (formData, api, _extraOptions) => {
-        const { dispatch, getState } = api;
-
-        const state = getState() as RootState;
-        const token = state.auth.token || authStorage.getToken();
+        const { dispatch } = api;
 
         const file = (formData.get("profileImage") ||
           formData.get("bannerImage")) as File | null;
 
-        const performUpload = (authToken: string) => {
+        const performUpload = () => {
           return new Promise<any>((resolve, reject) => {
             const xhr = new XMLHttpRequest();
             xhr.open(
               "PATCH",
               `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/user/me`,
             );
-            xhr.setRequestHeader("Authorization", `Bearer ${authToken}`);
+
+            // ✅ CRITICAL: Tell XHR to include cookies in the request
+            xhr.withCredentials = true;
+
+            // 🛡️ REMOVED: No more Authorization header manually set here
 
             xhr.upload.onprogress = (event) => {
               if (event.lengthComputable) {
@@ -154,38 +153,29 @@ export const userApiSlice = createApi({
         };
 
         try {
-          if (!token) {
-            throw {
-              status: 401,
-              data: { message: "Unauthorized. No token found." },
-            };
-          }
-
+          // 🛡️ REMOVED: The 'if (!token)' check. We just try the request;
+          // if no cookie is present, the server will return 401.
           dispatch(uploadStarted(file?.name || "Profile Update"));
-          const result = await performUpload(token);
+          const result = await performUpload();
           return { data: result };
         } catch (error: any) {
           const status = error.status || 500;
           if (status === 401) {
             dispatch(clearCredentials());
-            if (typeof window !== "undefined") {
-              window.location.assign("/auth/login?error=SessionExpired");
-            }
+            // No need for a hard window.location.assign here,
+            // the SanctionGuard/AuthInitializer will handle the redirect if needed.
           }
           return { error: { status, data: error.data } };
         }
       },
-      // REFINED: Invalidate all relevant tags to keep public and private views in sync
       invalidatesTags: (result) => [
         "Me",
-        "User", // Invalidate general user list
+        "User",
         { type: "User", id: result?.data?.user?.username },
         { type: "User", id: result?.data?.user?.id },
       ],
     }),
-    /**
-     * Permanently deletes the user account.
-     */
+
     deleteMyAccount: builder.mutation<{ message: string }, void>({
       query: () => ({ url: "/user/me", method: "DELETE" }),
       async onQueryStarted(_, { dispatch, queryFulfilled }) {
@@ -195,10 +185,7 @@ export const userApiSlice = createApi({
           if (typeof window !== "undefined") {
             window.location.assign("/");
           }
-        } catch (error) {
-          // Keep local state if deletion fails? Or force clear?
-          // Usually, for account deletion, we force clear regardless.
-        }
+        } catch (error) {}
       },
     }),
   }),

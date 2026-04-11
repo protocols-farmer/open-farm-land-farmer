@@ -1,6 +1,6 @@
 //src/features/auth/auth.service.ts
 import bcrypt from "bcryptjs";
-import prisma, { rawPrisma } from "@/db/prisma.js";
+import prisma from "@/db/prisma.js";
 import { User } from "@prisma-client";
 import { createHttpError } from "@/utils/error.factory.js";
 import { logger } from "@/config/logger.js";
@@ -12,10 +12,10 @@ import {
 import {
   LoginInputDto,
   RefreshTokenInputDto,
-  AuthTokens,
   LogoutInputDto,
   ChangePasswordInputDto,
   SignUpRequestDto,
+  AuthResponseDto,
 } from "@/features/auth/auth.types.js";
 import { userService, SafeUser } from "../user/user.service.js";
 import crypto from "crypto";
@@ -26,30 +26,21 @@ const MAX_USERNAME_LEN = 50;
 const SUFFIX_LEN = 5;
 
 export class AuthService {
-  /**
-   * REFINED: Registers a new user and triggers an email verification handshake.
-   * Scenario Fix: Custom error code if Mailgun fails so Controller can notify user.
-   */
-  /**
-   * REFINED: Registers a new user and triggers a welcome email.
-   * Note: emailVerifyToken is still generated and stored so the user can
-   * manually trigger verification later via the app banner.
-   */
-  public async registerUser(input: SignUpRequestDto): Promise<{
-    user: SafeUser;
-    tokens: AuthTokens;
-  }> {
+  public async registerUser(input: SignUpRequestDto): Promise<AuthResponseDto> {
     const { email, password } = input;
 
     let username = "";
     let isUnique = false;
+    let attempts = 0;
+    const MAX_ATTEMPTS = 10;
 
     const basePart = email
       .split("@")[0]
       .replace(/[^a-zA-Z0-9_]/g, "")
       .substring(0, MAX_USERNAME_LEN - SUFFIX_LEN);
 
-    while (!isUnique) {
+    while (!isUnique && attempts < MAX_ATTEMPTS) {
+      attempts++;
       const randomSuffix = Math.floor(1000 + Math.random() * 9000);
       username = `${basePart}_${randomSuffix}`;
 
@@ -57,7 +48,17 @@ export class AuthService {
       if (!existing) isUnique = true;
     }
 
-    // Still generate the token so it's ready for manual resend/verification
+    if (!isUnique) {
+      logger.error(
+        { email },
+        "Failed to generate unique username after max attempts",
+      );
+      throw createHttpError(
+        500,
+        "Internal Server Error: Username generation failed.",
+      );
+    }
+
     const verificationToken = crypto.randomBytes(32).toString("hex");
     const generatedName = "New Wanderer";
 
@@ -82,7 +83,6 @@ export class AuthService {
         { err, userId: user.id },
         "Welcome email delivery failed during signup",
       );
-      // Throw specific error so the Controller can trigger the 'warning' UI state
       throw createHttpError(503, "USER_CREATED_BUT_EMAIL_FAILED");
     }
 
@@ -96,14 +96,11 @@ export class AuthService {
     };
   }
 
-  public async loginUser(input: LoginInputDto): Promise<{
-    user: SafeUser;
-    tokens: AuthTokens;
-  }> {
+  public async loginUser(input: LoginInputDto): Promise<AuthResponseDto> {
     const { email, password } = input;
 
-    // 1. Fast, lightweight initial query
-    const userWithPassword = await rawPrisma.user.findUnique({
+    // Use extended prisma for retry logic
+    const userWithPassword = await prisma.user.findUnique({
       where: { email },
     });
 
@@ -129,7 +126,7 @@ export class AuthService {
       userWithPassword.status === "SUSPENDED" ||
       userWithPassword.status === "BANNED"
     ) {
-      const sanction = await rawPrisma.userSanction.findFirst({
+      const sanction = await prisma.userSanction.findFirst({
         where: {
           userId: userWithPassword.id,
           status: { in: ["ACTIVE", "APPEALED"] },
@@ -139,26 +136,23 @@ export class AuthService {
       });
 
       if (sanction) {
-        // If suspended and time is up, restore access immediately
         if (
           userWithPassword.status === "SUSPENDED" &&
           sanction.expiresAt &&
           new Date() >= sanction.expiresAt
         ) {
-          await rawPrisma.$transaction([
-            rawPrisma.user.update({
+          await prisma.$transaction([
+            prisma.user.update({
               where: { id: userWithPassword.id },
               data: { status: "ACTIVE" },
             }),
-            rawPrisma.userSanction.update({
+            prisma.userSanction.update({
               where: { id: sanction.id },
               data: { status: "EXPIRED" },
             }),
           ]);
-          // Update local memory so they get a normal access token
           userWithPassword.status = "ACTIVE";
         } else {
-          // Time is not up, attach the sanction details for the frontend
           activeSanction = {
             reason: sanction.reason,
             expiresAt: sanction.expiresAt,
@@ -189,7 +183,7 @@ export class AuthService {
   ): Promise<void> {
     const { currentPassword, newPassword } = input;
 
-    const user = await rawPrisma.user.findUnique({ where: { id: userId } });
+    const user = await prisma.user.findUnique({ where: { id: userId } });
 
     if (!user || !user.hashedPassword) {
       throw createHttpError(
@@ -235,7 +229,6 @@ export class AuthService {
       "Password changed successfully. All sessions revoked.",
     );
   }
-
   public async handleRefreshTokenRotation(
     input: RefreshTokenInputDto,
   ): Promise<{
@@ -306,7 +299,7 @@ export class AuthService {
     email: string;
     name?: string | null;
     image?: string | null;
-  }): Promise<{ user: SafeUser; tokens: AuthTokens }> {
+  }): Promise<AuthResponseDto> {
     let user = await prisma.user.findUnique({
       where: { email: profile.email },
     });
@@ -376,17 +369,24 @@ export class AuthService {
     });
   }
 
-  /**
-   * Generates a reset token and sends the email.
-   * Scenario Fix 1: Stop silent return for Social Accounts; throw error instead.
-   * Scenario Fix 2: Log 'User not found' for developers while returning silently for users.
-   */
   public async sendPasswordResetToken(email: string): Promise<void> {
-    const user = await rawPrisma.user.findUnique({ where: { email } });
+    const user = await prisma.user.findUnique({ where: { email } });
 
     if (!user) {
       logger.info({ email }, "🔍 Forgot Password: Email not found in DB.");
       return;
+    }
+
+    // Block reset for banned users
+    if (user.status === "BANNED") {
+      logger.warn(
+        { email, userId: user.id },
+        "⚠️ Forgot Password: Reset attempted by banned user.",
+      );
+      throw createHttpError(
+        403,
+        "This account has been banned. Reset is not permitted.",
+      );
     }
 
     if (!user.hashedPassword) {
@@ -415,12 +415,11 @@ export class AuthService {
       "📧 Forgot Password: Reset email successfully handed off to Mailgun.",
     );
   }
-
   public async resetUserPassword(
     token: string,
     newPassword: string,
   ): Promise<void> {
-    const user = await rawPrisma.user.findFirst({
+    const user = await prisma.user.findFirst({
       where: {
         passwordResetToken: token,
         passwordResetExpires: { gt: new Date() },
@@ -431,8 +430,8 @@ export class AuthService {
 
     const hashedPassword = await bcrypt.hash(newPassword, 10);
 
-    await rawPrisma.$transaction([
-      rawPrisma.user.update({
+    await prisma.$transaction([
+      prisma.user.update({
         where: { id: user.id },
         data: {
           hashedPassword,
@@ -440,11 +439,13 @@ export class AuthService {
           passwordResetExpires: null,
         },
       }),
-      rawPrisma.refreshToken.updateMany({
+      prisma.refreshToken.updateMany({
         where: { userId: user.id },
         data: { revoked: true },
       }),
     ]);
+
+    logger.info({ userId: user.id }, "Password reset successfully via token.");
   }
   /**
    * Scenario Fix: Log specific token attempted for developer debugging.
