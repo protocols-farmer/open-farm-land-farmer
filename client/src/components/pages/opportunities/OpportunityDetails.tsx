@@ -28,6 +28,7 @@ import {
   Building2,
   Sparkles,
   House,
+  CircleChevronLeft,
 } from "lucide-react";
 import { format } from "date-fns";
 import { Remarkable } from "remarkable";
@@ -120,7 +121,7 @@ export default function OpportunityDetailsPage({
   const renderedDescription = md.render(opportunity.fullDescription);
 
   return (
-    <div className="container -auto max-w-7xl py-12 md:py-20 animate-in fade-in slide-in-from-bottom-4 duration-500 mx-auto">
+    <div className="container -auto max-w-10xl py-12 md:py-20 mx-auto">
       <article className="grid grid-cols-1 lg:grid-cols-12 gap-12">
         <div className="lg:col-span-8 space-y-12">
           <header className="space-y-8">
@@ -138,6 +139,19 @@ export default function OpportunityDetailsPage({
               </div>
 
               <div className="space-y-2">
+                <Button
+                  variant="outline"
+                  asChild
+                  className="rounded-none font-bold border-3 border-double "
+                >
+                  <Link
+                    href="/opportunities"
+                    className="flex items-center justify-center gap-3  font-bold w-fit "
+                  >
+                    <CircleChevronLeft className="h-4 w-4" />
+                    <span>Return to opportunities</span>
+                  </Link>
+                </Button>
                 <h1 className="text-4xl md:text-5xl font-black  leading-none text-foreground">
                   {opportunity.title}
                 </h1>
@@ -183,7 +197,7 @@ export default function OpportunityDetailsPage({
               <ul className="grid grid-cols-1 gap-4">
                 {opportunity.responsibilities.map((item, i) => (
                   <li key={i} className="flex gap-4 items-start group">
-                    <div className="h-6 w-6  bg-primary/10 text-primary flex items-center justify-center shrink-0 mt-0.5 group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
+                    <div className="h-6 w-6  bg-primary/10 text-primary flex items-center justify-center shrink-0 mt-0.5 group-hover:bg-primary group-hover:text-primary-foreground ">
                       <span className="text-xs font-bold">{i + 1}</span>
                     </div>
                     <p className="text-muted-foreground pt-0.5">{item}</p>
@@ -256,15 +270,13 @@ export default function OpportunityDetailsPage({
 
           {(opportunity.tags?.length ?? 0) > 0 && (
             <div className="space-y-4 px-2">
-              <h3 className="text-xs    text-muted-foreground">
-                Required skills
-              </h3>
+              <h3 className="text-xs text-muted-foreground">Required skills</h3>
               <div className="flex flex-wrap gap-2">
                 {opportunity.tags.map((tag) => (
                   <Badge
                     key={tag.tag.id}
                     variant="outline"
-                    className=" font-bold px-3 py-1.5 bg-muted border-border hover:border-primary/30 transition-colors"
+                    className=" font-bold px-3 py-1.5 bg-muted border-border hover:border-primary/30 "
                   >
                     {tag.tag.name}
                   </Badge>

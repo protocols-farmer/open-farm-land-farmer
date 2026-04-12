@@ -15,8 +15,6 @@ export const isVerified = (
     return next(createHttpError(401, "Authentication required."));
   }
 
-  // SanitizedUser and LiteUser (from JWT) should both have this property now
-  // We check the flag we added to the Prisma schema.
   if (!req.user.isEmailVerified) {
     return next(
       createHttpError(

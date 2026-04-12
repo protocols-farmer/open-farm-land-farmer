@@ -1,4 +1,3 @@
-//src/features/guideSection/guideSection.service.ts
 import prisma from "@/db/prisma.js";
 import { Prisma, GuideSection } from "@prisma-client";
 import { createHttpError } from "@/utils/error.factory.js";
@@ -13,41 +12,47 @@ import {
 
 class GuideSectionService {
   /**
-   * Security check to ensure user is the author of the parent guide.
+   * Internal security check to ensure user is the author of the parent guide via section ID.
    */
   private async verifyAuthorshipBySection(userId: string, sectionId: string) {
     const section = await prisma.guideSection.findUnique({
       where: { id: sectionId },
       include: { step: { include: { post: { select: { authorId: true } } } } },
     });
-    if (!section || section.step.post.authorId !== userId) {
+
+    if (!section) throw createHttpError(404, "Guide section not found.");
+
+    if (section.step.post.authorId !== userId) {
       throw createHttpError(
         403,
-        "You are not authorized to modify this section.",
+        "You are not authorized to modify this technical section.",
       );
     }
     return section;
   }
 
   /**
-   * Security check for creating a new section via stepId.
+   * Internal security check to ensure user is the author of the parent guide via step ID.
    */
   private async verifyAuthorshipByStep(userId: string, stepId: string) {
     const step = await prisma.guideStep.findUnique({
       where: { id: stepId },
       include: { post: { select: { authorId: true } } },
     });
-    if (!step || step.post.authorId !== userId) {
+
+    if (!step) throw createHttpError(404, "Parent guide step not found.");
+
+    if (step.post.authorId !== userId) {
       throw createHttpError(
         403,
-        "You are not authorized to add a section to this step.",
+        "You are not authorized to add sections to this guide.",
       );
     }
   }
 
   /**
    * Create a new guide section.
-   * Handles empty title strings by converting them to null to prevent UI gaps.
+   * Handles empty title strings by converting them to null to prevent UI spacing issues.
    */
   async create(
     userId: string,
@@ -57,11 +62,10 @@ class GuideSectionService {
   ): Promise<GuideSection> {
     await this.verifyAuthorshipByStep(userId, stepId);
 
-    // Build the create input explicitly to handle exactOptionalPropertyTypes
     const createData: Prisma.GuideSectionCreateInput = {
       content: data.content,
       order: Number(data.order),
-      // If title is missing or just whitespace, store as null
+      // 🚜 NULL Logic: Ensures empty strings don't render as empty headers in the UI
       title: data.title?.trim() ? data.title : null,
       videoUrl: data.videoUrl || null,
       step: { connect: { id: stepId } },
@@ -78,7 +82,7 @@ class GuideSectionService {
 
   /**
    * Update an existing guide section.
-   * Handles image replacement and explicit image removal via 'removeImage' flag.
+   * Logic: Handles explicit image removal, replacement, and title nullification.
    */
   async update(
     userId: string,
@@ -91,7 +95,6 @@ class GuideSectionService {
       sectionId,
     );
 
-    // Map properties explicitly to avoid 'undefined' type errors
     const updateData: Prisma.GuideSectionUpdateInput = {};
 
     if (data.content !== undefined) updateData.content = data.content;
@@ -99,13 +102,11 @@ class GuideSectionService {
     if (data.videoUrl !== undefined)
       updateData.videoUrl = data.videoUrl || null;
 
-    // Explicitly nullify title if it's an empty string or whitespace
     if (data.title !== undefined) {
       updateData.title = data.title?.trim() ? data.title : null;
     }
 
-    // 1. HANDLE EXPLICIT REMOVAL (When user clicks 'X' in UI)
-    // We check for the string "true" because Multer/FormData converts booleans to strings.
+    // 1. 🚜 EXPLICIT REMOVAL: User cleared the image in the UI
     if (data.removeImage === "true" && !imageFile) {
       if (guideSection.imagePublicId) {
         await deleteFromCloudinary(guideSection.imagePublicId);
@@ -114,9 +115,8 @@ class GuideSectionService {
       updateData.imagePublicId = null;
     }
 
-    // 2. HANDLE IMAGE REPLACEMENT (New file uploaded)
+    // 2. 🚜 IMAGE REPLACEMENT: User uploaded a new file
     if (imageFile) {
-      // Clean up the old asset first
       if (guideSection.imagePublicId) {
         await deleteFromCloudinary(guideSection.imagePublicId);
       }
@@ -130,8 +130,10 @@ class GuideSectionService {
       data: updateData,
     });
   }
+
   /**
    * Delete a guide section.
+   * Ensures Cloudinary assets are purged before the record is removed.
    */
   async delete(userId: string, sectionId: string): Promise<void> {
     const guideSection = await this.verifyAuthorshipBySection(

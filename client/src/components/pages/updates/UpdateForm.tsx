@@ -1,12 +1,12 @@
-//src/components/pages/updates/UpdateForm.tsx
 "use client";
 
 import React, { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
-import { useForm, Controller } from "react-hook-form";
+import { useForm, Controller, SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Remarkable } from "remarkable";
 import DOMPurify from "dompurify";
+import toast from "react-hot-toast";
 
 import {
   createUpdateSchema,
@@ -34,6 +34,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Separator } from "@/components/ui/separator";
 import {
   Loader2,
   PlusCircle,
@@ -42,10 +43,9 @@ import {
   Eye,
   Edit3,
   Terminal,
+  History,
 } from "lucide-react";
-import { getApiErrorMessage } from "@/lib/utils";
-import toast from "react-hot-toast";
-import { cn } from "@/lib/utils";
+import { getApiErrorMessage, cn } from "@/lib/utils";
 
 const updateCategories: UpdateCategoryEnum[] = [
   "APP_UPDATE",
@@ -87,17 +87,18 @@ export default function UpdateForm({ existingUpdate }: UpdateFormProps) {
     },
   });
 
-  const contentValue = watch("content");
+  const watchedTitle = watch("title") || "";
+  const watchedContent = watch("content") || "";
+  const watchedVersion = watch("version") || "";
 
-  // 🚜 Render Markdown for the Preview Tab
   const renderedPreview = useMemo(() => {
-    if (!contentValue)
-      return "<p className='text-muted-foreground italic'>Nothing to preview yet...</p>";
-    const rawHtml = md.render(contentValue);
+    if (!watchedContent)
+      return "<p class='text-muted-foreground italic font-bold text-xs'>Waiting for log input...</p>";
+    const rawHtml = md.render(watchedContent);
     return DOMPurify.sanitize(rawHtml);
-  }, [contentValue]);
+  }, [watchedContent]);
 
-  const onSubmit = async (data: CreateUpdateFormValues) => {
+  const onSubmit: SubmitHandler<CreateUpdateFormValues> = async (data) => {
     setFormError(null);
     try {
       if (isEditMode) {
@@ -105,9 +106,10 @@ export default function UpdateForm({ existingUpdate }: UpdateFormProps) {
         toast.success("System log updated.");
         router.push(`/updates/${existingUpdate.id}`);
       } else {
-        const newUpdate = await createUpdate(data).unwrap();
-        toast.success("New update published.");
-        router.push(`/updates/${newUpdate.id}`);
+        const result = await createUpdate(data).unwrap();
+        toast.success("New update broadcasted.");
+        // FIX: result is already the UpdateDto because of transformResponse in ApiSlice
+        router.push(`/updates/${result.id}`);
       }
     } catch (err) {
       setFormError(getApiErrorMessage(err as any));
@@ -119,23 +121,42 @@ export default function UpdateForm({ existingUpdate }: UpdateFormProps) {
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
         <CardContent className="space-y-6 p-0">
           {formError && (
-            <Alert variant="destructive">
+            <Alert
+              variant="destructive"
+              className="rounded-none border-3 border-double"
+            >
               <AlertCircle className="h-4 w-4" />
-              <AlertTitle>Error</AlertTitle>
-              <AlertDescription>{formError}</AlertDescription>
+              <AlertTitle className="font-bold">Transmission Error</AlertTitle>
+              <AlertDescription className="font-medium">
+                {formError}
+              </AlertDescription>
             </Alert>
           )}
 
           <div className="space-y-2">
-            <Label htmlFor="title">Log title</Label>
+            <div className="flex justify-between items-end">
+              <Label htmlFor="title" className="font-bold text-sm">
+                Log Title <span className="text-destructive">*</span>
+              </Label>
+              <span
+                className={cn(
+                  "text-[10px] font-mono font-bold",
+                  watchedTitle.length > 150
+                    ? "text-destructive"
+                    : "text-muted-foreground",
+                )}
+              >
+                {watchedTitle.length}/150
+              </span>
+            </div>
             <Input
               id="title"
-              placeholder="e.g., Major core infrastructure refinement"
-              className="h-12 text-lg font-medium"
+              placeholder="Enter title..."
+              className="h-14 rounded-none border-2  focus-visible:ring-primary font-bold"
               {...register("title")}
             />
             {errors.title && (
-              <p className="text-xs text-destructive font-medium">
+              <p className="text-[10px] text-destructive font-bold italic">
                 {errors.title.message}
               </p>
             )}
@@ -147,55 +168,76 @@ export default function UpdateForm({ existingUpdate }: UpdateFormProps) {
               control={control}
               render={({ field }) => (
                 <div className="space-y-2">
-                  <Label>Category</Label>
+                  <Label className="font-bold text-sm">
+                    Category <span className="text-destructive">*</span>
+                  </Label>
                   <Select
                     onValueChange={field.onChange}
                     defaultValue={field.value}
                   >
-                    <SelectTrigger className="h-12">
-                      <SelectValue placeholder="Select a category..." />
+                    <SelectTrigger className="h-12 rounded-none border-2  font-bold">
+                      <SelectValue placeholder="Select type..." />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="rounded-none border-2 ">
                       {updateCategories.map((cat) => (
-                        <SelectItem key={cat} value={cat}>
-                          {cat.replace("_", " ").toLowerCase()}
+                        <SelectItem
+                          key={cat}
+                          value={cat}
+                          className="font-bold text-xs"
+                        >
+                          {cat.replace("_", " ")}
                         </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
                   {errors.category && (
-                    <p className="text-xs text-destructive font-medium">
+                    <p className="text-[10px] text-destructive font-bold italic">
                       {errors.category.message}
                     </p>
                   )}
                 </div>
               )}
             />
+
             <div className="space-y-2">
-              <Label htmlFor="version">Version (optional)</Label>
-              <Input
-                id="version"
-                placeholder="e.g., 1.2.0-rc.1"
-                className="h-12 font-mono"
-                {...register("version")}
-              />
+              <div className="flex justify-between items-end">
+                <Label htmlFor="version" className="font-bold text-sm">
+                  Version{" "}
+                  <span className="text-[10px] text-muted-foreground font-normal">
+                    (Optional)
+                  </span>
+                </Label>
+                <span className="text-[10px] font-mono font-bold text-muted-foreground">
+                  {watchedVersion.length}/20
+                </span>
+              </div>
+              <div className="relative">
+                <History className="absolute left-3 top-3.5 h-4 w-4 text-muted-foreground" />
+                <Input
+                  id="version"
+                  placeholder="v1.0.0"
+                  className="h-12 pl-10 rounded-none border-2  font-mono font-bold"
+                  {...register("version")}
+                />
+              </div>
             </div>
           </div>
 
+          <Separator className="border-2 border-double /20" />
+
           <div className="space-y-4">
-            <div className="flex items-center justify-between border-b border-border pb-2">
-              <Label className="text-sm font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2">
-                <Terminal className="h-4 w-4" />
-                Log content
+            <div className="flex items-center justify-between border-b-2 border-dashed /20 pb-3">
+              <Label className="text-xs font-bold text-primary flex items-center gap-2">
+                Main Content <span className="text-destructive">*</span>
               </Label>
-              <div className="flex bg-muted p-1 rounded-lg">
+              <div className="flex bg-muted p-1 border-2 border-double ">
                 <button
                   type="button"
                   onClick={() => setActiveTab("write")}
                   className={cn(
-                    "flex items-center gap-2 px-3 py-1.5 text-xs font-bold rounded-md transition-all",
+                    "flex items-center gap-2 px-4 py-1.5 text-[10px] font-bold transition-all rounded-none",
                     activeTab === "write"
-                      ? "bg-card text-foreground shadow-sm"
+                      ? "bg-primary text-primary-foreground"
                       : "text-muted-foreground hover:text-foreground",
                   )}
                 >
@@ -206,9 +248,9 @@ export default function UpdateForm({ existingUpdate }: UpdateFormProps) {
                   type="button"
                   onClick={() => setActiveTab("preview")}
                   className={cn(
-                    "flex items-center gap-2 px-3 py-1.5 text-xs font-bold rounded-md transition-all",
+                    "flex items-center gap-2 px-4 py-1.5 text-[10px] font-bold transition-all rounded-none",
                     activeTab === "preview"
-                      ? "bg-card text-foreground shadow-sm"
+                      ? "bg-primary text-primary-foreground"
                       : "text-muted-foreground hover:text-foreground",
                   )}
                 >
@@ -220,23 +262,35 @@ export default function UpdateForm({ existingUpdate }: UpdateFormProps) {
 
             {activeTab === "write" ? (
               <div className="space-y-2">
+                <div className="flex justify-end">
+                  <span
+                    className={cn(
+                      "text-[10px] font-mono font-bold",
+                      watchedContent.length > 5000
+                        ? "text-destructive"
+                        : "text-muted-foreground",
+                    )}
+                  >
+                    {watchedContent.length}/5000
+                  </span>
+                </div>
                 <Textarea
                   id="content"
-                  placeholder="Describe the structural changes harvested in this update..."
+                  placeholder="Describe the structural logs..."
                   rows={15}
-                  className="resize-none font-mono text-sm leading-relaxed focus-visible:ring-primary/20"
+                  className="rounded-none border-3  resize-none font-mono text-sm  focus-visible:ring-primary/20 p-6"
                   {...register("content")}
                 />
                 {errors.content && (
-                  <p className="text-xs text-destructive font-medium">
+                  <p className="text-[10px] text-destructive font-bold italic">
                     {errors.content.message}
                   </p>
                 )}
               </div>
             ) : (
-              <div className="min-h-[360px] p-6 rounded-md border border-dashed border-border bg-muted/5">
+              <div className="min-h-95 p-8 border-3 border-double  bg-background">
                 <div
-                  className="prose prose-zinc dark:prose-invert max-w-none prose-p:text-muted-foreground prose-headings:font-black prose-headings:tracking-tighter"
+                  className="prose prose-sm md:prose-base dark:prose-invert max-w-none prose-headings:font-bold"
                   dangerouslySetInnerHTML={{ __html: renderedPreview }}
                 />
               </div>
@@ -244,12 +298,11 @@ export default function UpdateForm({ existingUpdate }: UpdateFormProps) {
           </div>
         </CardContent>
 
-        <CardFooter className="p-0 pt-6">
+        <CardFooter className="p-0 pt-10">
           <Button
             type="submit"
             disabled={isLoading}
-            size="lg"
-            className="w-full font-black uppercase tracking-tighter h-14 bg-primary text-primary-foreground hover:bg-primary/90 transition-all active:scale-[0.98] shadow-lg shadow-primary/10"
+            className="w-full font-bold h-16  border-3 border-double  rounded-none "
           >
             {isLoading ? (
               <Loader2 className="mr-2 h-5 w-5 animate-spin" />
@@ -258,7 +311,7 @@ export default function UpdateForm({ existingUpdate }: UpdateFormProps) {
             ) : (
               <PlusCircle className="mr-2 h-5 w-5" />
             )}
-            {isEditMode ? "Save changes" : "Publish update"}
+            {isEditMode ? "Update an Update" : "Create an Update "}
           </Button>
         </CardFooter>
       </form>

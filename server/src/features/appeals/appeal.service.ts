@@ -1,4 +1,3 @@
-//src/features/appeals/appeal.service.ts
 import prisma from "@/db/prisma.js";
 import { createHttpError } from "@/utils/error.factory.js";
 import {
@@ -11,6 +10,7 @@ import {
 class AppealService {
   /**
    * User Submits an Appeal
+   * Logic: Trims reason and links it to the latest active sanction.
    */
   public async submitAppeal(userId: string, data: CreateAppealDto) {
     const activeSanction = await prisma.userSanction.findFirst({
@@ -39,7 +39,7 @@ class AppealService {
     return await prisma.$transaction(async (tx) => {
       const appeal = await tx.appeal.create({
         data: {
-          reason: data.reason,
+          reason: data.reason.trim(),
           userId,
           sanctionId: activeSanction.id,
         },
@@ -108,6 +108,7 @@ class AppealService {
 
   /**
    * Admin reviews (Approves or Rejects) an appeal
+   * Logic: Trims admin notes and updates user status accordingly.
    */
   public async reviewAppeal(
     appealId: string,
@@ -133,7 +134,7 @@ class AppealService {
         data: {
           status: data.status,
 
-          adminNotes: data.adminNotes ?? null,
+          adminNotes: data.adminNotes?.trim() || null,
           reviewerId: adminId,
         },
       });

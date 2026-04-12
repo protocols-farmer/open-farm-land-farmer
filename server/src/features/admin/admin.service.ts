@@ -341,9 +341,19 @@ class AdminService {
     maintenanceMessage?: string;
   }) {
     const config = await this.getSystemConfig();
+    const updateData: Prisma.SystemConfigUpdateInput = {};
+
+    if (data.maintenanceMode !== undefined) {
+      updateData.maintenanceMode = data.maintenanceMode;
+    }
+
+    if (data.maintenanceMessage !== undefined) {
+      updateData.maintenanceMessage = data.maintenanceMessage.trim() || null;
+    }
+
     return prisma.systemConfig.update({
       where: { id: config.id },
-      data,
+      data: updateData,
     });
   }
 
@@ -365,6 +375,9 @@ class AdminService {
         adminId &&
         reason
       ) {
+        // 🚜 Sanitization: Ensure the sanction reason is trimmed
+        const sanitizedReason = reason.trim();
+
         await tx.userSanction.updateMany({
           where: { userId, status: "ACTIVE" },
           data: { status: "EXPIRED" },
@@ -374,7 +387,7 @@ class AdminService {
           data: {
             userId,
             adminId,
-            reason,
+            reason: sanitizedReason,
             type: newStatus === "BANNED" ? "BAN" : "SUSPENSION",
             status: "ACTIVE",
             expiresAt: expiresAt || null,

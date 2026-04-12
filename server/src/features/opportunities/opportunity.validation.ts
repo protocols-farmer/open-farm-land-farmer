@@ -1,4 +1,4 @@
-//src/features/opportunities/opportunity.validation.ts
+// server/src/features/opportunities/opportunity.validation.ts
 import { z } from "zod";
 import { OpportunityType } from "@prisma-client";
 
@@ -9,7 +9,6 @@ const opportunityTypeValues = Object.values(OpportunityType) as [
 
 /**
  * 🚜 Helper: Custom Regex for secure, well-structured URLs.
- * Ensures the link starts with https and has a valid domain.
  */
 const secureUrlSchema = z
   .string()
@@ -36,9 +35,15 @@ export const opportunitySchema = z.object({
     .min(3, "Title must be at least 3 characters long")
     .max(100, "Title cannot exceed 100 characters"),
 
-  companyName: z.string().min(1, "Company name is required"),
+  companyName: z
+    .string()
+    .min(1, "Company name is required")
+    .max(100, "Company name cannot exceed 100 characters"),
 
-  location: z.string().min(1, "Location is required"),
+  location: z
+    .string()
+    .min(1, "Location is required")
+    .max(100, "Location cannot exceed 100 characters"),
 
   type: z.enum(opportunityTypeValues, {
     message: "Please select a valid opportunity type.",
@@ -46,27 +51,41 @@ export const opportunitySchema = z.object({
 
   fullDescription: z
     .string()
-    .min(20, "Full description must be at least 20 characters long"),
+    .min(20, "Full description must be at least 20 characters long")
+    .max(3000, "Description is too long (max 3000 characters)"),
 
-  applyUrl: secureUrlSchema,
+  applyUrl: secureUrlSchema.max(500, "URL is excessively long"),
 
-  // 🚜 Note: companyLogo is validated as a file by Multer in the routes,
-  // so we treat it as an optional string in the body schema.
-  companyLogo: z.string().optional(),
-  retainedLogoUrl: z.string().optional(),
+  companyLogo: z.string().optional().or(z.literal("")),
+  retainedLogoUrl: z.string().optional().or(z.literal("")),
 
-  // Transform checkbox strings from FormData back to booleans
   isRemote: z.preprocess((val) => val === "true" || val === true, z.boolean()),
 
-  salaryRange: z.string().optional().or(z.literal("")),
+  salaryRange: z
+    .string()
+    .max(50, "Salary range must be under 50 characters")
+    .optional()
+    .or(z.literal("")),
 
-  // Preprocess arrays because FormData sends them as strings
+  // 🚜 HARDENED: Capped array length and string length per item
   responsibilities: z
-    .preprocess(preprocessArray, z.array(z.string()))
+    .preprocess(
+      preprocessArray,
+      z
+        .array(z.string().max(200, "Each item must be under 200 chars"))
+        .max(20, "Maximum 20 items allowed"),
+    )
     .optional(),
-  qualifications: z.preprocess(preprocessArray, z.array(z.string())).optional(),
 
-  // 🚜 REFINED: Hardened tag validation for backend
+  qualifications: z
+    .preprocess(
+      preprocessArray,
+      z
+        .array(z.string().max(200, "Each item must be under 200 chars"))
+        .max(20, "Maximum 20 items allowed"),
+    )
+    .optional(),
+
   tags: z
     .preprocess(
       preprocessArray,

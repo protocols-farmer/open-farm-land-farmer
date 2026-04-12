@@ -1,4 +1,3 @@
-// src/features/updates/update.controller.ts
 import { Request, Response } from "express";
 import { asyncHandler } from "@/middleware/asyncHandler.js";
 import { createHttpError } from "@/utils/error.factory.js";
@@ -7,7 +6,6 @@ import { updateService } from "./update.service.js";
 class UpdateController {
   create = asyncHandler(async (req: Request, res: Response) => {
     const authorId = req.user?.id;
-    // The role check is now handled by middleware, so we just need to ensure a user exists.
     if (!authorId) throw createHttpError(401, "Authentication required.");
 
     const newUpdate = await updateService.create(req.body, authorId);
@@ -49,12 +47,6 @@ class UpdateController {
     res.status(204).send();
   });
 
-  /**
-   * 🚜 Public endpoint to fetch the current app version for the UI.
-   */
-  /**
-   * 🚜 Public endpoint to fetch the current app version.
-   */
   getLatestVersion = asyncHandler(async (_req: Request, res: Response) => {
     const versionData = await updateService.getLatestVersion();
 
@@ -62,7 +54,7 @@ class UpdateController {
       return res.status(200).json({
         success: true,
         data: {
-          version: "1.0.0-beta.1", // 🚜 Consistent fallback versioning
+          version: "1.0.0-beta.1",
           title: "Initial public release",
         },
       });

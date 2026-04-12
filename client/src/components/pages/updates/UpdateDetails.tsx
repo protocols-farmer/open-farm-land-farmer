@@ -48,7 +48,6 @@ import { cn } from "@/lib/utils";
 
 const md = new Remarkable({ html: true, linkify: true, typographer: true });
 
-// 🚜 Refined: Using theme-aware primary color instead of hard-coded blues/purples
 const getCategoryIcon = (category: string) => {
   const iconProps = "h-5 w-5 text-primary";
   switch (category) {
@@ -129,7 +128,7 @@ export default function UpdateDetails({ updateId }: { updateId: string }) {
     );
 
   return (
-    <div className="mx-auto max-w-4xl py-12 md:py-20 px-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
+    <div className="mx-auto max-w-10xl py-12 md:py-20 px-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <article className="space-y-12">
         <header className="space-y-6 text-center">
           <div className="flex flex-col items-center gap-3">
@@ -225,7 +224,7 @@ export default function UpdateDetails({ updateId }: { updateId: string }) {
         <Separator className="bg-border" />
 
         <div
-          className="prose prose-lg prose-zinc dark:prose-invert mx-auto max-w-none break-words prose-p:text-muted-foreground prose-headings:font-black prose-headings:"
+          className="prose prose-lg prose-zinc dark:prose-invert mx-auto max-w-none wrap-break-words prose-p:text-muted-foreground prose-headings:font-black prose-headings:"
           dangerouslySetInnerHTML={{ __html: renderedContent }}
         />
       </article>

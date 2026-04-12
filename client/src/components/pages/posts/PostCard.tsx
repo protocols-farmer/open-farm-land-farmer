@@ -202,8 +202,8 @@ export default function PostCard({ post }: PostCardProps) {
 
         <SideFlourish className="-top-2 left-1/2 -translate-x-1/2 bg-card px-2" />
         <SideFlourish className="-bottom-2 left-1/2 -translate-x-1/2 rotate-180 bg-card px-2" />
-        <SideFlourish className="-left-[14px] top-1/2 -translate-y-1/2 -rotate-90 bg-card px-2" />
-        <SideFlourish className="-right-[14px] top-1/2 -translate-y-1/2 rotate-90 bg-card px-2" />
+        <SideFlourish className="-left-3.5 top-1/2 -translate-y-1/2 -rotate-90 bg-card px-2" />
+        <SideFlourish className="-right-3.5 top-1/2 -translate-y-1/2 rotate-90 bg-card px-2" />
 
         <Link
           href={href}
@@ -284,7 +284,7 @@ export default function PostCard({ post }: PostCardProps) {
           </Button>
         </div>
 
-        <CardContent className="p-4 flex flex-col flex-grow space-y-3">
+        <CardContent className="p-4 flex flex-col grow space-y-3">
           <CardTitle className="text-lg  leading-snug  font-bold line-clamp-2">
             <Link
               href={href}
@@ -305,7 +305,7 @@ export default function PostCard({ post }: PostCardProps) {
               href={`/profile/${post.author.username}`}
               className="flex items-center gap-2 group/author min-w-0"
             >
-              <Avatar className="w-7 h-7 flex-shrink-0 rounded-none border border-border group-hover/author:border-primary transition-colors grayscale group-hover/author:grayscale-0">
+              <Avatar className="w-7 h-7 shrink-0 rounded-none border border-border group-hover/author:border-primary transition-colors grayscale group-hover/author:grayscale-0">
                 <AvatarImage
                   src={post.author.profileImage ?? undefined}
                   className="object-cover transition-all"
@@ -340,7 +340,7 @@ export default function PostCard({ post }: PostCardProps) {
         <CardFooter className="p-3 border-t-3 border-double ">
           <Button
             variant="outline"
-            className=" cursor-pointer mt-3 rounded-none w-full h-10 border-3 border-double font-bold group/btn transition-all  "
+            className=" cursor-pointer mt-3 rounded-none w-full h-10 border-3 border-double group/btn transition-all  "
             onClick={() => router.push(href)}
           >
             {smartActionText}
@@ -393,7 +393,7 @@ export default function PostCard({ post }: PostCardProps) {
                 size="sm"
                 className="rounded-none   font-black text-[10px] border-dashed"
               >
-                Close Ledger
+                Close
               </Button>
             </DialogClose>
           </DialogFooter>

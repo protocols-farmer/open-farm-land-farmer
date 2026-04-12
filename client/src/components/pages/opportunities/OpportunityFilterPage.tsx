@@ -193,14 +193,14 @@ export default function OpportunityFilterPage({
         </p>
       </div>
 
-      <Card className="p-4 md:p-6 bg-background/60 backdrop-blur-md border-border/50 shadow-sm  mb-8">
+      <Card className="p-4 md:p-6 bg-background/60 backdrop-blur-md border-border/50 shadow-sm  mb-8 rounded-none">
         <div className="flex flex-col gap-4">
           <div className="flex flex-col lg:flex-row gap-4">
             <div className="relative grow">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/50" />
               <Input
                 placeholder={searchPlaceholder}
-                className="pl-11 h-12 text-sm  border-border/40 bg-background/50"
+                className="pl-11 h-12 text-sm  border-border/40 bg-background/50 rounded-none"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />

@@ -1,5 +1,4 @@
 // server/src/features/opportunities/opportunity.service.ts
-
 import prisma from "@/db/prisma.js";
 import { Prisma } from "@prisma-client";
 import { createHttpError } from "@/utils/error.factory.js";
@@ -14,25 +13,13 @@ import { logger } from "@/config/logger.js";
 import { deleteFromCloudinary } from "@/config/cloudinary.js";
 
 class OpportunityService {
-  /**
-   * Helper to ensure tags are unique, trimmed, and lowercase.
-   * Prevents P2002 unique constraint errors on OpportunityTag table.
-   */
-  /**
-   * 🚜 TAG GUARD: Hardened sanitization for job opportunities.
-   * Enforces lowercase, trims, rejects spaces, and hard-caps length at 25 chars.
-   */
   private sanitizeTags(tags: any): string[] {
     if (!tags || !Array.isArray(tags)) return [];
-
     const normalizedTags = tags.map((t: any) => {
-      // Handle string or object {name: '...'}
       const name =
         typeof t === "string" ? t : t?.name ? String(t.name) : String(t);
-
       return name.trim().toLowerCase().substring(0, 25);
     });
-
     return [
       ...new Set(
         normalizedTags.filter(
@@ -41,15 +28,11 @@ class OpportunityService {
       ),
     ].slice(0, 10);
   }
-  /**
-   * Creates a new job opportunity and notifies subscribed wanderers.
-   * Includes full broadcast tracking (Found, Success, Failure) in the logs.
-   */
+
   public async create(data: CreateOpportunityDto, posterId: string) {
     const { tags, ...opportunityData } = data;
     const uniqueTags = this.sanitizeTags(tags);
 
-    // 1. Create the database record
     const newOpportunity = await prisma.opportunity.create({
       data: {
         ...opportunityData,
@@ -73,31 +56,15 @@ class OpportunityService {
       },
     });
 
-    // 2. Trigger Marketing Emails (Non-blocking / Background)
+    // Background Broadcast
     prisma.user
       .findMany({
-        where: {
-          status: "ACTIVE",
-          settings: { emailMarketing: true },
-        },
-        select: { email: true, name: true },
+        where: { status: "ACTIVE", settings: { emailMarketing: true } },
+        select: { email: true },
       })
       .then(async (users) => {
-        console.log(
-          `🚀 OPPORTUNITY BROADCAST: Found ${users.length} eligible users.`,
-        );
-
-        if (users.length === 0) {
-          console.warn(
-            "⚠️ BROADCAST ABORTED: No active users with marketing enabled found.",
-          );
-          return;
-        }
-
+        if (users.length === 0) return;
         const opportunityUrl = `${config.socialAuth.frontendUrl}/opportunities/${newOpportunity.id}`;
-        let successCount = 0;
-        let failureCount = 0;
-
         for (const user of users) {
           try {
             await emailService.sendOpportunityAlert(user.email, {
@@ -109,47 +76,27 @@ class OpportunityService {
               tags: newOpportunity.tags.map((t) => t.tag.name),
               url: opportunityUrl,
             });
-            successCount++;
           } catch (err) {
-            failureCount++;
             logger.warn(
               { err, email: user.email },
-              "Failed to send opportunity alert email",
+              "Opportunity alert failed.",
             );
           }
         }
-
-        logger.info(
-          {
-            totalAudience: users.length,
-            successful: successCount,
-            failed: failureCount,
-            opportunityId: newOpportunity.id,
-          },
-          "📢 Opportunity broadcast completed.",
-        );
       })
-      .catch((err) => {
-        logger.error(
-          { err },
-          "❌ Critical failure in fetching users for broadcast",
-        );
-      });
+      .catch((err) =>
+        logger.error({ err }, "Broadcast initialization failed."),
+      );
 
     return newOpportunity;
   }
 
-  /**
-   * 🚜 REFINED: Retrieves all job opportunities with search and filtering.
-   */
   public async findAll(filters: OpportunityQueryFilters) {
     const skip = Number(filters.skip) || 0;
-    const take = Number(filters.take) || 10;
+    const take = Number(filters.take) || 12;
     const { q, type, isRemote, tags } = filters;
-
     const where: Prisma.OpportunityWhereInput = {};
 
-    // 1. Fuzzy Search: Title, Company, or Description
     if (q) {
       where.OR = [
         { title: { contains: q, mode: "insensitive" } },
@@ -157,27 +104,14 @@ class OpportunityService {
         { fullDescription: { contains: q, mode: "insensitive" } },
       ];
     }
-
-    // 2. Strict Enum Filtering: Opportunity Type
-    if (type) {
-      where.type = type;
-    }
-
-    // 3. Remote Filtering: Boolean logic
-    if (isRemote !== undefined) {
+    if (type) where.type = type;
+    if (isRemote !== undefined)
       where.isRemote = isRemote === "true" || isRemote === true;
-    }
-
-    // 4. Tag Filtering: Intersection via join table
     if (tags) {
       const tagList = tags.split(",").map((t) => t.trim().toLowerCase());
       if (tagList.length > 0) {
         where.tags = {
-          some: {
-            tag: {
-              name: { in: tagList, mode: "insensitive" },
-            },
-          },
+          some: { tag: { name: { in: tagList, mode: "insensitive" } } },
         };
       }
     }
@@ -199,9 +133,6 @@ class OpportunityService {
     return { opportunities, total };
   }
 
-  /**
-   * Retrieves a single job opportunity by its ID.
-   */
   public async findOne(id: string) {
     const opportunity = await prisma.opportunity.findUnique({
       where: { id },
@@ -214,36 +145,27 @@ class OpportunityService {
     return opportunity;
   }
 
-  /**
-   * Updates an existing job opportunity.
-   */
   public async update(id: string, data: UpdateOpportunityDto) {
     const { tags, retainedLogoUrl, ...opportunityData } = data;
     const uniqueTags = this.sanitizeTags(tags);
-
-    const currentOpportunity = await this.findOne(id);
+    const current = await this.findOne(id);
 
     if (
       opportunityData.companyLogoPublicId &&
-      currentOpportunity.companyLogoPublicId &&
-      currentOpportunity.companyLogoPublicId !==
-        opportunityData.companyLogoPublicId
+      current.companyLogoPublicId &&
+      current.companyLogoPublicId !== opportunityData.companyLogoPublicId
     ) {
-      deleteFromCloudinary(currentOpportunity.companyLogoPublicId).catch(
-        (err) =>
-          logger.error(
-            { err, publicId: currentOpportunity.companyLogoPublicId },
-            "Failed to delete old company logo during update",
-          ),
+      deleteFromCloudinary(current.companyLogoPublicId).catch((err) =>
+        logger.error(err, "Old logo cleanup failed."),
       );
     }
 
-    const updatedOpportunity = await prisma.opportunity.update({
+    return prisma.opportunity.update({
       where: { id },
       data: {
         ...opportunityData,
         tags: {
-          deleteMany: {}, // Clear old relations
+          deleteMany: {},
           create: uniqueTags.map((tagName) => ({
             tag: {
               connectOrCreate: {
@@ -259,24 +181,15 @@ class OpportunityService {
         tags: { include: { tag: true } },
       },
     });
-    return updatedOpportunity;
   }
 
-  /**
-   * Deletes a job opportunity.
-   */
   public async remove(id: string) {
     const opportunity = await this.findOne(id);
-
     if (opportunity.companyLogoPublicId) {
       await deleteFromCloudinary(opportunity.companyLogoPublicId).catch((err) =>
-        logger.error(
-          { err, publicId: opportunity.companyLogoPublicId },
-          "Failed to delete company logo during opportunity removal",
-        ),
+        logger.error(err, "Cleanup failure."),
       );
     }
-
     await prisma.opportunity.delete({ where: { id } });
   }
 }

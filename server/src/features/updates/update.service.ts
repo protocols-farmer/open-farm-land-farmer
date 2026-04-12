@@ -1,4 +1,3 @@
-//src/features/updates/update.service.ts
 import prisma from "@/db/prisma.js";
 import { SystemRole } from "@prisma-client";
 import { createHttpError } from "@/utils/error.factory.js";
@@ -8,10 +7,6 @@ import { config } from "@/config/index.js";
 import { logger } from "@/config/logger.js";
 
 class UpdateService {
-  /**
-   * Creates a new system update and notifies the guild.
-   * Includes explicit console logging for dev-mode visibility.
-   */
   public async create(data: CreateUpdateDto, authorId: string) {
     const newUpdate = await prisma.update.create({
       data: {
@@ -21,33 +16,16 @@ class UpdateService {
       include: { author: { select: { name: true, profileImage: true } } },
     });
 
-    // --- Background Email Trigger (Non-blocking) ---
+    // Broadcast in background
     prisma.user
       .findMany({
-        where: {
-          status: "ACTIVE",
-          settings: { emailUpdates: true },
-        },
+        where: { status: "ACTIVE", settings: { emailUpdates: true } },
         select: { email: true },
       })
       .then(async (users) => {
-        // 🚜 DEV LOG: Immediate visibility in your terminal
-        console.log(
-          `🚀 UPDATE BROADCAST: Found ${users.length} eligible users.`,
-        );
-
-        if (users.length === 0) {
-          console.warn(
-            "⚠️ UPDATE ABORTED: No active users with emailUpdates enabled found.",
-          );
-          return;
-        }
+        if (users.length === 0) return;
 
         const updateUrl = `${config.socialAuth.frontendUrl}/updates/${newUpdate.id}`;
-        let successCount = 0;
-        let failureCount = 0;
-
-        // Async loop ensures we respect the provider's response time
         for (const user of users) {
           try {
             await emailService.sendSystemUpdate(user.email, {
@@ -58,36 +36,18 @@ class UpdateService {
                 "...",
               url: updateUrl,
             });
-            successCount++;
           } catch (err) {
-            failureCount++;
-            logger.warn(
-              { err, email: user.email },
-              "System update email delivery failed for user.",
-            );
+            logger.warn({ err, email: user.email }, "Update email failed.");
           }
         }
-
-        // Final summary in the structured logger
-        logger.info(
-          {
-            updateId: newUpdate.id,
-            totalAudience: users.length,
-            successful: successCount,
-            failed: failureCount,
-          },
-          "📢 System update broadcast completed.",
-        );
       })
-      .catch((err) => {
-        logger.error(
-          { err },
-          "❌ Critical failure during system update broadcast initialization.",
-        );
-      });
+      .catch((err) =>
+        logger.error({ err }, "Broadcast initialization failed."),
+      );
 
     return newUpdate;
   }
+
   public async findAll(pagination: { skip: number; take: number }) {
     const { skip, take } = pagination;
     const [updates, total] = await prisma.$transaction([
@@ -123,12 +83,7 @@ class UpdateService {
       userRole === SystemRole.SUPER_ADMIN ||
       userRole === SystemRole.DEVELOPER;
 
-    if (!isAuthorized) {
-      throw createHttpError(
-        403,
-        "You are not authorized to modify this update.",
-      );
-    }
+    if (!isAuthorized) throw createHttpError(403, "Not authorized to modify.");
 
     return prisma.update.update({
       where: { id },
@@ -139,26 +94,16 @@ class UpdateService {
 
   public async remove(id: string, userId: string, userRole: SystemRole) {
     const updateToModify = await this.findOne(id);
-
     const isAuthorized =
       updateToModify.authorId === userId ||
       userRole === SystemRole.SUPER_ADMIN ||
       userRole === SystemRole.DEVELOPER;
 
-    if (!isAuthorized) {
-      throw createHttpError(
-        403,
-        "You are not authorized to delete this update.",
-      );
-    }
+    if (!isAuthorized) throw createHttpError(403, "Not authorized to delete.");
 
     await prisma.update.delete({ where: { id } });
   }
 
-  /**
-   * 🚜 Highly optimized query for the Footer/Hero version badge.
-   * Returns ONLY the single latest record that has a version string.
-   */
   public async getLatestVersion() {
     return prisma.update.findFirst({
       where: {

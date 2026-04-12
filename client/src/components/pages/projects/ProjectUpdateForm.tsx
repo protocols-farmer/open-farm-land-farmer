@@ -242,7 +242,7 @@ export default function ProjectUpdateForm({
               <FormControl>
                 <Textarea
                   placeholder="Describe the milestone or changes..."
-                  className="min-h-[120px] rounded-none border-2"
+                  className="min-h-30 rounded-none border-2"
                   {...field}
                 />
               </FormControl>

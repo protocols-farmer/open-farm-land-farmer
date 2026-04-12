@@ -1,4 +1,4 @@
-//src/lib/schemas/opportunity.schemas.ts
+// src/lib/schemas/opportunity.schemas.ts
 import { z } from "zod";
 
 /**
@@ -17,54 +17,61 @@ export const opportunitySchema = z.object({
     .min(3, "Title must be at least 3 characters.")
     .max(100, "Title cannot exceed 100 characters."),
 
-  companyName: z.string().min(1, "Company name is required."),
+  companyName: z
+    .string()
+    .min(1, "Company name is required.")
+    .max(100, "Company name cannot exceed 100 characters."),
 
-  location: z.string().min(1, "Location is required."),
+  location: z
+    .string()
+    .min(1, "Location is required.")
+    .max(100, "Location cannot exceed 100 characters."),
 
   type: OpportunityTypeEnum,
 
   fullDescription: z
     .string()
-    .min(20, "A minimum of 20 characters is required for the description."),
+    .min(20, "A minimum of 20 characters is required.")
+    .max(3000, "Description cannot exceed 3000 characters."),
 
   applyUrl: z
     .string()
-    .url({ message: "Provide a valid HTTPS application link." }),
+    .url({ message: "Provide a valid HTTPS application link." })
+    .max(500, "URL is excessively long."),
 
-  /**
-   * 🚜 REFINED: Supports both binary File (new upload) and String (retained logo).
-   * Standard .url() check is removed here because File objects don't have URLs.
-   */
   companyLogo: z.any().optional(),
 
-  isRemote: z.boolean().optional().default(false),
+  // Strict casting to ensure resolver compatibility
+  isRemote: z.boolean().default(false) as z.ZodType<boolean>,
 
-  salaryRange: z.string().optional().or(z.literal("")),
+  salaryRange: z
+    .string()
+    .max(50, "Salary range info is too long (max 50 chars).")
+    .optional()
+    .or(z.literal("")),
 
-  /**
-   * 🚜 THE POST WAY: Tags are now a strict array of strings.
-   * This allows the ReactHashTags component to control the field directly.
-   */
   tags: z
     .array(
       z
         .string()
         .min(1, "Tag cannot be empty.")
         .max(25, "Tag is too long (max 25 chars)")
-        .regex(
-          /^[a-zA-Z0-9-]+$/,
-          "Tags must be alphanumeric with hyphens only",
-        ),
+        .regex(/^[a-zA-Z0-9-]+$/, "Alphanumeric and hyphens only"),
     )
     .min(1, "At least one tag is required.")
     .max(10, "Up to 10 tags allowed."),
 
-  /**
-   * Keep responsibilities and qualifications as strings for the basic <Input /> UI.
-   * Conversion to string[] happens in the form's onSubmit.
-   */
-  responsibilities: z.string().optional().or(z.literal("")),
-  qualifications: z.string().optional().or(z.literal("")),
+  responsibilities: z
+    .string()
+    .max(1000, "Responsibilities text is too long (max 1000 chars).")
+    .optional()
+    .or(z.literal("")),
+
+  qualifications: z
+    .string()
+    .max(1000, "Qualifications text is too long (max 1000 chars).")
+    .optional()
+    .or(z.literal("")),
 });
 
 export type OpportunityFormValues = z.infer<typeof opportunitySchema>;

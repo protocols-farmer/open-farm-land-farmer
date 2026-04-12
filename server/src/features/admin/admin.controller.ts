@@ -1,110 +1,150 @@
-//src/features/admin/admin.controller.ts
 import { Request, Response } from "express";
 import { asyncHandler } from "@/middleware/asyncHandler.js";
 import { adminService } from "./admin.service.js";
 import { createHttpError } from "@/utils/error.factory.js";
-import { SystemRole, UserStatus } from "@prisma-client";
 
 class AdminController {
+  /**
+   * Fetches high-level metrics for the administration dashboard.
+   */
   getDashboardStats = asyncHandler(async (_req: Request, res: Response) => {
     const stats = await adminService.getDashboardStats();
-    res.status(200).json({ status: "success", data: stats });
+    res.status(200).json({ success: true, data: stats });
   });
 
+  /**
+   * Retrieves a paginated list of users with search and sorting.
+   */
   getAllUsers = asyncHandler(async (req: Request, res: Response) => {
-    const { users, total } = await adminService.getAllUsers(req.query);
+    const page = parseInt(req.query.page as string) || 1;
     const limit = parseInt(req.query.limit as string) || 10;
+
+    const { users, total } = await adminService.getAllUsers({
+      ...req.query,
+      page,
+      limit,
+    });
+
     res.status(200).json({
-      status: "success",
+      success: true,
       data: {
         users,
         pagination: {
           totalItems: total,
           totalPages: Math.ceil(total / limit),
-          currentPage: parseInt(req.query.page as string) || 1,
+          currentPage: page,
         },
       },
     });
   });
 
   getAllPosts = asyncHandler(async (req: Request, res: Response) => {
-    const { posts, total } = await adminService.getAllPosts(req.query);
+    const page = parseInt(req.query.page as string) || 1;
     const limit = parseInt(req.query.limit as string) || 10;
+
+    const { posts, total } = await adminService.getAllPosts({
+      ...req.query,
+      page,
+      limit,
+    });
+
     res.status(200).json({
-      status: "success",
+      success: true,
       data: {
         posts,
         pagination: {
           totalItems: total,
           totalPages: Math.ceil(total / limit),
-          currentPage: parseInt(req.query.page as string) || 1,
+          currentPage: page,
         },
       },
     });
   });
 
   getAllOpportunities = asyncHandler(async (req: Request, res: Response) => {
-    const { opportunities, total } = await adminService.getAllOpportunities(
-      req.query,
-    );
+    const page = parseInt(req.query.page as string) || 1;
     const limit = parseInt(req.query.limit as string) || 10;
+
+    const { opportunities, total } = await adminService.getAllOpportunities({
+      ...req.query,
+      page,
+      limit,
+    });
+
     res.status(200).json({
-      status: "success",
+      success: true,
       data: {
         opportunities,
         pagination: {
           totalItems: total,
           totalPages: Math.ceil(total / limit),
-          currentPage: parseInt(req.query.page as string) || 1,
+          currentPage: page,
         },
       },
     });
   });
 
   getAllUpdates = asyncHandler(async (req: Request, res: Response) => {
-    const { updates, total } = await adminService.getAllUpdates(req.query);
+    const page = parseInt(req.query.page as string) || 1;
     const limit = parseInt(req.query.limit as string) || 10;
+
+    const { updates, total } = await adminService.getAllUpdates({
+      ...req.query,
+      page,
+      limit,
+    });
+
     res.status(200).json({
-      status: "success",
+      success: true,
       data: {
         updates,
         pagination: {
           totalItems: total,
           totalPages: Math.ceil(total / limit),
-          currentPage: parseInt(req.query.page as string) || 1,
+          currentPage: page,
         },
       },
     });
   });
 
   getAllComments = asyncHandler(async (req: Request, res: Response) => {
-    const { comments, total } = await adminService.getAllComments(req.query);
+    const page = parseInt(req.query.page as string) || 1;
     const limit = parseInt(req.query.limit as string) || 10;
+
+    const { comments, total } = await adminService.getAllComments({
+      ...req.query,
+      page,
+      limit,
+    });
+
     res.status(200).json({
-      status: "success",
+      success: true,
       data: {
         comments,
         pagination: {
           totalItems: total,
           totalPages: Math.ceil(total / limit),
-          currentPage: parseInt(req.query.page as string) || 1,
+          currentPage: page,
         },
       },
     });
   });
 
+  /**
+   * Modifies a user's system role.
+   * Manual logic removed; handled by updateUserRoleSchema.
+   */
   updateUserRole = asyncHandler(async (req: Request, res: Response) => {
     const { id } = req.params;
     const { role } = req.body;
 
-    if (!role || !Object.values(SystemRole).includes(role)) {
-      throw createHttpError(400, "Invalid role provided.");
-    }
-
     const updatedUser = await adminService.updateUserRole(id, role);
-    res.status(200).json({ status: "success", data: updatedUser });
+    res.status(200).json({ success: true, data: updatedUser });
   });
 
+  /**
+   * Deletes a user account. Admins are blocked from self-deletion.
+   */
   deleteUser = asyncHandler(async (req: Request, res: Response) => {
     const { id } = req.params;
 
@@ -145,36 +185,29 @@ class AdminController {
 
   getSystemConfig = asyncHandler(async (_req: Request, res: Response) => {
     const config = await adminService.getSystemConfig();
-    res.status(200).json({ status: "success", data: config });
+    res.status(200).json({ success: true, data: config });
   });
 
+  /**
+   * Updates global system settings (e.g., Maintenance Mode).
+   */
   updateSystemConfig = asyncHandler(async (req: Request, res: Response) => {
     const { maintenanceMode, maintenanceMessage } = req.body;
     const updated = await adminService.updateSystemConfig({
       maintenanceMode,
       maintenanceMessage,
     });
-    res.status(200).json({ status: "success", data: updated });
+    res.status(200).json({ success: true, data: updated });
   });
 
+  /**
+   * Updates user status (Ban/Suspend/Active).
+   * Manual logic removed; validation and refinement handled by updateUserStatusSchema.
+   */
   updateUserStatus = asyncHandler(async (req: Request, res: Response) => {
     const { id } = req.params;
     const { status, reason, expiresAt } = req.body;
     const adminId = req.user!.id;
-
-    if (!status || !Object.values(UserStatus).includes(status)) {
-      throw createHttpError(400, "Invalid status provided.");
-    }
-
-    if (
-      (status === UserStatus.BANNED || status === UserStatus.SUSPENDED) &&
-      !reason
-    ) {
-      throw createHttpError(
-        400,
-        "A reason must be provided when banning or suspending a user.",
-      );
-    }
 
     const updatedUser = await adminService.updateUserStatus(
       id,
@@ -184,7 +217,7 @@ class AdminController {
       expiresAt ? new Date(expiresAt) : null,
     );
 
-    res.status(200).json({ status: "success", data: updatedUser });
+    res.status(200).json({ success: true, data: updatedUser });
   });
 }
 
