@@ -10,7 +10,10 @@ export const submitAppealSchema = z.object({
       })
       .trim()
       .min(10, "Your appeal must be at least 10 characters long.")
-      .max(500, "Your appeal is too long (max 500 characters)."),
+      .max(
+        500,
+        "Your appeal is too long. Please keep it under 500 characters.",
+      ),
   }),
 });
 

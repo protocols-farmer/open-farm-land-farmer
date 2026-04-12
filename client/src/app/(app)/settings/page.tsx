@@ -18,12 +18,10 @@ export default function SettingsPage() {
             <div className="p-2 bg-primary/10 rounded-lg">
               <SettingsIcon className="h-6 w-6 text-primary" />
             </div>
-            <h1 className="text-4xl font-black uppercase tracking-tighter">
-              Account Settings
-            </h1>
+            <h1 className="text-4xl font-black  ">Account Settings</h1>
           </div>
           <p className="text-muted-foreground text-lg font-medium">
-            Fine-tune your experience within the Guild.
+            Fine-tune your experience within Open Farm Land.
           </p>
         </div>
 
@@ -33,16 +31,14 @@ export default function SettingsPage() {
           <section className="space-y-4">
             <div className="flex items-center gap-2 text-primary">
               <ShieldCheck className="h-5 w-5" />
-              <h2 className="text-sm font-black uppercase tracking-[0.2em]">
-                Privacy & Communication
-              </h2>
+              <h2 className="text-sm font-black  ">Privacy & Communication</h2>
             </div>
             <EmailSettingsForm />
           </section>
         </div>
 
         <p className="text-xs text-center text-muted-foreground pt-10">
-          All changes are saved automatically to your Guild profile.
+          All changes are saved automatically to your Open Farm Land profile.
         </p>
       </div>
     </div>

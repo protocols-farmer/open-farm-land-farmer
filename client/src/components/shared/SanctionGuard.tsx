@@ -1,4 +1,3 @@
-//src/components/shared/SanctionGuard.tsx
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -16,6 +15,7 @@ import {
   Loader2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 export default function SanctionGuard({
   children,
@@ -24,7 +24,6 @@ export default function SanctionGuard({
 }) {
   const currentUser = useAppSelector(selectCurrentUser);
   const pathname = usePathname();
-
   const [logout, { isLoading: isLoggingOut }] = useLogoutMutation();
   const [timeLeft, setTimeLeft] = useState<string>("");
 
@@ -39,10 +38,7 @@ export default function SanctionGuard({
         ).getTime();
         const now = new Date().getTime();
         const difference = expiry - now;
-
-        if (difference <= 0) {
-          return "Suspension finished! Please refresh the page to regain access.";
-        }
+        if (difference <= 0) return "Suspension expired. Please refresh.";
 
         const days = Math.floor(difference / (1000 * 60 * 60 * 24));
         const hours = Math.floor(
@@ -52,8 +48,7 @@ export default function SanctionGuard({
           (difference % (1000 * 60 * 60)) / (1000 * 60),
         );
 
-        if (days > 0) return `${days} Days, ${hours} Hours`;
-        return `${hours} Hours, ${minutes} Minutes`;
+        return days > 0 ? `${days}d ${hours}h` : `${hours}h ${minutes}m`;
       };
 
       setTimeLeft(calculateTimeLeft());
@@ -62,19 +57,15 @@ export default function SanctionGuard({
     }
   }, [currentUser]);
 
-  if (!currentUser || currentUser.status === "ACTIVE") {
+  if (!currentUser || currentUser.status === "ACTIVE") return <>{children}</>;
+  if (currentUser.status === "BANNED" && pathname?.startsWith("/appeals"))
     return <>{children}</>;
-  }
-
-  if (currentUser.status === "BANNED" && pathname?.startsWith("/appeals")) {
-    return <>{children}</>;
-  }
 
   const handleLogout = async () => {
     try {
       await logout().unwrap();
       window.location.href = "/auth/login";
-    } catch (error) {
+    } catch {
       window.location.href = "/auth/login";
     }
   };
@@ -82,121 +73,83 @@ export default function SanctionGuard({
   const reason =
     currentUser.activeSanction?.reason || "Violating community guidelines.";
 
-  if (currentUser.status === "BANNED") {
-    return (
-      <div className="flex min-h-screen flex-col items-center justify-center bg-background p-6 animate-in fade-in duration-500">
-        <div className="mx-auto flex w-full max-w-105 flex-col items-center space-y-8 text-center">
-          {/* Banned Icon using Shadcn 'destructive' variables */}
-          <div className="flex h-24 w-24 items-center justify-center rounded-full bg-destructive/10 border-8 border-destructive/20">
-            <Ban className="h-12 w-12 text-destructive" />
-          </div>
+  return (
+    <div className="flex min-h-screen flex-col items-center justify-center bg-background p-6 animate-in fade-in duration-500">
+      <div className="mx-auto flex w-full max-w-lg flex-col items-center space-y-8 text-center">
+        {/* Sharp Icon Container */}
+        <div
+          className={cn(
+            "flex h-20 w-20 items-center justify-center border-4 ring-8 ring-offset-4 ring-offset-background transition-all",
+            currentUser.status === "BANNED"
+              ? "bg-destructive/10 border-destructive ring-destructive/10"
+              : "bg-secondary border-secondary-foreground ring-secondary/20",
+          )}
+        >
+          {currentUser.status === "BANNED" ? (
+            <Ban className="h-10 w-10 text-destructive" />
+          ) : (
+            <AlertTriangle className="h-10 w-10 text-secondary-foreground" />
+          )}
+        </div>
 
-          <div className="space-y-3 w-full">
-            <h1 className="text-4xl font-black tracking-tight text-foreground">
-              Account Banned
-            </h1>
-            <p className="text-muted-foreground font-medium text-sm leading-relaxed">
-              Your account has been permanently restricted from accessing the
-              platform due to a severe violation of our community guidelines.
+        <div className="space-y-4 w-full">
+          <h1 className="text-4xl font-black   ">
+            Account {currentUser.status}
+          </h1>
+          <p className="text-muted-foreground font-medium text-sm leading-relaxed max-w-sm mx-auto">
+            Access to the platform has been restricted due to a technical
+            violation of our community standards.
+          </p>
+
+          {/* Reason Box - Sharp Design */}
+          <div className="bg-muted/30 border border-border p-5 text-left rounded-none">
+            <p className="text-[10px] font-black text-muted-foreground mb-2">
+              Official Reason
             </p>
-
-            <div className="mt-4 bg-destructive/10 border border-destructive/20 p-4 rounded-lg text-left">
-              <p className="text-sm font-bold text-destructive mb-1">
-                Reason for Ban:
-              </p>
-              <p className="text-sm text-foreground leading-relaxed">
-                "{reason}"
-              </p>
-            </div>
+            <p className="text-sm  border-l-2 border-primary pl-4 py-1 ">
+              "{reason}"
+            </p>
           </div>
 
-          <div className="flex w-full flex-col gap-3 pt-6 border-t border-border/50">
-            <Button asChild size="lg" className="w-full font-bold">
+          {currentUser.status === "SUSPENDED" && timeLeft && (
+            <div className="flex items-center justify-center gap-2 text-[11px] font-black   bg-secondary/50 py-3 border border-border">
+              <Clock className="h-4 w-4" />
+              <span>
+                Restoration:{" "}
+                <span className="text-foreground underline">{timeLeft}</span>
+              </span>
+            </div>
+          )}
+        </div>
+
+        <div className="flex w-full flex-col gap-3 pt-6 border-t border-border">
+          {currentUser.status === "BANNED" && (
+            <Button
+              asChild
+              size="lg"
+              className="w-full rounded-none font-bold "
+            >
               <Link href="/appeals">
-                Submit an Appeal <ArrowRight className="ml-2 h-4 w-4" />
+                OPEN APPEAL CASE <ArrowRight className="ml-2 h-4 w-4" />
               </Link>
             </Button>
-            <Button
-              variant="outline"
-              size="lg"
-              className="w-full"
-              onClick={handleLogout}
-              disabled={isLoggingOut}
-            >
-              {isLoggingOut ? (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              ) : (
-                <LogOut className="mr-2 h-4 w-4" />
-              )}{" "}
-              Sign Out
-            </Button>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  if (currentUser.status === "SUSPENDED") {
-    return (
-      <div className="flex min-h-screen flex-col items-center justify-center bg-background p-6 animate-in fade-in duration-500">
-        <div className="mx-auto flex w-full max-w-105 flex-col items-center space-y-8 text-center">
-          {/* Suspended Icon using Shadcn 'secondary' and 'muted' variables to avoid hardcoded oranges */}
-          <div className="flex h-24 w-24 items-center justify-center rounded-full bg-secondary border-8 border-secondary/50">
-            <AlertTriangle className="h-12 w-12 text-secondary-foreground" />
-          </div>
-
-          <div className="space-y-3 w-full">
-            <h1 className="text-4xl font-black tracking-tight text-foreground">
-              Account Suspended
-            </h1>
-            <p className="text-muted-foreground font-medium text-sm leading-relaxed">
-              Your account is currently serving a temporary suspension for
-              violating community guidelines. You will automatically regain
-              access once the suspension period expires.
-            </p>
-
-            {/* Dynamic Reason Box using semantic borders and backgrounds */}
-            <div className="mt-4 bg-muted/30 border border-border p-4 rounded-lg text-left">
-              <p className="text-sm font-bold text-foreground mb-1">
-                Reason for Suspension:
-              </p>
-              <p className="text-sm text-muted-foreground leading-relaxed">
-                "{reason}"
-              </p>
-            </div>
-
-            {/* Live Timer */}
-            {timeLeft && (
-              <div className="mt-4 flex items-center justify-center gap-2 text-muted-foreground font-medium bg-muted/50 py-3 rounded-md border border-border">
-                <Clock className="h-5 w-5" />
-                <span>
-                  Access Restores In:{" "}
-                  <span className="text-foreground font-bold">{timeLeft}</span>
-                </span>
-              </div>
+          )}
+          <Button
+            variant="outline"
+            size="lg"
+            className="w-full rounded-none font-bold"
+            onClick={handleLogout}
+            disabled={isLoggingOut}
+          >
+            {isLoggingOut ? (
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            ) : (
+              <LogOut className="mr-2 h-4 w-4" />
             )}
-          </div>
-
-          <div className="flex w-full flex-col gap-3 pt-6 border-t border-border/50">
-            <Button
-              variant="outline"
-              size="lg"
-              className="w-full"
-              onClick={handleLogout}
-              disabled={isLoggingOut}
-            >
-              {isLoggingOut ? (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              ) : (
-                <LogOut className="mr-2 h-4 w-4" />
-              )}{" "}
-              Sign Out
-            </Button>
-          </div>
+            SIGN OUT
+          </Button>
         </div>
       </div>
-    );
-  }
-
-  return <>{children}</>;
+    </div>
+  );
 }

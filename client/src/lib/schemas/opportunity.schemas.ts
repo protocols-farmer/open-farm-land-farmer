@@ -1,16 +1,11 @@
-// src/lib/schemas/opportunity.schemas.ts
+//src/lib/schemas/opportunity.schemas.ts
 import { z } from "zod";
+import { OpportunityType } from "../features/admin/adminTypes";
 
 /**
- * Syncs with Backend 'OpportunityType' Prisma Enum.
+ * 🚜 Opportunity Validation Schema
+ * 1:1 Mirror of the Backend Digital Perimeter
  */
-const OpportunityTypeEnum = z.enum(
-  ["FULL_TIME", "PART_TIME", "CONTRACT", "INTERNSHIP"],
-  {
-    required_error: "Selection of an opportunity type is mandatory.",
-  },
-);
-
 export const opportunitySchema = z.object({
   title: z
     .string()
@@ -27,51 +22,55 @@ export const opportunitySchema = z.object({
     .min(1, "Location is required.")
     .max(100, "Location cannot exceed 100 characters."),
 
-  type: OpportunityTypeEnum,
+  type: z.nativeEnum(OpportunityType, {
+    errorMap: () => ({ message: "Please select a valid opportunity type." }),
+  }),
 
   fullDescription: z
     .string()
-    .min(20, "A minimum of 20 characters is required.")
-    .max(3000, "Description cannot exceed 3000 characters."),
+    .min(20, "Full description must be at least 20 characters.")
+    .max(3000, "Description is too long (max 3000 characters)."),
 
   applyUrl: z
     .string()
-    .url({ message: "Provide a valid HTTPS application link." })
+    .url("Please enter a valid URL.")
+    .regex(/^https:\/\//, "For security, links must use HTTPS.")
     .max(500, "URL is excessively long."),
 
   companyLogo: z.any().optional(),
 
-  // Strict casting to ensure resolver compatibility
-  isRemote: z.boolean().default(false) as z.ZodType<boolean>,
+  isRemote: z.boolean().default(false),
 
   salaryRange: z
     .string()
-    .max(50, "Salary range info is too long (max 50 chars).")
+    .max(50, "Salary range must be under 50 characters.")
     .optional()
     .or(z.literal("")),
+
+  // 🚜 SYNCED: Character limits and error messages
+  responsibilities: z
+    .array(z.string().max(200, "Each item must be under 200 characters."))
+    .min(1, "At least one responsibility is required.")
+    .max(20, "Maximum 20 items allowed."),
+
+  qualifications: z
+    .array(z.string().max(200, "Each item must be under 200 characters."))
+    .min(1, "At least one qualification is required.")
+    .max(20, "Maximum 20 items allowed."),
 
   tags: z
     .array(
       z
         .string()
         .min(1, "Tag cannot be empty.")
-        .max(25, "Tag is too long (max 25 chars)")
-        .regex(/^[a-zA-Z0-9-]+$/, "Alphanumeric and hyphens only"),
+        .max(25, "Each tag must be under 25 characters.")
+        .regex(
+          /^[a-zA-Z0-9-]+$/,
+          "Tags must be alphanumeric with hyphens only.",
+        ),
     )
     .min(1, "At least one tag is required.")
     .max(10, "Up to 10 tags allowed."),
-
-  responsibilities: z
-    .string()
-    .max(1000, "Responsibilities text is too long (max 1000 chars).")
-    .optional()
-    .or(z.literal("")),
-
-  qualifications: z
-    .string()
-    .max(1000, "Qualifications text is too long (max 1000 chars).")
-    .optional()
-    .or(z.literal("")),
 });
 
 export type OpportunityFormValues = z.infer<typeof opportunitySchema>;

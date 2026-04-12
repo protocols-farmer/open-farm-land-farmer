@@ -1,3 +1,4 @@
+//src/features/guideSection/guideSection.controller.ts
 import { asyncHandler } from "@/middleware/asyncHandler.js";
 import { Request, Response } from "express";
 import { guideSectionService } from "./guideSection.service.js";

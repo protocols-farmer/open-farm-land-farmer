@@ -77,10 +77,10 @@ export default function EmailSettingsForm() {
 
   if (isFetching) {
     return (
-      <Card className="border-none shadow-none bg-transparent">
+      <Card className="border-3 rounded-none boarder-double shadow-none bg-transparent">
         <div className="space-y-4">
           {[1, 2, 3].map((i) => (
-            <Skeleton key={i} className="h-20 w-full rounded-xl" />
+            <Skeleton key={i} className="h-20 w-full " />
           ))}
         </div>
       </Card>
@@ -90,25 +90,26 @@ export default function EmailSettingsForm() {
   return (
     <Form {...form}>
       <div className="space-y-6">
-        <Card className="border-2 border-primary/5 bg-card/50 backdrop-blur-sm">
+        <Card className="border-3 border-double  bg-card rounded-none">
           <CardHeader>
             <div className="flex items-center gap-2">
               <Mail className="h-5 w-5 text-primary" />
-              <CardTitle className="text-xl font-black uppercase tracking-tighter">
+              <CardTitle className="text-xl font-black  ">
                 Email Notifications
               </CardTitle>
             </div>
             <CardDescription>
-              Manage how the Guild contacts you regarding platform activity.
+              Manage how Open Farm Land contacts you regarding platform
+              activity.
             </CardDescription>
           </CardHeader>
-          <CardContent className="grid gap-6">
+          <CardContent className="grid gap-6 rounded-none border-3 border-double p-3">
             {/* Opportunity Alerts */}
             <FormField
               control={form.control}
               name="emailMarketing"
               render={({ field }) => (
-                <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4 shadow-sm bg-background/50">
+                <FormItem className="flex flex-row items-center justify-between  border-3 border-double p-4 shadow-sm bg-background/50">
                   <div className="space-y-0.5">
                     <FormLabel className="text-base font-bold flex items-center gap-2">
                       <Megaphone className="h-4 w-4 text-orange-500" />
@@ -137,7 +138,7 @@ export default function EmailSettingsForm() {
               control={form.control}
               name="emailUpdates"
               render={({ field }) => (
-                <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4 shadow-sm bg-background/50">
+                <FormItem className="flex flex-row items-center justify-between  border-3 border-double p-4 shadow-sm bg-background/50">
                   <div className="space-y-0.5">
                     <FormLabel className="text-base font-bold flex items-center gap-2">
                       <ShieldCheck className="h-4 w-4 text-blue-500" />
@@ -166,7 +167,7 @@ export default function EmailSettingsForm() {
               control={form.control}
               name="emailSocial"
               render={({ field }) => (
-                <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4 shadow-sm bg-background/50">
+                <FormItem className="flex flex-row items-center justify-between  border-3 border-double p-4 shadow-sm bg-background/50">
                   <div className="space-y-0.5">
                     <FormLabel className="text-base font-bold flex items-center gap-2">
                       <BellRing className="h-4 w-4 text-purple-500" />

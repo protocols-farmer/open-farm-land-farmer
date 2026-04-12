@@ -1,4 +1,4 @@
-//src/components/pages/admin/posts/PostManagement.tsx
+//src/components/pages/admin/posts/PostsManagement.tsx
 "use client";
 
 import React, { useState } from "react";
@@ -35,6 +35,7 @@ import {
   MessageSquare,
   Share2,
   Bookmark,
+  Loader2,
 } from "lucide-react";
 import { format } from "date-fns";
 import toast from "react-hot-toast";
@@ -84,7 +85,7 @@ function PostActions({ post }: { post: AdminPostRow }) {
   const handleDelete = async () => {
     try {
       await deletePost(post.id).unwrap();
-      toast.success(`Post "${post.title.substring(0, 20)}..." deleted.`);
+      toast.success("Post successfully purged.");
     } catch (error) {
       toast.error("Failed to delete post.");
     }
@@ -98,9 +99,8 @@ function PostActions({ post }: { post: AdminPostRow }) {
             <MoreHorizontal className="h-4 w-4" />
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end">
+        <DropdownMenuContent align="end" className="rounded-none">
           <DropdownMenuLabel>Actions</DropdownMenuLabel>
-          {/* UPDATED: Link now uses the smart href */}
           <DropdownMenuItem asChild>
             <Link href={href}>
               <Eye className="mr-2 h-4 w-4" />
@@ -109,7 +109,7 @@ function PostActions({ post }: { post: AdminPostRow }) {
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem
-            className="text-red-500 focus:bg-red-500/10"
+            className="text-destructive focus:bg-destructive/10 focus:text-destructive cursor-pointer"
             onClick={() => setIsAlertOpen(true)}
             disabled={isLoading}
           >
@@ -120,17 +120,28 @@ function PostActions({ post }: { post: AdminPostRow }) {
       </DropdownMenu>
 
       <AlertDialog open={isAlertOpen} onOpenChange={setIsAlertOpen}>
-        <AlertDialogContent>
+        <AlertDialogContent className="rounded-none">
           <AlertDialogHeader>
             <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
             <AlertDialogDescription>
-              This will permanently delete this post and cannot be undone.
+              This will permanently delete this post and all associated
+              comments/stats.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDelete} disabled={isLoading}>
-              {isLoading ? "Deleting..." : "Yes, delete post"}
+            <AlertDialogCancel className="rounded-none">
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDelete}
+              disabled={isLoading}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90 rounded-none"
+            >
+              {isLoading ? (
+                <Loader2 className="animate-spin h-4 w-4" />
+              ) : (
+                "Yes, delete post"
+              )}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -158,7 +169,7 @@ export default function PostManagement() {
     <>
       <Input
         placeholder="Search posts or authors..."
-        className="w-64"
+        className="w-64 rounded-none"
         value={searchTerm}
         onChange={(e) => setSearchTerm(e.target.value)}
       />
@@ -166,10 +177,10 @@ export default function PostManagement() {
         value={category}
         onValueChange={(value) => setCategory(value as PostCategory | "ALL")}
       >
-        <SelectTrigger className="w-[180px]">
+        <SelectTrigger className="w-45 rounded-none">
           <SelectValue placeholder="Filter by category" />
         </SelectTrigger>
-        <SelectContent>
+        <SelectContent className="rounded-none">
           <SelectItem value="ALL">All Categories</SelectItem>
           {Object.values(PostCategory).map((cat) => (
             <SelectItem key={cat} value={cat}>
@@ -184,113 +195,143 @@ export default function PostManagement() {
   return (
     <ManagementPageLayout
       title="Post Management"
-      description="View, search, filter, and moderate all posts on the platform."
+      description="Monitor and moderate content published across the community."
       itemCount={pagination?.totalItems ?? 0}
       controls={controls}
     >
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead className="w-[80px]">Image</TableHead>
-            <TableHead className="w-[25%]">Title</TableHead>
-            <TableHead className="w-[35%]">Description</TableHead>
-            <TableHead>Author</TableHead>
-            <TableHead>Stats</TableHead>
-            <TableHead className="text-right">Actions</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {isLoading ? (
-            <TableRow>
-              <TableCell colSpan={6} className="text-center h-24">
-                Loading posts...
-              </TableCell>
+      <div className="rounded-none border bg-card">
+        <Table>
+          <TableHeader>
+            <TableRow className="bg-muted/50">
+              <TableHead className="w-20">Image</TableHead>
+              <TableHead className="w-[25%]">Title</TableHead>
+              <TableHead className="w-[35%]">Description</TableHead>
+              <TableHead>Author</TableHead>
+              <TableHead>Engagement</TableHead>
+              <TableHead className="text-right">Actions</TableHead>
             </TableRow>
-          ) : isError ? (
-            <TableRow>
-              <TableCell
-                colSpan={6}
-                className="text-center h-24 text-destructive"
-              >
-                Failed to load posts.
-              </TableCell>
-            </TableRow>
-          ) : posts.length === 0 ? (
-            <TableRow>
-              <TableCell colSpan={6} className="text-center h-24">
-                No posts found.
-              </TableCell>
-            </TableRow>
-          ) : (
-            posts.map((post) => (
-              <TableRow key={post.id}>
-                <TableCell>
-                  <div className="relative h-16 w-16 rounded-md overflow-hidden bg-muted shrink-0">
-                    {post.images?.[0]?.url ? (
-                      <Image
-                        src={post.images[0].url}
-                        alt={post.title}
-                        fill
-                        className="object-cover"
-                      />
-                    ) : (
-                      <div className="h-full w-full bg-secondary"></div>
-                    )}
-                  </div>
-                </TableCell>
-                <TableCell className="font-medium align-top break-all">
-                  {post.title}
-                </TableCell>
-                <TableCell className="text-sm text-muted-foreground align-top break-all">
-                  {post.description}
-                </TableCell>
-                <TableCell className="align-top">
-                  <div className="flex items-center gap-2">
-                    <Avatar className="h-8 w-8">
-                      <AvatarImage
-                        src={post.author.profileImage ?? undefined}
-                      />
-                      <AvatarFallback>
-                        {post.author.name.slice(0, 2)}
-                      </AvatarFallback>
-                    </Avatar>
-                    <span className="text-sm">@{post.author.username}</span>
-                  </div>
-                </TableCell>
-                <TableCell className="align-top">
-                  <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs text-muted-foreground">
-                    <span className="flex items-center">
-                      <Eye className="h-3 w-3 mr-1.5" />
-                      {post.viewsCount.toLocaleString()}
-                    </span>
-                    <span className="flex items-center">
-                      <Heart className="h-3 w-3 mr-1.5" />
-                      {post.likesCount.toLocaleString()}
-                    </span>
-                    <span className="flex items-center">
-                      <MessageSquare className="h-3 w-3 mr-1.5" />
-                      {post.commentsCount.toLocaleString()}
-                    </span>
-                    <span className="flex items-center">
-                      <Bookmark className="h-3 w-3 mr-1.5" />
-                      {post.savedCount.toLocaleString()}
-                    </span>
-                    <span className="flex items-center col-span-2">
-                      <Share2 className="h-3 w-3 mr-1.5" />
-                      {post.sharesCount.toLocaleString()}
-                    </span>
-                  </div>
-                </TableCell>
-                <TableCell className="text-right align-top">
-                  <PostActions post={post} />
+          </TableHeader>
+          <TableBody>
+            {isLoading ? (
+              <TableRow>
+                <TableCell colSpan={6} className="text-center h-24 italic">
+                  <Loader2 className="animate-spin h-5 w-5 mx-auto mb-2" />
+                  Retrieving content...
                 </TableCell>
               </TableRow>
-            ))
-          )}
-        </TableBody>
-      </Table>
+            ) : isError ? (
+              <TableRow>
+                <TableCell
+                  colSpan={6}
+                  className="text-center h-24 text-destructive font-bold"
+                >
+                  Failed to load post stream.
+                </TableCell>
+              </TableRow>
+            ) : posts.length === 0 ? (
+              <TableRow>
+                <TableCell
+                  colSpan={6}
+                  className="text-center h-24 text-muted-foreground"
+                >
+                  No posts found matching your criteria.
+                </TableCell>
+              </TableRow>
+            ) : (
+              posts.map((post) => (
+                <TableRow
+                  key={post.id}
+                  className="group transition-colors hover:bg-muted/30"
+                >
+                  <TableCell>
+                    <div className="relative h-12 w-12 rounded-none overflow-hidden bg-muted shrink-0 border">
+                      {post.images?.[0]?.url ? (
+                        <Image
+                          src={post.images[0].url}
+                          alt={post.title}
+                          fill
+                          className="object-cover"
+                        />
+                      ) : (
+                        <div className="h-full w-full bg-secondary"></div>
+                      )}
+                    </div>
+                  </TableCell>
+
+                  {/* 🚜 Fixed: Added max-w and line-clamp for Title */}
+                  <TableCell className="align-top font-bold max-w-55">
+                    <p className="line-clamp-2" title={post.title}>
+                      {post.title}
+                    </p>
+                    <Badge
+                      variant="outline"
+                      className="mt-1 text-[10px] rounded-none px-1 py-0 h-4 font-mono"
+                    >
+                      {post.category}
+                    </Badge>
+                  </TableCell>
+
+                  {/* 🚜 Fixed: Added max-w and line-clamp for Description */}
+                  <TableCell className="text-sm text-muted-foreground align-top max-w-[320px]">
+                    <p
+                      className="line-clamp-2 leading-relaxed"
+                      title={post.description}
+                    >
+                      {post.description}
+                    </p>
+                  </TableCell>
+
+                  <TableCell className="align-top">
+                    <div className="flex items-center gap-2">
+                      <Avatar className="h-7 w-7 rounded-none border">
+                        <AvatarImage
+                          src={post.author.profileImage ?? undefined}
+                        />
+                        <AvatarFallback className="rounded-none text-xs">
+                          {post.author.name.slice(0, 2).toUpperCase()}
+                        </AvatarFallback>
+                      </Avatar>
+                      <span className="text-xs font-semibold">
+                        @{post.author.username}
+                      </span>
+                    </div>
+                  </TableCell>
+
+                  <TableCell className="align-top">
+                    <div className="grid grid-cols-2 gap-x-3 gap-y-1 text-[10px] text-muted-foreground font-mono">
+                      <span className="flex items-center">
+                        <Eye className="h-3 w-3 mr-1" />
+                        {post.viewsCount}
+                      </span>
+                      <span className="flex items-center">
+                        <Heart className="h-3 w-3 mr-1" />
+                        {post.likesCount}
+                      </span>
+                      <span className="flex items-center">
+                        <MessageSquare className="h-3 w-3 mr-1" />
+                        {post.commentsCount}
+                      </span>
+                      <span className="flex items-center">
+                        <Bookmark className="h-3 w-3 mr-1" />
+                        {post.savedCount}
+                      </span>
+                    </div>
+                  </TableCell>
+
+                  <TableCell className="text-right align-top">
+                    <PostActions post={post} />
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
+          </TableBody>
+        </Table>
+      </div>
+
       {pagination && (
-        <PaginationControls pagination={pagination} onPageChange={setPage} />
+        <div className="mt-6">
+          <PaginationControls pagination={pagination} onPageChange={setPage} />
+        </div>
       )}
     </ManagementPageLayout>
   );

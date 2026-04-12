@@ -24,10 +24,6 @@ class GuideStepService {
     }
   }
 
-  /**
-   * Creates a new technical step.
-   * Forces 'order' to Number to handle FormData/Query string inputs.
-   */
   async create(
     userId: string,
     postId: string,
@@ -37,18 +33,13 @@ class GuideStepService {
 
     return prisma.guideStep.create({
       data: {
-        title: data.title,
-        description: data.description,
+        title: data.title.trim(),
+        description: data.description.trim(),
         order: Number(data.order),
         post: { connect: { id: postId } },
       },
     });
   }
-
-  /**
-   * Updates step details.
-   * Performs an inclusive lookup to verify authorship via the relation tree.
-   */
   async update(
     userId: string,
     stepId: string,
@@ -60,16 +51,14 @@ class GuideStepService {
     });
 
     if (!step) throw createHttpError(404, "Guide step not found.");
-
     if (step.post.authorId !== userId) {
       throw createHttpError(403, "Unauthorized: You do not own this guide.");
     }
 
-    // 🚜 Strictly map data to avoid unexpected payload injection
     const updateData: Prisma.GuideStepUpdateInput = {};
-    if (data.title !== undefined) updateData.title = data.title;
+    if (data.title !== undefined) updateData.title = data.title.trim();
     if (data.description !== undefined)
-      updateData.description = data.description;
+      updateData.description = data.description.trim();
     if (data.order !== undefined) updateData.order = Number(data.order);
 
     return prisma.guideStep.update({
@@ -77,7 +66,6 @@ class GuideStepService {
       data: updateData,
     });
   }
-
   /**
    * Removes a step.
    * Cascade deletion of associated GuideSections is handled at the database level.

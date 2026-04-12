@@ -5,21 +5,21 @@ export const createGuideSectionSchema = z.object({
   body: z.object({
     title: z
       .string()
-      .min(3, "Title must be at least 3 characters long.")
-      .max(150, "Title cannot exceed 150 characters.")
+      .min(3, "Section title must be at least 3 characters.")
+      .max(150, "Section title cannot exceed 150 characters.")
       .optional()
       .or(z.literal("")),
 
     content: z
       .string()
-      .min(10, "Content must be at least 10 characters long.")
-      .max(20000, "Content cannot exceed 20000 characters."),
+      .min(10, "Technical content must be at least 10 characters.")
+      .max(20000, "Technical content cannot exceed 20000 characters."),
 
     order: z.coerce.number().int().positive("Order must be a positive number."),
 
     videoUrl: z
       .string()
-      .url("Please provide a valid URL.")
+      .url("Please enter a valid URL.")
       .optional()
       .or(z.literal("")),
 
@@ -31,15 +31,15 @@ export const updateGuideSectionSchema = z.object({
   body: z.object({
     title: z
       .string()
-      .min(3, "Title must be at least 3 characters long.")
-      .max(150, "Title cannot exceed 150 characters.")
+      .min(3, "Section title must be at least 3 characters.")
+      .max(150, "Section title cannot exceed 150 characters.")
       .optional()
       .or(z.literal("")),
 
     content: z
       .string()
-      .min(10, "Content must be at least 10 characters long.")
-      .max(20000, "Content cannot exceed 20000 characters.")
+      .min(10, "Technical content must be at least 10 characters.")
+      .max(20000, "Technical content cannot exceed 20000 characters.")
       .optional(),
 
     order: z.coerce
@@ -50,7 +50,7 @@ export const updateGuideSectionSchema = z.object({
 
     videoUrl: z
       .string()
-      .url("Please provide a valid URL.")
+      .url("Please enter a valid URL.")
       .optional()
       .or(z.literal("")),
 

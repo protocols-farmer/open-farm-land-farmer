@@ -1,5 +1,5 @@
 //src/lib/features/admin/adminTypes.ts
-// These should match the enums in your backend/Prisma schema
+
 export enum SystemRole {
   USER = "USER",
   SYSTEM_CONTENT_CREATOR = "SYSTEM_CONTENT_CREATOR",
@@ -40,15 +40,11 @@ export enum OpportunityType {
   INTERNSHIP = "INTERNSHIP",
   FREELANCE = "FREELANCE",
 }
-
 export enum UpdateCategory {
-  PLATFORM = "PLATFORM",
-  PROJECT = "PROJECT",
-  SECURITY = "SECURITY",
-  MAINTENANCE = "MAINTENANCE",
+  APP_UPDATE = "APP_UPDATE",
+  MARKETING = "MARKETING",
+  COMMUNITY = "COMMUNITY",
 }
-
-// --- Data Shapes ---
 
 export interface AdminDashboardStats {
   totalUsers: number;
@@ -57,8 +53,8 @@ export interface AdminDashboardStats {
   totalLikes: number;
   totalSaves: number;
   totalShares: number;
-  totalOpportunities: number; // Added
-  totalUpdates: number; // Added
+  totalOpportunities: number;
+  totalUpdates: number;
 }
 
 export interface AdminUserRow {
@@ -76,6 +72,7 @@ export interface AdminUserRow {
   followingCount?: number;
   sanctionsReceived?: AdminUserSanction[];
 }
+
 export interface AdminPostRow {
   id: string;
   title: string;
@@ -155,7 +152,6 @@ export interface AdminApiQuery {
   filterByCategory?: PostCategory;
   filterByUpdateCategory?: UpdateCategory;
 }
-// --- Full API Response Shapes ---
 
 export interface PaginationInfo {
   totalItems: number;
@@ -164,12 +160,12 @@ export interface PaginationInfo {
 }
 
 export interface GetAdminStatsResponse {
-  status: string;
+  success: boolean;
   data: AdminDashboardStats;
 }
 
 export interface GetAdminUsersResponse {
-  status: string;
+  success: boolean;
   data: {
     users: AdminUserRow[];
     pagination: PaginationInfo;
@@ -177,7 +173,7 @@ export interface GetAdminUsersResponse {
 }
 
 export interface GetAdminPostsResponse {
-  status: string;
+  success: boolean;
   data: {
     posts: AdminPostRow[];
     pagination: PaginationInfo;
@@ -185,7 +181,7 @@ export interface GetAdminPostsResponse {
 }
 
 export interface GetAdminCommentsResponse {
-  status: string;
+  success: boolean;
   data: {
     comments: AdminCommentRow[];
     pagination: PaginationInfo;
@@ -193,7 +189,7 @@ export interface GetAdminCommentsResponse {
 }
 
 export interface GetAdminOpportunitiesResponse {
-  status: string;
+  success: boolean;
   data: {
     opportunities: AdminOpportunityRow[];
     pagination: PaginationInfo;
@@ -201,7 +197,7 @@ export interface GetAdminOpportunitiesResponse {
 }
 
 export interface GetAdminUpdatesResponse {
-  status: string;
+  success: boolean;
   data: {
     updates: AdminUpdateRow[];
     pagination: PaginationInfo;
@@ -216,7 +212,7 @@ export interface SystemConfig {
 }
 
 export interface GetSystemConfigResponse {
-  status: string;
+  success: boolean;
   data: SystemConfig;
 }
 

@@ -1,6 +1,4 @@
-// =================================================================
-// FILE: src/lib/features/admin/adminApiSlice.ts
-// =================================================================
+//src/lib/features/admin/adminApiSlice.ts
 import { createApi, retry } from "@reduxjs/toolkit/query/react";
 import { baseQueryWithReauth } from "../../api/baseQueryWithReauth";
 import {
@@ -15,6 +13,7 @@ import {
   GetAdminUpdatesResponse,
   GetAdminOpportunitiesResponse,
   UserStatus,
+  AdminUserRow,
 } from "./adminTypes";
 
 const baseQueryWithRetry = retry(baseQueryWithReauth, { maxRetries: 3 });
@@ -94,8 +93,10 @@ export const adminApiSlice = createApi({
             ]
           : [{ type: "AdminComments", id: "LIST" }],
     }),
+
+    // 🚜 UPDATED: Returns the updated user object with the new success flag
     updateUserRole: builder.mutation<
-      void,
+      { success: boolean; data: AdminUserRow },
       { userId: string; role: SystemRole }
     >({
       query: ({ userId, role }) => ({
@@ -103,25 +104,26 @@ export const adminApiSlice = createApi({
         method: "PATCH",
         body: { role },
       }),
-      invalidatesTags: [{ type: "AdminUsers", id: "LIST" }],
+      invalidatesTags: (result) =>
+        result?.success ? [{ type: "AdminUsers", id: "LIST" }] : [],
     }),
-    deleteUser: builder.mutation<{ success: boolean; id: string }, string>({
+
+    // 🚜 FIXED: Backend returns 204 No Content, so response type is void
+    deleteUser: builder.mutation<void, string>({
       query: (userId) => ({ url: `/admin/users/${userId}`, method: "DELETE" }),
       invalidatesTags: ["AdminUsers", "AdminStats"],
     }),
-    deletePost: builder.mutation<{ success: boolean; id: string }, string>({
+    deletePost: builder.mutation<void, string>({
       query: (postId) => ({ url: `/admin/posts/${postId}`, method: "DELETE" }),
       invalidatesTags: ["AdminPosts", "AdminStats"],
     }),
-    deleteComment: builder.mutation<{ success: boolean; id: string }, string>({
+    deleteComment: builder.mutation<void, string>({
       query: (commentId) => ({
         url: `/admin/comments/${commentId}`,
         method: "DELETE",
       }),
       invalidatesTags: ["AdminComments", "AdminStats"],
     }),
-
-    // Add these endpoints to src/lib/features/admin/adminApiSlice.ts
 
     getSystemConfig: builder.query<GetSystemConfigResponse, void>({
       query: () => "/admin/system-config",
@@ -184,21 +186,19 @@ export const adminApiSlice = createApi({
           : [{ type: "AdminUpdates", id: "LIST" }],
     }),
 
-    deleteOpportunity: builder.mutation<
-      { success: boolean; id: string },
-      string
-    >({
+    deleteOpportunity: builder.mutation<void, string>({
       query: (id) => ({ url: `/admin/opportunities/${id}`, method: "DELETE" }),
       invalidatesTags: ["AdminOpportunities", "AdminStats"],
     }),
 
-    deleteUpdate: builder.mutation<{ success: boolean; id: string }, string>({
+    deleteUpdate: builder.mutation<void, string>({
       query: (id) => ({ url: `/admin/updates/${id}`, method: "DELETE" }),
       invalidatesTags: ["AdminUpdates", "AdminStats"],
     }),
 
+    // 🚜 UPDATED: Returns the updated user object
     updateUserStatus: builder.mutation<
-      void,
+      { success: boolean; data: AdminUserRow },
       {
         userId: string;
         status: UserStatus;
@@ -211,7 +211,8 @@ export const adminApiSlice = createApi({
         method: "PATCH",
         body: { status, reason, expiresAt },
       }),
-      invalidatesTags: [{ type: "AdminUsers", id: "LIST" }],
+      invalidatesTags: (result) =>
+        result?.success ? [{ type: "AdminUsers", id: "LIST" }] : [],
     }),
   }),
 });
@@ -227,9 +228,9 @@ export const {
   useDeleteCommentMutation,
   useGetSystemConfigQuery,
   useUpdateSystemConfigMutation,
-  useGetAdminOpportunitiesQuery, // Added
+  useGetAdminOpportunitiesQuery,
   useGetAdminUpdatesQuery,
-  useDeleteOpportunityMutation, // Added
+  useDeleteOpportunityMutation,
   useDeleteUpdateMutation,
   useUpdateUserStatusMutation,
 } = adminApiSlice;

@@ -50,10 +50,6 @@ class GuideSectionService {
     }
   }
 
-  /**
-   * Create a new guide section.
-   * Handles empty title strings by converting them to null to prevent UI spacing issues.
-   */
   async create(
     userId: string,
     stepId: string,
@@ -63,11 +59,10 @@ class GuideSectionService {
     await this.verifyAuthorshipByStep(userId, stepId);
 
     const createData: Prisma.GuideSectionCreateInput = {
-      content: data.content,
+      content: data.content.trim(),
       order: Number(data.order),
-      // 🚜 NULL Logic: Ensures empty strings don't render as empty headers in the UI
-      title: data.title?.trim() ? data.title : null,
-      videoUrl: data.videoUrl || null,
+      title: data.title?.trim() || null,
+      videoUrl: data.videoUrl?.trim() || null,
       step: { connect: { id: stepId } },
     };
 
@@ -79,11 +74,6 @@ class GuideSectionService {
 
     return prisma.guideSection.create({ data: createData });
   }
-
-  /**
-   * Update an existing guide section.
-   * Logic: Handles explicit image removal, replacement, and title nullification.
-   */
   async update(
     userId: string,
     sectionId: string,
@@ -97,29 +87,22 @@ class GuideSectionService {
 
     const updateData: Prisma.GuideSectionUpdateInput = {};
 
-    if (data.content !== undefined) updateData.content = data.content;
+    if (data.content !== undefined) updateData.content = data.content.trim();
     if (data.order !== undefined) updateData.order = Number(data.order);
     if (data.videoUrl !== undefined)
-      updateData.videoUrl = data.videoUrl || null;
+      updateData.videoUrl = data.videoUrl?.trim() || null;
+    if (data.title !== undefined) updateData.title = data.title?.trim() || null;
 
-    if (data.title !== undefined) {
-      updateData.title = data.title?.trim() ? data.title : null;
-    }
-
-    // 1. 🚜 EXPLICIT REMOVAL: User cleared the image in the UI
     if (data.removeImage === "true" && !imageFile) {
-      if (guideSection.imagePublicId) {
+      if (guideSection.imagePublicId)
         await deleteFromCloudinary(guideSection.imagePublicId);
-      }
       updateData.imageUrl = null;
       updateData.imagePublicId = null;
     }
 
-    // 2. 🚜 IMAGE REPLACEMENT: User uploaded a new file
     if (imageFile) {
-      if (guideSection.imagePublicId) {
+      if (guideSection.imagePublicId)
         await deleteFromCloudinary(guideSection.imagePublicId);
-      }
       const result = await uploadToCloudinary(imageFile.path, "guide_sections");
       updateData.imageUrl = result.secure_url;
       updateData.imagePublicId = result.public_id;

@@ -1,7 +1,7 @@
+//src/features/admin/admin.validation.ts
 import { z } from "zod";
 import { SystemRole, UserStatus } from "@prisma-client";
 
-// Extracting enum values as a tuple for Zod
 const systemRoleValues = Object.values(SystemRole) as [string, ...string[]];
 const userStatusValues = Object.values(UserStatus) as [string, ...string[]];
 
@@ -9,16 +9,14 @@ const userStatusValues = Object.values(UserStatus) as [string, ...string[]];
  * 🚜 Admin Validation: Hardened for high-integrity moderation.
  */
 
-// 1. Role Management
 export const updateUserRoleSchema = z.object({
   body: z.object({
     role: z.enum(systemRoleValues, {
-      message: "Please provide a valid system role.",
+      message: "Please select a valid system role.",
     }),
   }),
 });
 
-// 2. System Configuration
 export const updateSystemConfigSchema = z.object({
   body: z.object({
     maintenanceMode: z.boolean().optional(),
@@ -31,17 +29,15 @@ export const updateSystemConfigSchema = z.object({
   }),
 });
 
-// 3. User Status & Sanctions
 export const updateUserStatusSchema = z
   .object({
     body: z.object({
       status: z.enum(userStatusValues, {
-        message: "Please provide a valid user status.",
+        message: "Please select a valid user status.",
       }),
 
       reason: z
         .string()
-        .min(5, "Reason must be at least 5 characters.")
         .max(500, "Reason is too long (max 500 characters).")
         .optional()
         .or(z.literal("")),
@@ -67,7 +63,7 @@ export const updateUserStatusSchema = z
     },
     {
       message:
-        "A technical reason (min 5 characters) is mandatory for sanctions.",
+        "A technical reason (min 5 characters) is required for sanctions.",
       path: ["body", "reason"],
     },
   );

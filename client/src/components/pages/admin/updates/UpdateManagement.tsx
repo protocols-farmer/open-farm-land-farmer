@@ -1,5 +1,4 @@
 //src/components/pages/admin/updates/UpdateManagement.tsx
-
 "use client";
 
 import React, { useState } from "react";
@@ -37,7 +36,7 @@ import {
   Eye,
   Tag,
   Calendar,
-  History,
+  Loader2,
 } from "lucide-react";
 import { format } from "date-fns";
 import toast from "react-hot-toast";
@@ -58,13 +57,11 @@ import PaginationControls from "@/components/shared/PaginationControls";
 
 const getCategoryStyles = (category: UpdateCategory) => {
   const styles: Record<UpdateCategory, string> = {
-    [UpdateCategory.PLATFORM]:
+    [UpdateCategory.APP_UPDATE]:
       "bg-blue-500/10 text-blue-500 border-blue-500/20",
-    [UpdateCategory.PROJECT]:
+    [UpdateCategory.MARKETING]:
       "bg-emerald-500/10 text-emerald-500 border-emerald-500/20",
-    [UpdateCategory.SECURITY]:
-      "bg-destructive/10 text-destructive border-destructive/20 animate-pulse",
-    [UpdateCategory.MAINTENANCE]:
+    [UpdateCategory.COMMUNITY]:
       "bg-orange-500/10 text-orange-500 border-orange-500/20",
   };
   return styles[category] || "bg-secondary text-secondary-foreground";
@@ -91,7 +88,7 @@ function UpdateActions({ update }: { update: AdminUpdateRow }) {
             <MoreHorizontal className="h-4 w-4" />
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end">
+        <DropdownMenuContent align="end" className="rounded-none">
           <DropdownMenuLabel>Actions</DropdownMenuLabel>
           <DropdownMenuItem asChild>
             <Link href={`/updates/${update.id}`}>
@@ -100,7 +97,7 @@ function UpdateActions({ update }: { update: AdminUpdateRow }) {
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem
-            className="text-red-500 focus:bg-red-500/10"
+            className="text-destructive focus:bg-destructive/10 focus:text-destructive cursor-pointer"
             onClick={() => setIsAlertOpen(true)}
             disabled={isLoading}
           >
@@ -110,22 +107,27 @@ function UpdateActions({ update }: { update: AdminUpdateRow }) {
       </DropdownMenu>
 
       <AlertDialog open={isAlertOpen} onOpenChange={setIsAlertOpen}>
-        <AlertDialogContent>
+        <AlertDialogContent className="rounded-none">
           <AlertDialogHeader>
             <AlertDialogTitle>Delete this update?</AlertDialogTitle>
             <AlertDialogDescription>
               This will remove the update entry for{" "}
-              <strong>{update.title}</strong>. Users will no longer see this in
-              their history.
+              <strong>{update.title}</strong>. This action is irreversible.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel className="rounded-none">
+              Cancel
+            </AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDelete}
-              className="bg-red-500 hover:bg-red-600"
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90 rounded-none"
             >
-              {isLoading ? "Deleting..." : "Delete Entry"}
+              {isLoading ? (
+                <Loader2 className="animate-spin h-4 w-4" />
+              ) : (
+                "Delete Entry"
+              )}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -150,22 +152,22 @@ export default function UpdateManagement() {
   return (
     <ManagementPageLayout
       title="Platform Updates"
-      description="Manage change logs, version releases, and security announcements."
+      description="Manage change logs, version releases, and announcements."
       itemCount={pagination?.totalItems ?? 0}
       controls={
         <Input
           placeholder="Search by title or version..."
-          className="w-72"
+          className="w-72 rounded-none"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
         />
       }
     >
-      <div className="rounded-md border bg-card shadow-sm">
+      <div className="rounded-none border bg-card">
         <Table>
           <TableHeader>
             <TableRow className="bg-muted/30">
-              <TableHead className="w-[35%]">Title</TableHead>
+              <TableHead className="w-[40%]">Title</TableHead>
               <TableHead>Category</TableHead>
               <TableHead>Version</TableHead>
               <TableHead>Author</TableHead>
@@ -176,20 +178,18 @@ export default function UpdateManagement() {
           <TableBody>
             {isLoading ? (
               <TableRow>
-                <TableCell
-                  colSpan={6}
-                  className="text-center h-32 text-muted-foreground italic"
-                >
-                  Loading change logs...
+                <TableCell colSpan={6} className="text-center h-32 italic">
+                  <Loader2 className="animate-spin h-6 w-6 mx-auto mb-2" />
+                  Syncing logs...
                 </TableCell>
               </TableRow>
             ) : isError ? (
               <TableRow>
                 <TableCell
                   colSpan={6}
-                  className="text-center h-32 text-destructive font-medium"
+                  className="text-center h-32 text-destructive font-bold"
                 >
-                  Critical error fetching updates.
+                  Error: Could not retrieve update stream.
                 </TableCell>
               </TableRow>
             ) : updates.length === 0 ? (
@@ -198,7 +198,7 @@ export default function UpdateManagement() {
                   colSpan={6}
                   className="text-center h-32 text-muted-foreground"
                 >
-                  No updates logged yet.
+                  No update records found.
                 </TableCell>
               </TableRow>
             ) : (
@@ -207,60 +207,59 @@ export default function UpdateManagement() {
                   key={update.id}
                   className="group hover:bg-muted/40 transition-colors"
                 >
-                  <TableCell className="align-top">
+                  {/* 🚜 Horizontal Scroll Fix: Added max-w and truncate */}
+                  <TableCell className="align-top max-w-75">
                     <div className="flex flex-col gap-0.5">
-                      <span className="font-bold text-foreground line-clamp-1">
+                      <span
+                        className="font-bold text-foreground truncate block"
+                        title={update.title}
+                      >
                         {update.title}
                       </span>
-                      <span className="text-[10px] uppercase tracking-wider text-muted-foreground flex items-center">
-                        <Tag className="mr-1 h-3 w-3" /> ID:{" "}
-                        {update.id.slice(-8)}
+                      <span className="text-[10px] uppercase tracking-tighter text-muted-foreground flex items-center font-mono">
+                        <Tag className="mr-1 h-3 w-3" />{" "}
+                        {update.id.split("-")[0]}
                       </span>
                     </div>
                   </TableCell>
                   <TableCell className="align-top">
                     <Badge
                       variant="outline"
-                      className={getCategoryStyles(update.category)}
+                      className={`rounded-none border-0 px-2 py-0 text-[10px] font-bold ${getCategoryStyles(update.category)}`}
                     >
-                      {update.category}
+                      {update.category.replace("_", " ")}
                     </Badge>
                   </TableCell>
                   <TableCell className="align-top">
                     {update.version ? (
-                      <code className="text-[13px] font-mono font-bold bg-muted px-2 py-0.5 rounded text-primary border border-primary/10">
-                        {update.version}
+                      <code className="text-[11px] font-mono font-black bg-muted px-1.5 py-0.5 border">
+                        v{update.version}
                       </code>
                     ) : (
-                      <span className="text-xs text-muted-foreground italic">
+                      <span className="text-[10px] text-muted-foreground italic">
                         N/A
                       </span>
                     )}
                   </TableCell>
                   <TableCell className="align-top">
                     <div className="flex items-center gap-2">
-                      <Avatar className="h-8 w-8 ring-2 ring-background">
+                      <Avatar className="h-7 w-7 rounded-none border">
                         <AvatarImage
                           src={update.author.profileImage ?? undefined}
                         />
-                        <AvatarFallback>
+                        <AvatarFallback className="rounded-none text-[10px]">
                           {update.author.username.slice(0, 2).toUpperCase()}
                         </AvatarFallback>
                       </Avatar>
-                      <div className="flex flex-col">
-                        <span className="text-xs font-semibold">
-                          @{update.author.username}
-                        </span>
-                        <span className="text-[10px] text-muted-foreground">
-                          Admin Staff
-                        </span>
-                      </div>
+                      <span className="text-xs font-bold">
+                        @{update.author.username}
+                      </span>
                     </div>
                   </TableCell>
                   <TableCell className="align-top">
-                    <div className="flex items-center text-xs text-muted-foreground">
-                      <Calendar className="mr-1.5 h-3.5 w-3.5" />
-                      {format(new Date(update.publishedAt), "PP")}
+                    <div className="flex items-center text-[11px] text-muted-foreground font-medium">
+                      <Calendar className="mr-1.5 h-3 w-3" />
+                      {format(new Date(update.publishedAt), "MMM d, yyyy")}
                     </div>
                   </TableCell>
                   <TableCell className="text-right align-top">

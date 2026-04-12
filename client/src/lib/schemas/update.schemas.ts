@@ -1,31 +1,29 @@
-// src/lib/schemas/update.schemas.ts
 import { z } from "zod";
-
-const UpdateCategoryEnum = z.enum(["APP_UPDATE", "MARKETING", "COMMUNITY"], {
-  required_error: "You must select an update category.",
-});
+import { UpdateCategory } from "../features/admin/adminTypes";
 
 export const createUpdateSchema = z.object({
   title: z
     .string()
-    .min(5, "Title must be at least 5 characters long.")
-    .max(150, "Title cannot exceed 150 characters."), // Hardened limit
+    .min(5, "Title must be at least 5 characters.")
+    .max(150, "Title cannot exceed 150 characters."),
 
   content: z
     .string()
-    .min(20, "Content must be at least 20 characters long.")
-    .max(5000, "Content is too long (max 5000 characters)."), // Hardened limit
+    .min(20, "Content must be at least 20 characters.")
+    .max(5000, "Content is too long (max 5000 characters)."),
 
-  category: UpdateCategoryEnum,
+  category: z.nativeEnum(UpdateCategory, {
+    errorMap: () => ({ message: "Please select a valid update category." }),
+  }),
 
   version: z
     .string()
-    .max(20, "Version identifier is too long (max 20 chars).")
+    .max(20, "Version identifier is too long (max 20 characters).")
     .optional()
     .or(z.literal("")),
 });
 
-export type CreateUpdateFormValues = z.infer<typeof createUpdateSchema>;
-
 export const updateUpdateSchema = createUpdateSchema.partial();
+
+export type CreateUpdateFormValues = z.infer<typeof createUpdateSchema>;
 export type UpdateUpdateFormValues = z.infer<typeof updateUpdateSchema>;

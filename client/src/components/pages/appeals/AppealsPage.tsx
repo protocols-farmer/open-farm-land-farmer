@@ -31,22 +31,18 @@ import toast from "react-hot-toast";
 
 export default function AppealsPage() {
   const currentUser = useAppSelector(selectCurrentUser);
-  const router = useRouter();
-
   const [logout, { isLoading: isLoggingOut }] = useLogoutMutation();
   const [submitAppeal, { isLoading: isSubmitting }] = useSubmitAppealMutation();
-
   const [appealText, setAppealText] = useState("");
   const [isSubmitted, setIsSubmitted] = useState(false);
 
-  // Security check: Only banned users should see this
   if (currentUser?.status !== "BANNED") {
     return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <Alert variant="destructive" className="max-w-md">
+      <div className="flex items-center justify-center min-h-[60vh] p-4">
+        <Alert variant="destructive" className="max-w-md rounded-none border-2">
           <AlertCircle className="h-4 w-4" />
-          <AlertDescription>
-            You do not have permission to view this page.
+          <AlertDescription className="font-bold">
+            ACCESS DENIED: APPEAL PERMISSIONS NOT FOUND.
           </AlertDescription>
         </Alert>
       </div>
@@ -57,96 +53,58 @@ export default function AppealsPage() {
     try {
       await logout().unwrap();
       window.location.href = "/auth/login";
-    } catch (error) {
+    } catch {
       window.location.href = "/auth/login";
     }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    // 🚜 FRONTEND ZOD SHIELD: Validate before hitting the server
     const validation = submitAppealSchema.safeParse({ reason: appealText });
     if (!validation.success) {
       toast.error(validation.error.errors[0].message);
       return;
     }
-
     try {
       await submitAppeal({ reason: appealText }).unwrap();
       setIsSubmitted(true);
     } catch (error: any) {
-      toast.error(
-        error?.data?.message || "Failed to submit appeal. Please try again.",
-      );
+      toast.error(error?.data?.message || "Transmission failure. Retry.");
     }
   };
 
-  // 🚜 SMART UX: Check the precise state of the appeal
   const isPending =
     isSubmitted || currentUser?.activeSanction?.status === "APPEALED";
   const isRejected = currentUser?.activeSanction?.appealStatus === "REJECTED";
 
-  // 1. SHOW REJECTION SCREEN (If an admin explicitly denied their appeal)
-  if (isRejected) {
+  // Rejection/Pending UI Shared Layout
+  if (isRejected || isPending) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-muted/20 p-4">
-        <Card className="max-w-md w-full text-center py-6 border-destructive/20 shadow-lg">
-          <CardHeader>
-            <div className="mx-auto bg-destructive/10 p-4 rounded-full w-fit mb-4">
-              <AlertCircle className="h-10 w-10 text-destructive" />
-            </div>
-            <CardTitle className="text-2xl font-bold">Appeal Denied</CardTitle>
-            <CardDescription className="text-base mt-2">
-              Your appeal has been reviewed by our moderation team and was
-              <span className="font-semibold text-destructive"> denied</span>.
-              The original sanction against your account remains in effect. This
-              decision is final.
-            </CardDescription>
-          </CardHeader>
-          <CardFooter className="flex justify-center pt-6">
-            <Button
-              variant="outline"
-              onClick={handleLogout}
-              disabled={isLoggingOut}
+        <Card className="max-w-md w-full text-center py-8 rounded-none border-2 shadow-2xl">
+          <CardHeader className="space-y-4">
+            <div
+              className={`mx-auto p-4 border-2 w-fit ${isRejected ? "bg-destructive/10 border-destructive" : "bg-primary/10 border-primary"}`}
             >
-              {isLoggingOut ? (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              {isRejected ? (
+                <AlertCircle className="h-10 w-10 text-destructive" />
               ) : (
-                <LogOut className="mr-2 h-4 w-4" />
-              )}{" "}
-              Sign Out
-            </Button>
-          </CardFooter>
-        </Card>
-      </div>
-    );
-  }
-
-  // 2. SHOW PENDING SCREEN (If they just submitted it, or log back in while it's waiting)
-  if (isPending) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-muted/20 p-4">
-        <Card className="max-w-md w-full text-center py-6 border-border shadow-lg">
-          <CardHeader>
-            <div className="mx-auto bg-primary/10 p-4 rounded-full w-fit mb-4">
-              <CheckCircle className="h-10 w-10 text-primary" />
+                <CheckCircle className="h-10 w-10 text-primary" />
+              )}
             </div>
-            <CardTitle className="text-2xl font-bold">
-              Appeal Under Review
+            <CardTitle className="text-3xl font-black   ">
+              {isRejected ? "Appeal Denied" : "Under Review"}
             </CardTitle>
-            <CardDescription className="text-base mt-2">
-              Your appeal is currently pending review by our moderation team. We
-              will evaluate your case and contact you via email at{" "}
-              <span className="font-semibold text-foreground">
-                {currentUser.email}
-              </span>{" "}
-              with our final decision.
+            <CardDescription className="text-sm font-medium leading-relaxed">
+              {isRejected
+                ? "Your appeal was denied by moderation staff. This decision is final and absolute."
+                : `Your case has been logged. We will contact you at ${currentUser.email} with the verdict.`}
             </CardDescription>
           </CardHeader>
           <CardFooter className="flex justify-center pt-6">
             <Button
               variant="outline"
+              className="rounded-none font-bold"
               onClick={handleLogout}
               disabled={isLoggingOut}
             >
@@ -154,97 +112,91 @@ export default function AppealsPage() {
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               ) : (
                 <LogOut className="mr-2 h-4 w-4" />
-              )}{" "}
-              Sign Out
+              )}
+              SIGN OUT
             </Button>
           </CardFooter>
         </Card>
       </div>
     );
   }
-
-  // 3. SHOW THE FORM (If they are banned and haven't appealed yet)
-  const isOverLimit = appealText.length > 500;
-  const isUnderLimit = appealText.trim().length < 10;
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-muted/20 p-4 sm:p-6">
-      <Card className="max-w-2xl w-full border-border shadow-lg animate-in fade-in slide-in-from-bottom-4 duration-500">
-        <CardHeader className="space-y-3 pb-6 border-b border-border/50">
-          <div className="flex items-center gap-3 text-destructive">
-            <Scale className="h-8 w-8" />
-            <CardTitle className="text-3xl font-black">
-              Account Appeal Center
+      <Card className="max-w-2xl w-full rounded-none border-2 shadow-2xl animate-in fade-in slide-in-from-bottom-4 duration-500">
+        <CardHeader className="space-y-4 pb-8 border-b-2">
+          <div className="flex items-center gap-4 text-destructive">
+            <div className="p-2 border-2 border-destructive bg-destructive/10">
+              <Scale className="h-8 w-8" />
+            </div>
+            <CardTitle className="text-4xl font-black   ">
+              Case Submission
             </CardTitle>
           </div>
-          <CardDescription className="text-base leading-relaxed">
-            We understand that mistakes happen. If you believe your account was
-            banned in error, or if you wish to formally apologize and request a
-            second chance, please explain your situation below.
+          <CardDescription className="text-sm font-medium  border-l-4 border-primary pl-4 py-1">
+            If you believe this ban was issued in technical error, provide your
+            defense below.
           </CardDescription>
         </CardHeader>
 
         <form onSubmit={handleSubmit}>
-          <CardContent className="pt-8 space-y-4">
-            <div className="bg-muted p-4 rounded-md border border-border">
-              <p className="text-sm font-semibold mb-1">Appealing as:</p>
-              <p className="text-muted-foreground text-sm font-mono">
-                @{currentUser.username} ({currentUser.email})
-              </p>
+          <CardContent className="pt-8 space-y-6">
+            <div className="bg-muted p-4 border  text-[10px]   text-muted-foreground">
+              LOGGED AS:{" "}
+              <span className="text-foreground font-black">
+                @{currentUser.username}
+              </span>
             </div>
 
             <div className="space-y-2">
-              <label htmlFor="appeal" className="text-sm font-semibold">
-                Your Appeal Message
-              </label>
+              <div className="flex justify-between items-center">
+                <label className="text-[10px] font-black  ">
+                  Defense Statement
+                </label>
+                <span
+                  className={`text-[10px]  font-bold ${appealText.length > 500 ? "text-destructive" : "text-muted-foreground"}`}
+                >
+                  {appealText.length}/500
+                </span>
+              </div>
               <Textarea
-                id="appeal"
-                placeholder="Please provide context, any relevant details, and why you believe your access should be restored..."
-                className={`min-h-[200px] resize-y ${isOverLimit ? "border-destructive focus-visible:ring-destructive" : ""}`}
+                placeholder="Detail the context of the incident..."
+                className="min-h-55 rounded-none resize-none  text-sm border-2 focus-visible:ring-primary"
                 value={appealText}
                 onChange={(e) => setAppealText(e.target.value)}
                 disabled={isSubmitting || isLoggingOut}
-                required
               />
-
-              {/* 🚜 LIVE CHARACTER COUNTER */}
-              <div className="flex justify-between items-center text-xs mt-1">
-                <p className="text-muted-foreground">Minimum 10 characters.</p>
-                <p
-                  className={`font-mono font-medium ${isOverLimit ? "text-destructive" : "text-muted-foreground"}`}
-                >
-                  {appealText.length} / 500
-                </p>
-              </div>
+              <p className="text-[10px]  text-muted-foreground">
+                Minimal 10 characters required for validation.
+              </p>
             </div>
           </CardContent>
 
-          <CardFooter className="flex justify-between border-t border-border/50 pt-6 mt-4 bg-muted/10 rounded-b-xl">
+          <CardFooter className="flex justify-between border-t-2 pt-6 mt-4 bg-muted/20">
             <Button
               type="button"
               variant="ghost"
+              className="rounded-none font-bold"
               onClick={handleLogout}
               disabled={isSubmitting || isLoggingOut}
             >
-              {isLoggingOut ? (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              ) : (
-                <LogOut className="mr-2 h-4 w-4" />
-              )}{" "}
-              Cancel & Sign Out
+              CANCEL & EXIT
             </Button>
             <Button
               type="submit"
               disabled={
-                isSubmitting || isLoggingOut || isUnderLimit || isOverLimit
+                isSubmitting ||
+                isLoggingOut ||
+                appealText.trim().length < 10 ||
+                appealText.length > 500
               }
-              className="font-bold min-w-[140px]"
+              className="rounded-none font-black px-8"
             >
               {isSubmitting ? (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               ) : (
                 <>
-                  <Send className="mr-2 h-4 w-4" /> Submit Case
+                  <Send className="mr-2 h-4 w-4" /> TRANSMIT APPEAL
                 </>
               )}
             </Button>

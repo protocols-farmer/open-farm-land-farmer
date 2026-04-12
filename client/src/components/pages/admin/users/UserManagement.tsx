@@ -1,7 +1,8 @@
-//src/components/pages/admin/users/UserManagement.tsx
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import {
   useGetAdminUsersQuery,
   useDeleteUserMutation,
@@ -12,6 +13,10 @@ import {
   SystemRole,
   UserStatus,
 } from "@/lib/features/admin/adminTypes";
+import {
+  updateUserStatusSchema,
+  UpdateUserStatusValues,
+} from "@/lib/schemas/admin.schemas";
 import { useDebounce } from "@/lib/hooks/useDebounce";
 import {
   Table,
@@ -31,7 +36,13 @@ import {
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { MoreHorizontal, Trash2, Ban, CheckCircle } from "lucide-react";
+import {
+  MoreHorizontal,
+  Trash2,
+  Ban,
+  CheckCircle,
+  Loader2,
+} from "lucide-react";
 import { format } from "date-fns";
 import toast from "react-hot-toast";
 import {
@@ -64,17 +75,57 @@ function UserActions({ user }: { user: AdminUserRow }) {
   const [updateStatus, { isLoading: isUpdatingStatus }] =
     useUpdateUserStatusMutation();
   const [isAlertOpen, setIsAlertOpen] = useState(false);
+  const [isModModalOpen, setIsModModalOpen] = useState(false);
   const currentUser = useAppSelector(selectCurrentUser);
 
-  // 🚜 Moderation Modal State
-  const [isModModalOpen, setIsModModalOpen] = useState(false);
-  const [modAction, setModAction] = useState<
-    UserStatus.SUSPENDED | UserStatus.BANNED
-  >(UserStatus.SUSPENDED);
+  // 🚜 Initialize React Hook Form with Zod Schema
+  const {
+    register,
+    handleSubmit,
+    watch,
+    setValue,
+    reset,
+    formState: { errors },
+  } = useForm<UpdateUserStatusValues>({
+    resolver: zodResolver(updateUserStatusSchema),
+    defaultValues: {
+      status: UserStatus.SUSPENDED,
+      reason: "",
+      expiresAt: "",
+    },
+  });
 
-  // 🚜 Replaced modDuration with precise datetime state
-  const [modExpiresAt, setModExpiresAt] = useState("");
-  const [modReason, setModReason] = useState("");
+  const selectedStatus = watch("status");
+  const reasonText = watch("reason") || "";
+
+  // 🚜 Logic: Only show Reason/Expiry for Sanctions (Suspended or Banned)
+  const isSanction =
+    selectedStatus === UserStatus.SUSPENDED ||
+    selectedStatus === UserStatus.BANNED;
+
+  const onModerateSubmit = async (values: UpdateUserStatusValues) => {
+    try {
+      let finalExpiresAt = values.expiresAt;
+      if (values.status === UserStatus.SUSPENDED && values.expiresAt) {
+        finalExpiresAt = new Date(values.expiresAt).toISOString();
+      }
+
+      await updateStatus({
+        userId: user.id,
+        status: values.status,
+        reason: values.reason,
+        expiresAt: values.status === UserStatus.BANNED ? null : finalExpiresAt,
+      }).unwrap();
+
+      toast.success(
+        `User @${user.username} status updated to ${values.status.toLowerCase()}.`,
+      );
+      setIsModModalOpen(false);
+      reset();
+    } catch (error) {
+      toast.error("Failed to update user status.");
+    }
+  };
 
   const handleDelete = async () => {
     if (currentUser?.id === user.id) {
@@ -86,41 +137,6 @@ function UserActions({ user }: { user: AdminUserRow }) {
       toast.success(`User @${user.username} has been deleted.`);
     } catch (error) {
       toast.error("Failed to delete user.");
-    }
-  };
-
-  const handleModerateSubmit = async () => {
-    if (!modReason.trim()) {
-      toast.error("A reason is required.");
-      return;
-    }
-
-    let expiresAt: string | null = null;
-    if (modAction === UserStatus.SUSPENDED) {
-      if (!modExpiresAt) {
-        toast.error("Please select an expiration date and time.");
-        return;
-      }
-      // Convert the local datetime input to a standard ISO string for the database
-      expiresAt = new Date(modExpiresAt).toISOString();
-    }
-
-    try {
-      await updateStatus({
-        userId: user.id,
-        status: modAction,
-        reason: modReason,
-        expiresAt,
-      }).unwrap();
-
-      toast.success(
-        `User @${user.username} has been ${modAction.toLowerCase()}.`,
-      );
-      setIsModModalOpen(false);
-      setModReason("");
-      setModExpiresAt(""); // Reset
-    } catch (error) {
-      toast.error("Failed to update user status.");
     }
   };
 
@@ -150,7 +166,6 @@ function UserActions({ user }: { user: AdminUserRow }) {
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
           <DropdownMenuLabel>Actions</DropdownMenuLabel>
-
           <DropdownMenuItem
             onClick={() =>
               isDisciplined ? handleRestoreAccess() : setIsModModalOpen(true)
@@ -173,7 +188,6 @@ function UserActions({ user }: { user: AdminUserRow }) {
             )}
           </DropdownMenuItem>
 
-          {/* 🚜 Using Shadcn semantic destructive classes */}
           <DropdownMenuItem
             className="cursor-pointer text-destructive focus:bg-destructive/10 focus:text-destructive"
             onClick={() => setIsAlertOpen(true)}
@@ -187,30 +201,28 @@ function UserActions({ user }: { user: AdminUserRow }) {
         </DropdownMenuContent>
       </DropdownMenu>
 
-      {/* Moderation Form Modal */}
+      {/* Moderation Modal */}
       <AlertDialog open={isModModalOpen} onOpenChange={setIsModModalOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Moderate User: @{user.username}</AlertDialogTitle>
             <AlertDialogDescription>
-              Specify the sanction type, duration, and the reason for this
-              action. The user will see this reason.
+              Select the sanction type. A reason is mandatory for bans and
+              suspensions.
             </AlertDialogDescription>
           </AlertDialogHeader>
 
-          <div className="space-y-4 py-4">
+          <form
+            onSubmit={handleSubmit(onModerateSubmit)}
+            className="space-y-4 py-4"
+          >
             <div className="space-y-2">
-              <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                Action Type
-              </label>
-              {/* 🚜 Replaced native select with Shadcn Select */}
+              <label className="text-sm font-medium">Action Type</label>
               <Select
-                value={modAction}
-                onValueChange={(val) =>
-                  setModAction(val as UserStatus.SUSPENDED | UserStatus.BANNED)
-                }
+                onValueChange={(val) => setValue("status", val as UserStatus)}
+                defaultValue={UserStatus.SUSPENDED}
               >
-                <SelectTrigger className="w-full">
+                <SelectTrigger>
                   <SelectValue placeholder="Select an action" />
                 </SelectTrigger>
                 <SelectContent>
@@ -220,79 +232,93 @@ function UserActions({ user }: { user: AdminUserRow }) {
                   <SelectItem value={UserStatus.BANNED}>
                     Permanent Ban
                   </SelectItem>
+                  <SelectItem value={UserStatus.DEACTIVATED}>
+                    Deactivate Account
+                  </SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
-            {modAction === UserStatus.SUSPENDED && (
-              <div className="space-y-2 animate-in fade-in slide-in-from-top-1 duration-200">
-                <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                  Expiration Date & Time
-                </label>
-                {/* 🚜 Precise datetime picker using Shadcn Input styling */}
-                <Input
-                  type="datetime-local"
-                  value={modExpiresAt}
-                  onChange={(e) => setModExpiresAt(e.target.value)}
-                  min={new Date(
-                    new Date().getTime() -
-                      new Date().getTimezoneOffset() * 60000,
-                  )
-                    .toISOString()
-                    .slice(0, 16)}
-                  className="w-full"
-                />
+            {/* 🚜 Conditional Reason Visibility & xyz/500 Counter */}
+            {isSanction && (
+              <div className="space-y-4 animate-in fade-in slide-in-from-top-2 duration-300">
+                {selectedStatus === UserStatus.SUSPENDED && (
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">
+                      Expiration Date & Time
+                    </label>
+                    <Input
+                      type="datetime-local"
+                      {...register("expiresAt")}
+                      className="w-full"
+                    />
+                    {errors.expiresAt && (
+                      <p className="text-xs text-destructive">
+                        {errors.expiresAt.message}
+                      </p>
+                    )}
+                  </div>
+                )}
+
+                <div className="space-y-2">
+                  <div className="flex justify-between items-center">
+                    <label className="text-sm font-medium">
+                      Reason for Sanction
+                    </label>
+                    <span
+                      className={`text-[10px] font-mono ${reasonText.length > 500 ? "text-destructive" : "text-muted-foreground"}`}
+                    >
+                      {reasonText.length}/500
+                    </span>
+                  </div>
+                  <Textarea
+                    placeholder="Provide technical justification..."
+                    {...register("reason")}
+                    className="min-h-[100px] resize-none"
+                  />
+                  {errors.reason && (
+                    <p className="text-xs text-destructive">
+                      {errors.reason.message}
+                    </p>
+                  )}
+                </div>
               </div>
             )}
 
-            <div className="space-y-2">
-              <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                Reason (Required)
-              </label>
-              {/* 🚜 Replaced native textarea with Shadcn Textarea */}
-              <Textarea
-                placeholder="E.g., Repeated violation of community guidelines..."
-                value={modReason}
-                onChange={(e) => setModReason(e.target.value)}
-                className="min-h-[100px] resize-none"
-              />
-            </div>
-          </div>
-
-          <AlertDialogFooter>
-            <AlertDialogCancel
-              onClick={() => {
-                setIsModModalOpen(false);
-                setModReason("");
-                setModExpiresAt("");
-              }}
-            >
-              Cancel
-            </AlertDialogCancel>
-            <Button
-              onClick={handleModerateSubmit}
-              disabled={
-                isUpdatingStatus ||
-                !modReason.trim() ||
-                (modAction === UserStatus.SUSPENDED && !modExpiresAt)
-              }
-              variant="destructive"
-            >
-              {isUpdatingStatus ? "Applying..." : "Confirm Action"}
-            </Button>
-          </AlertDialogFooter>
+            <AlertDialogFooter className="pt-4">
+              <AlertDialogCancel
+                onClick={() => {
+                  setIsModModalOpen(false);
+                  reset();
+                }}
+              >
+                Cancel
+              </AlertDialogCancel>
+              <Button
+                type="submit"
+                variant="destructive"
+                disabled={isUpdatingStatus}
+              >
+                {isUpdatingStatus ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  "Confirm Action"
+                )}
+              </Button>
+            </AlertDialogFooter>
+          </form>
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* Existing Delete Modal */}
+      {/* Delete Modal */}
       <AlertDialog open={isAlertOpen} onOpenChange={setIsAlertOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
             <AlertDialogDescription>
-              This will permanently delete the account for{" "}
-              <span className="font-bold">@{user.username}</span> and all their
-              data.
+              Permanently delete{" "}
+              <span className="font-bold">@{user.username}</span>? This cannot
+              be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -338,104 +364,111 @@ export default function UserManagement() {
         />
       }
     >
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>User</TableHead>
-            <TableHead>Email</TableHead>
-            <TableHead>Role & Status</TableHead>
-            <TableHead>Joined</TableHead>
-            <TableHead>Content</TableHead>
-            <TableHead className="text-right">Actions</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {isLoading ? (
+      <div className="rounded-md border">
+        <Table>
+          <TableHeader>
             <TableRow>
-              <TableCell colSpan={6} className="text-center h-24">
-                Loading users...
-              </TableCell>
+              <TableHead className="w-[250px]">User</TableHead>
+              <TableHead className="w-[200px]">Email</TableHead>
+              <TableHead>Role & Status</TableHead>
+              <TableHead>Joined</TableHead>
+              <TableHead>Content</TableHead>
+              <TableHead className="text-right">Actions</TableHead>
             </TableRow>
-          ) : isError ? (
-            <TableRow>
-              <TableCell
-                colSpan={6}
-                className="text-center h-24 text-destructive"
-              >
-                Failed to load users.
-              </TableCell>
-            </TableRow>
-          ) : users.length === 0 ? (
-            <TableRow>
-              <TableCell colSpan={6} className="text-center h-24">
-                No users found.
-              </TableCell>
-            </TableRow>
-          ) : (
-            users.map((user) => (
-              <TableRow key={user.id}>
-                <TableCell>
-                  <Link
-                    href={`/profile/${user.username}`}
-                    className="flex items-center gap-3 group"
-                  >
-                    <Avatar>
-                      <AvatarImage src={user.profileImage ?? undefined} />
-                      <AvatarFallback>{user.name.slice(0, 2)}</AvatarFallback>
-                    </Avatar>
-                    <div>
-                      <p className="font-medium group-hover:underline">
-                        {user.name}
-                      </p>
-                      <p className="text-sm text-muted-foreground">
-                        @{user.username}
-                      </p>
-                    </div>
-                  </Link>
-                </TableCell>
-                <TableCell>{user.email}</TableCell>
-                <TableCell>
-                  <div className="flex flex-col gap-1 w-fit">
-                    <Badge
-                      variant={
-                        user.systemRole === "SUPER_ADMIN"
-                          ? "default"
-                          : "secondary"
-                      }
-                    >
-                      {user.systemRole}
-                    </Badge>
-                    {user.status === UserStatus.BANNED && (
-                      <Badge
-                        variant="destructive"
-                        className="text-[10px] py-0 mt-0.5"
-                      >
-                        BANNED
-                      </Badge>
-                    )}
-                    {user.status === UserStatus.SUSPENDED && (
-                      <Badge
-                        variant="outline"
-                        className="text-[10px] py-0 mt-0.5 border-orange-500 text-orange-500"
-                      >
-                        SUSPENDED
-                      </Badge>
-                    )}
-                  </div>
-                </TableCell>
-                <TableCell>{format(new Date(user.joinedAt), "PP")}</TableCell>
-                <TableCell>
-                  <p className="text-xs">{user._count.posts} Posts</p>
-                  <p className="text-xs">{user._count.comments} Comments</p>
-                </TableCell>
-                <TableCell className="text-right">
-                  <UserActions user={user} />
+          </TableHeader>
+          <TableBody>
+            {isLoading ? (
+              <TableRow>
+                <TableCell colSpan={6} className="text-center h-24">
+                  Loading users...
                 </TableCell>
               </TableRow>
-            ))
-          )}
-        </TableBody>
-      </Table>
+            ) : isError ? (
+              <TableRow>
+                <TableCell
+                  colSpan={6}
+                  className="text-center h-24 text-destructive"
+                >
+                  Failed to load users.
+                </TableCell>
+              </TableRow>
+            ) : users.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={6} className="text-center h-24">
+                  No users found.
+                </TableCell>
+              </TableRow>
+            ) : (
+              users.map((user) => (
+                <TableRow key={user.id}>
+                  <TableCell>
+                    <Link
+                      href={`/profile/${user.username}`}
+                      className="flex items-center gap-3 group max-w-[230px]"
+                    >
+                      <Avatar>
+                        <AvatarImage src={user.profileImage ?? undefined} />
+                        <AvatarFallback>{user.name.slice(0, 2)}</AvatarFallback>
+                      </Avatar>
+                      <div className="truncate">
+                        <p className="font-medium group-hover:underline truncate">
+                          {user.name}
+                        </p>
+                        <p className="text-sm text-muted-foreground truncate">
+                          @{user.username}
+                        </p>
+                      </div>
+                    </Link>
+                  </TableCell>
+                  {/* 🚜 Horizontal Scroll Fix: truncate long emails */}
+                  <TableCell className="max-w-[200px] truncate font-mono text-xs">
+                    {user.email}
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex flex-col gap-1 w-fit">
+                      <Badge
+                        variant={
+                          user.systemRole === "SUPER_ADMIN"
+                            ? "default"
+                            : "secondary"
+                        }
+                      >
+                        {user.systemRole}
+                      </Badge>
+                      {user.status !== UserStatus.ACTIVE && (
+                        <Badge
+                          variant={
+                            user.status === UserStatus.BANNED
+                              ? "destructive"
+                              : "outline"
+                          }
+                          className="text-[10px] py-0 mt-0.5"
+                        >
+                          {user.status}
+                        </Badge>
+                      )}
+                    </div>
+                  </TableCell>
+                  <TableCell className="whitespace-nowrap">
+                    {format(new Date(user.joinedAt), "PP")}
+                  </TableCell>
+                  <TableCell>
+                    <p className="text-[10px] text-muted-foreground uppercase font-bold">
+                      {user.postsCount} Posts
+                    </p>
+                    <p className="text-[10px] text-muted-foreground uppercase font-bold">
+                      {user.commentsCount} Comments
+                    </p>
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <UserActions user={user} />
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
+          </TableBody>
+        </Table>
+      </div>
       {pagination && (
         <PaginationControls pagination={pagination} onPageChange={setPage} />
       )}

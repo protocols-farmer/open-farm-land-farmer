@@ -1,11 +1,9 @@
-// src/lib/features/appeals/appealTypes.ts
+//src/lib/features/appeals/appealTypes.ts
 
-// --- Enums (Mirrored from Backend) ---
 export type AppealStatus = "PENDING" | "APPROVED" | "REJECTED";
 export type SanctionType = "SUSPENSION" | "BAN";
 export type UserStatus = "ACTIVE" | "SUSPENDED" | "DEACTIVATED" | "BANNED";
 
-// --- Request DTOs ---
 export interface SubmitAppealRequest {
   reason: string;
 }
@@ -22,13 +20,12 @@ export interface AdminAppealQuery {
   q?: string;
 }
 
-// --- Response Models ---
 export interface AppealRow {
   id: string;
   reason: string;
   status: AppealStatus;
   adminNotes: string | null;
-  createdAt: string; // ISO Date String
+  createdAt: string;
   user: {
     id: string;
     username: string;
@@ -40,7 +37,7 @@ export interface AppealRow {
     id: string;
     type: SanctionType;
     reason: string;
-    expiresAt: string | null; // ISO Date String
+    expiresAt: string | null;
   };
   reviewer?: {
     id: string;
@@ -48,9 +45,8 @@ export interface AppealRow {
   } | null;
 }
 
-// --- API Responses ---
 export interface SubmitAppealResponse {
-  status: string;
+  success: boolean;
   message: string;
   data: {
     id: string;
@@ -63,7 +59,7 @@ export interface SubmitAppealResponse {
 }
 
 export interface GetAdminAppealsResponse {
-  status: string;
+  success: boolean;
   data: {
     appeals: AppealRow[];
     pagination: {
@@ -75,7 +71,7 @@ export interface GetAdminAppealsResponse {
 }
 
 export interface ReviewAppealResponse {
-  status: string;
+  success: boolean;
   message: string;
   data: AppealRow;
 }

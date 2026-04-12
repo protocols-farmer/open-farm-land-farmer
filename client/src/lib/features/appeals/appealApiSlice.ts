@@ -1,4 +1,4 @@
-// src/lib/features/appeals/appealApiSlice.ts
+//src/lib/features/appeals/appealApiSlice.ts
 import { createApi, retry } from "@reduxjs/toolkit/query/react";
 import { baseQueryWithReauth } from "../../api/baseQueryWithReauth";
 import type {
@@ -15,25 +15,18 @@ const baseQueryWithRetry = retry(baseQueryWithReauth, { maxRetries: 3 });
 export const appealApiSlice = createApi({
   reducerPath: "appealApi",
   baseQuery: baseQueryWithRetry,
-  // We use tags to automatically refresh tables when actions are taken
   tagTypes: ["Appeals", "AdminUsers", "Me"],
   endpoints: (builder) => ({
-    // ==========================================
-    // 1. USER ENDPOINTS
-    // ==========================================
     submitAppeal: builder.mutation<SubmitAppealResponse, SubmitAppealRequest>({
       query: (body) => ({
         url: "/appeals",
         method: "POST",
         body,
       }),
-      // Invalidate 'Me' so the user's local state updates to reflect they've appealed
-      invalidatesTags: ["Me"],
+
+      invalidatesTags: (result) => (result?.success ? ["Me"] : []),
     }),
 
-    // ==========================================
-    // 2. ADMIN ENDPOINTS
-    // ==========================================
     getAdminAppeals: builder.query<GetAdminAppealsResponse, AdminAppealQuery>({
       query: (args) => {
         const params = new URLSearchParams();
@@ -45,7 +38,7 @@ export const appealApiSlice = createApi({
         return `/appeals/admin?${params.toString()}`;
       },
       providesTags: (result) =>
-        result
+        result?.success
           ? [
               ...result.data.appeals.map(({ id }) => ({
                 type: "Appeals" as const,
@@ -65,11 +58,14 @@ export const appealApiSlice = createApi({
         method: "PATCH",
         body: data,
       }),
-      // When an appeal is reviewed, refresh the Appeals table AND the User Management table
-      invalidatesTags: [
-        { type: "Appeals", id: "LIST" },
-        { type: "AdminUsers", id: "LIST" },
-      ],
+
+      invalidatesTags: (result) =>
+        result?.success
+          ? [
+              { type: "Appeals", id: "LIST" },
+              { type: "AdminUsers", id: "LIST" },
+            ]
+          : [],
     }),
   }),
 });
