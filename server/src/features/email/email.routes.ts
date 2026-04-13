@@ -5,8 +5,12 @@ import { verifyToken } from "@/middleware/auth.middleware.js";
 import { requireRole } from "@/middleware/admin.middleware.js";
 import { validate } from "@/middleware/validate.js";
 import { z } from "zod";
+import { apiLimiter } from "@/middleware/rateLimiter.js";
 
 const router: Router = Router();
+
+// 🚜 SECURITY FIX: Apply API rate limiting to prevent administrative email tool abuse.
+router.use(apiLimiter);
 
 // Validation schema for manual updates
 const systemUpdateSchema = z.object({

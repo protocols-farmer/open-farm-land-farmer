@@ -1,4 +1,3 @@
-//src/features/auth/auth.controller.ts
 import { asyncHandler } from "@/middleware/asyncHandler.js";
 import { Request, Response } from "express";
 import { authService } from "./auth.service.js";
@@ -174,17 +173,20 @@ class AuthController {
     try {
       await authService.sendPasswordResetToken(email);
 
+      // 🚜 SECURITY FIX: Uniform success message regardless of existence or account type.
       return res.status(200).json({
         status: "success",
         message:
           "If an account exists with that email, a reset link has been sent.",
       });
     } catch (error: any) {
+      // 🚜 SECURITY FIX: We no longer return a unique error for social accounts.
+      // This prevents Mitchell from knowing if an email exists but is "Social Only".
       if (error.message === "SOCIAL_ACCOUNT_DETECTED") {
-        return res.status(400).json({
-          status: "social_account",
+        return res.status(200).json({
+          status: "success",
           message:
-            "This email is linked to a social provider. Please log in with Google or GitHub.",
+            "If an account exists with that email, a reset link has been sent.",
         });
       }
 

@@ -2,8 +2,11 @@
 import { Router } from "express";
 import { notificationsController } from "./notifications.controller.js";
 import { verifyToken } from "@/middleware/auth.middleware.js";
+import { apiLimiter } from "@/middleware/rateLimiter.js";
 
 const router: Router = Router();
+
+router.use(apiLimiter);
 
 router.get("/", verifyToken, notificationsController.getNotifications);
 router.get(

@@ -4,12 +4,12 @@ import { commentController } from "./comment.controller.js";
 import {
   verifyToken,
   optionalVerifyToken,
-} from "../../middleware/auth.middleware.js"; // 🚜 UPDATED
+} from "../../middleware/auth.middleware.js";
+import { apiLimiter } from "@/middleware/rateLimiter.js";
 
 const router: Router = Router();
+router.use(apiLimiter);
 
-// --- PUBLIC (USER-AWARE) ROUTES ---
-// 🚜 Applied optionalVerifyToken to allow guest access without 401
 router.get(
   "/posts/:postId/comments",
   optionalVerifyToken,
@@ -21,8 +21,6 @@ router.get(
   commentController.getRepliesForComment,
 );
 
-// --- PROTECTED ROUTES ---
-// Create comments and replies
 router.post(
   "/posts/:postId/comments",
   verifyToken,

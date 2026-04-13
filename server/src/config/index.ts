@@ -83,6 +83,8 @@ interface Config {
     auth: {
       windowMs: number;
       max: number;
+      maxAttempts: number; // 🚜 Added
+      lockoutMinutes: number;
     };
     api: {
       windowMs: number;
@@ -155,6 +157,12 @@ try {
       auth: {
         windowMs: getEnvVariableAsInt("AUTH_LIMIT_WINDOW_MS", false, 900000),
         max: getEnvVariableAsInt("AUTH_LIMIT_MAX", false, 10),
+        maxAttempts: getEnvVariableAsInt("AUTH_MAX_LOGIN_ATTEMPTS", false, 5),
+        lockoutMinutes: getEnvVariableAsInt(
+          "AUTH_LOCKOUT_DURATION_MINS",
+          false,
+          15,
+        ),
       },
       api: {
         windowMs: getEnvVariableAsInt("API_LIMIT_WINDOW_MS", false, 60000),

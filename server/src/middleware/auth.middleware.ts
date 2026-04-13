@@ -33,11 +33,13 @@ export const verifyToken = asyncHandler(
     }
 
     try {
+      // 1. Verify the JWT first
       const decoded = jwt.verify(
         token,
         config.jwt.accessSecret,
       ) as DecodedAccessTokenPayload;
 
+      // 2. Validate basic payload structure
       if (
         !decoded.id ||
         !decoded.email ||
@@ -54,6 +56,7 @@ export const verifyToken = asyncHandler(
         );
       }
 
+      // 3. Fetch user from DB to get the LATEST status (Bypass cached status in token)
       // 🚜 CHANGE 1: Stripped out the heavy 'include: { sanctionsReceived }'
       const userFromDb = await (prisma as ExtendedPrismaClient).user.findUnique(
         {
@@ -69,6 +72,11 @@ export const verifyToken = asyncHandler(
         return next(createHttpError(401, "Unauthorized: User not found."));
       }
 
+      /**
+       * 🛡️ THE SECURITY GATE (User Status Check)
+       * This happens IMMEDIATELY after verification and DB retrieval.
+       * Blocks BANNED, SUSPENDED, and DEACTIVATED users before any business logic runs.
+       */
       if (userFromDb.status !== "ACTIVE") {
         const allowedPaths = ["/user/me", "/appeals", "/auth/logout"];
         const isAllowed = allowedPaths.some(
@@ -88,6 +96,7 @@ export const verifyToken = asyncHandler(
         }
       }
 
+      // 4. Populate req.user only after all security gates are passed
       // 🚜 CHANGE 3: Simplified the req.user object
       req.user = {
         id: userFromDb.id,
@@ -148,6 +157,11 @@ export const optionalVerifyToken = asyncHandler(
         },
       );
 
+      /**
+       * 🛡️ THE SECURITY GATE (Optional)
+       * For optional auth, we only attach the user if they are ACTIVE.
+       * If BANNED/DEACTIVATED, they remain a "guest" to the rest of the app.
+       */
       if (userFromDb && userFromDb.status === "ACTIVE") {
         req.user = {
           id: userFromDb.id,

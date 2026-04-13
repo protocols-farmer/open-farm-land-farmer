@@ -1,3 +1,4 @@
+//src/features/email/email.controller.ts
 import { Request, Response } from "express";
 import { asyncHandler } from "@/middleware/asyncHandler.js";
 import { emailService } from "./email.service.js";

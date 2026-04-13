@@ -1,4 +1,3 @@
-//src/features/admin/admin.routes.ts
 import { Router } from "express";
 import { adminController } from "./admin.controller.js";
 import { requireRole } from "@/middleware/admin.middleware.js";
@@ -10,8 +9,13 @@ import {
   updateUserStatusSchema,
   updateSystemConfigSchema,
 } from "./admin.validation.js"; // 🚜 Validation imports
+import { apiLimiter } from "@/middleware/rateLimiter.js";
 
 const router: Router = Router();
+
+// 🚜 SECURITY FIX: Apply API rate limiting to all admin routes.
+// Prevents automated scraping of user data or rapid-fire destructive actions.
+router.use(apiLimiter);
 
 // ==========================================
 // 1. PUBLIC ROUTES

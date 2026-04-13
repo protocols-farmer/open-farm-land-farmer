@@ -14,10 +14,6 @@ import { authLimiter, emailResendLimiter } from "@/middleware/rateLimiter.js";
 
 const router: Router = Router();
 
-// ==========================================
-// 1. PUBLIC AUTH ROUTES
-// ==========================================
-
 router.post(
   "/signup",
   authLimiter,
@@ -29,13 +25,11 @@ router.post("/login", authLimiter, validate(loginSchema), authController.login);
 
 router.post("/oauth", authLimiter, authController.handleOAuth);
 
-router.post("/refresh", authController.refreshAccessToken);
-
-// --- Password Recovery & Email Verification ---
+router.post("/refresh", authLimiter, authController.refreshAccessToken);
 
 router.post(
   "/forgot-password",
-  authLimiter, // Essential to prevent email spamming
+  authLimiter,
   validate(forgotPasswordSchema),
   authController.forgotPassword,
 );
@@ -53,10 +47,6 @@ router.post(
  */
 router.get("/verify-email", authController.verifyEmail);
 
-// ==========================================
-// 2. PROTECTED AUTH ROUTES (Requires Login)
-// ==========================================
-
 router.post("/logout", verifyToken, authController.logout);
 
 router.post(
@@ -68,8 +58,8 @@ router.post(
 
 router.post(
   "/resend-verification",
-  verifyToken, // Must be logged in
-  emailResendLimiter, // Strict rate limit
+  verifyToken,
+  emailResendLimiter,
   authController.resendVerification,
 );
 

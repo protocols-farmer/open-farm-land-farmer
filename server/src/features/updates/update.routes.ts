@@ -1,3 +1,4 @@
+//src/features/updates/update.routes.ts
 import { Router } from "express";
 import { updateController } from "./update.controller.js";
 import { verifyToken } from "@/middleware/auth.middleware.js";
@@ -6,8 +7,11 @@ import { isVerified } from "@/middleware/isVerified.js";
 import { validate } from "@/middleware/validate.js";
 import { createUpdateSchema, updateUpdateSchema } from "./update.validation.js";
 import { SystemRole } from "@prisma-client";
+import { apiLimiter } from "@/middleware/rateLimiter.js";
 
 const router: Router = Router();
+
+router.use(apiLimiter);
 
 router.get("/latest-version", updateController.getLatestVersion);
 router.get("/", updateController.findAll);

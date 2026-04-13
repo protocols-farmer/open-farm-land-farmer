@@ -8,8 +8,11 @@ import {
 import { uploadImage } from "@/middleware/multer.config.js";
 import { validate } from "@/middleware/validate.js";
 import { updateUserProfileSchema } from "@/features/user/user.validation.js";
+import { apiLimiter } from "@/middleware/rateLimiter.js";
 
 const router: Router = Router();
+
+router.use(apiLimiter);
 
 router.get(
   "/profile/:username",

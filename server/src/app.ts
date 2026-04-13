@@ -1,4 +1,4 @@
-// src/app.ts
+//src/app.ts
 import express, { Express, Request, Response, NextFunction } from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
@@ -10,8 +10,9 @@ import apiRoutes from "@/features/apiRoutes.js";
 //Express
 const app: Express = express();
 
-// Trust proxy settings (if behind a proxy like Nginx or Heroku)
-app.set("trust proxy", 1);
+// 🚜 SECURITY FIX: Disabled generic trust proxy to prevent X-Forwarded-For spoofing.
+// Only enable this if you are behind a trusted balancer (like Cloudflare/Nginx) and set it to specific IPs.
+app.set("trust proxy", false);
 
 // // Enable CORS with your detailed options
 app.use(cors(corsOptions));

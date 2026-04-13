@@ -7,7 +7,11 @@ import { createHttpError } from "@/utils/error.factory.js";
 import { logger } from "@/config/logger.js";
 import { deleteFromCloudinary } from "@/config/cloudinary.js";
 
-export type SafeUser = Omit<User, "hashedPassword">;
+// 🚜 SECURITY FIX: Explicitly omit brute-force protection fields from SafeUser
+export type SafeUser = Omit<
+  User,
+  "hashedPassword" | "failedLoginAttempts" | "lockoutUntil"
+>;
 
 interface UserProfileUpdateData {
   name?: string;
@@ -32,6 +36,9 @@ export class UserService {
       emailVerifyToken,
       passwordResetToken,
       passwordResetExpires,
+      // 🚜 SECURITY FIX: Strip security fields from public profiles
+      failedLoginAttempts,
+      lockoutUntil,
       status,
       deactivatedAt,
       settings,
@@ -48,15 +55,29 @@ export class UserService {
   }
 
   public async findUserByEmail(email: string): Promise<SafeUser | null> {
-    return this.userDelegate.findUnique({
+    const user = await this.userDelegate.findUnique({
       where: { email },
-    }) as Promise<SafeUser | null>;
+    });
+
+    if (!user) return null;
+
+    // 🚜 SECURITY FIX: Ensure security fields are stripped before returning
+    const { hashedPassword, failedLoginAttempts, lockoutUntil, ...safeUser } =
+      user;
+    return safeUser as unknown as SafeUser;
   }
 
   public async findUserByUsername(username: string): Promise<SafeUser | null> {
-    return this.userDelegate.findUnique({
+    const user = await this.userDelegate.findUnique({
       where: { username },
-    }) as Promise<SafeUser | null>;
+    });
+
+    if (!user) return null;
+
+    // 🚜 SECURITY FIX: Ensure security fields are stripped before returning
+    const { hashedPassword, failedLoginAttempts, lockoutUntil, ...safeUser } =
+      user;
+    return safeUser as unknown as SafeUser;
   }
 
   public async findUserById(id: string): Promise<SafeUser | null> {
@@ -115,7 +136,13 @@ export class UserService {
     }
 
     // 4. Clean destructuring, no 'delete' keywords or 'any' hacks
-    const { hashedPassword, ...safeUserBase } = user;
+    // 🚜 SECURITY FIX: Added failedLoginAttempts and lockoutUntil to destructuring
+    const {
+      hashedPassword,
+      failedLoginAttempts,
+      lockoutUntil,
+      ...safeUserBase
+    } = user;
 
     return {
       ...safeUserBase,
@@ -127,7 +154,7 @@ export class UserService {
     const { email, username, password, name } = input;
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    return (await this.userDelegate.create({
+    const user = await this.userDelegate.create({
       data: {
         email,
         username,
@@ -144,7 +171,16 @@ export class UserService {
         },
       },
       include: { settings: true },
-    })) as unknown as SafeUser;
+    });
+
+    const {
+      hashedPassword: _,
+      failedLoginAttempts: __,
+      lockoutUntil: ___,
+      ...safeUser
+    } = user;
+
+    return safeUser as unknown as SafeUser;
   }
   /**
    * Scenario Fix: Decouple DB deletion from Cloudinary cleanup.
@@ -204,7 +240,9 @@ export class UserService {
         data,
       });
 
-      const { hashedPassword, ...safeUser } = updatedUser;
+      // 🚜 SECURITY FIX: Ensure security fields are not leaked after update
+      const { hashedPassword, failedLoginAttempts, lockoutUntil, ...safeUser } =
+        updatedUser;
       return safeUser as unknown as SafeUser;
     } catch (error: any) {
       if (error.code === "P2002") {
@@ -219,7 +257,7 @@ export class UserService {
       }
 
       if (error.code === "P2025") {
-        throw createHttpError(404, "User profile not found.");
+        throw createHttpError(404, "user profile not found.");
       }
 
       logger.error({ err: error, userId }, "❌ Profile update failed.");

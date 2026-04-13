@@ -4,8 +4,10 @@ import { settingsController } from "./settings.controller.js";
 import { verifyToken } from "@/middleware/auth.middleware.js";
 import { validate } from "@/middleware/validate.js";
 import { updateSettingsSchema } from "./settings.validation.js";
+import { apiLimiter } from "@/middleware/rateLimiter.js";
 
 const router: Router = Router();
+router.use(apiLimiter);
 
 router.get("/", verifyToken, settingsController.getSettings);
 

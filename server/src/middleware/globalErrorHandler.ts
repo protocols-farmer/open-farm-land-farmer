@@ -40,21 +40,25 @@ export const globalErrorHandler: ErrorRequestHandler = (
   ) {
     switch (err.code) {
       case "P2002": {
-        statusCode = 409;
+        statusCode = 400; // 🚜 Changed from 409 to 400 for generic failure
         status = "fail";
 
-        const target = (err.meta as any)?.target?.join(", ");
-        const errMsg = err.message?.toLowerCase() || "";
+        // 🚜 SECURITY FIX: Generic error message to prevent Account Enumeration.
+        // We no longer confirm if an email or username specifically exists.
+        message = "Invalid input or account already exists with these details.";
 
-        if (target) {
-          message = `This ${target} is already in use. Please choose another.`;
-        } else if (errMsg.includes("email")) {
-          message = "This email is already registered.";
-        } else if (errMsg.includes("username")) {
-          message = "That username is already taken.";
-        } else {
-          message = "An account with these details already exists.";
-        }
+        //      const target = (err.meta as any)?.target?.join(", ");
+        // const errMsg = err.message?.toLowerCase() || "";
+
+        // if (target) {
+        //   message = `This ${target} is already in use. Please choose another.`;
+        // } else if (errMsg.includes("email")) {
+        //   message = "This email is already registered.";
+        // } else if (errMsg.includes("username")) {
+        //   message = "That username is already taken.";
+        // } else {
+        //   message = "An account with these details already exists.";
+        // }
         break;
       }
       case "P2025":

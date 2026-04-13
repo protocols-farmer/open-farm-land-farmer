@@ -1,4 +1,3 @@
-//src/features/auth/auth.service.ts
 import bcrypt from "bcryptjs";
 import prisma from "@/db/prisma.js";
 import { User } from "@prisma-client";
@@ -104,8 +103,23 @@ export class AuthService {
       where: { email },
     });
 
+    // 🚜 SECURITY FIX: Generic error to prevent email enumeration (Mitchell's request)
     if (!userWithPassword) {
-      throw createHttpError(404, "No account found with this email address.");
+      throw createHttpError(401, "Invalid email or password.");
+    }
+
+    // 🚜 BRUTE FORCE PROTECTION: Check lockoutUntil before proceeding
+    if (
+      userWithPassword.lockoutUntil &&
+      userWithPassword.lockoutUntil > new Date()
+    ) {
+      const remainingMinutes = Math.ceil(
+        (userWithPassword.lockoutUntil.getTime() - Date.now()) / 60000,
+      );
+      throw createHttpError(
+        403,
+        `Too many attempts. Please try again in ${remainingMinutes} minutes.`,
+      );
     }
 
     if (!userWithPassword.hashedPassword) {
@@ -116,8 +130,39 @@ export class AuthService {
       password,
       userWithPassword.hashedPassword,
     );
+
     if (!isPasswordCorrect) {
-      throw createHttpError(401, "The password you entered is incorrect.");
+      // 🚜 BRUTE FORCE PROTECTION: Increment attempts and handle lockout
+      const newAttempts = userWithPassword.failedLoginAttempts + 1;
+      const isLockedNow = newAttempts >= config.rateLimits.auth.maxAttempts;
+      const lockoutDate = isLockedNow
+        ? new Date(Date.now() + config.rateLimits.auth.lockoutMinutes * 60000)
+        : null;
+
+      await prisma.user.update({
+        where: { id: userWithPassword.id },
+        data: {
+          failedLoginAttempts: newAttempts,
+          lockoutUntil: lockoutDate,
+        },
+      });
+
+      // 🚜 SECURITY FIX: Generic error
+      throw createHttpError(401, "Invalid email or password.");
+    }
+
+    // 🚜 BRUTE FORCE PROTECTION: Reset counter on successful login
+    if (
+      userWithPassword.failedLoginAttempts > 0 ||
+      userWithPassword.lockoutUntil
+    ) {
+      await prisma.user.update({
+        where: { id: userWithPassword.id },
+        data: {
+          failedLoginAttempts: 0,
+          lockoutUntil: null,
+        },
+      });
     }
 
     let activeSanction = undefined;

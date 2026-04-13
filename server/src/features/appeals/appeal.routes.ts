@@ -5,8 +5,11 @@ import { verifyToken } from "@/middleware/auth.middleware.js";
 import { requireRole } from "@/middleware/admin.middleware.js";
 import { validate } from "@/middleware/validate.js";
 import { submitAppealSchema, reviewAppealSchema } from "./appeal.validation.js";
+import { apiLimiter } from "@/middleware/rateLimiter.js";
 
 const router: Router = Router();
+
+router.use(apiLimiter);
 
 router.post(
   "/",

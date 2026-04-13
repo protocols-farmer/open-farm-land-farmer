@@ -1,3 +1,4 @@
+//src/features/guideSection/guideStep.routes.ts
 import { Router } from "express";
 import { guideStepController } from "./guideStep.controller.js";
 import { verifyToken } from "@/middleware/auth.middleware.js";
@@ -7,8 +8,11 @@ import {
   createGuideStepSchema,
   updateGuideStepSchema,
 } from "./guideStep.validation.js";
+import { apiLimiter } from "@/middleware/rateLimiter.js";
 
 const router: Router = Router();
+
+router.use(apiLimiter);
 
 router.post(
   "/posts/:postId/steps",

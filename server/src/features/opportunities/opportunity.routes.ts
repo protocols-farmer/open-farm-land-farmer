@@ -11,8 +11,10 @@ import {
   updateOpportunitySchema,
 } from "./opportunity.validation.js";
 import { SystemRole } from "@prisma-client";
+import { apiLimiter } from "@/middleware/rateLimiter.js";
 
 const router: Router = Router();
+router.use(apiLimiter);
 
 // --- Public Routes ---
 router.get("/", opportunityController.findAll);
