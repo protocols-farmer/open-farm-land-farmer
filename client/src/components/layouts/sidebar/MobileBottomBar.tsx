@@ -5,14 +5,14 @@ import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { Plus, Home, LayoutGrid, Pickaxe, Shovel } from "lucide-react";
+import { Plus, Home, LayoutGrid, Pickaxe, Sprout } from "lucide-react";
 
 const bottomNavItems = [
   { href: "/", label: "Home", icon: Home },
   { href: "/all", label: "All Posts", icon: LayoutGrid },
   { href: "/create", label: "Create", icon: Plus, isCentral: true },
+  { href: "/guides", label: "Guides", icon: Sprout },
   { href: "/projects", label: "Projects", icon: Pickaxe },
-  { href: "/blogs", label: "Blogs", icon: Shovel },
 ];
 
 export default function MobileBottomBar() {

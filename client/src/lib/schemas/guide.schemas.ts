@@ -1,5 +1,48 @@
-//src/lib/schemas/guide.schemas.ts
 import { z } from "zod";
+
+// ==========================================
+// 🚜 GUIDE STEP SCHEMAS
+// ==========================================
+
+export const createGuideStepSchema = z.object({
+  title: z
+    .string()
+    .min(3, "Step title must be at least 3 characters.")
+    .max(150, "Step title cannot exceed 150 characters."),
+
+  description: z
+    .string()
+    .min(10, "Technical briefing must be at least 10 characters.")
+    .max(1000, "Technical briefing cannot exceed 1000 characters."),
+
+  order: z.coerce.number().int().positive("Order must be a positive number."),
+});
+
+export const updateGuideStepSchema = z.object({
+  title: z
+    .string()
+    .min(3, "Step title must be at least 3 characters.")
+    .max(150, "Step title cannot exceed 150 characters.")
+    .optional(),
+
+  description: z
+    .string()
+    .min(10, "Technical briefing must be at least 10 characters.")
+    .max(1000, "Technical briefing cannot exceed 1000 characters.")
+    .optional(),
+
+  order: z.coerce
+    .number()
+    .int()
+    .positive("Order must be a positive number.")
+    .optional(),
+});
+
+export type CreateGuideStepValues = z.infer<typeof createGuideStepSchema>;
+
+// ==========================================
+// 🚜 GUIDE SECTION SCHEMAS
+// ==========================================
 
 export const createGuideSectionSchema = z.object({
   title: z
@@ -54,3 +97,5 @@ export const updateGuideSectionSchema = z.object({
   image: z.any().optional(),
   removeImage: z.string().optional(),
 });
+
+export type CreateGuideSectionValues = z.infer<typeof createGuideSectionSchema>;

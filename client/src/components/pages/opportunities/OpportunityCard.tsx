@@ -36,13 +36,13 @@ export default function OpportunityCard({
     <Card className="rounded-none group h-full flex flex-col bg-card border-double border-3  transition-all duration-500   overflow-hidden relative">
       <CardHeader className="p-7 pb-5">
         <div className="flex items-start gap-5">
-          <div className="relative h-16 w-16  overflow-hidden bg-muted/50 border border-border/50 shrink-0 flex items-center justify-center shadow-inner">
+          <div className="relative h-16 w-16  overflow-hidden bg-muted/50 border border-border/50 shrink-0 flex items-center justify-center ">
             {opportunity.companyLogo ? (
               <Image
                 src={opportunity.companyLogo}
                 alt={opportunity.companyName}
                 fill
-                className="object-contain p-2.5 transition-transform duration-700 group-hover:scale-110"
+                className="object-contain transition-transform duration-700 group-hover:scale-110"
               />
             ) : (
               <Building2 className="h-7 w-7 text-muted-foreground/20" />

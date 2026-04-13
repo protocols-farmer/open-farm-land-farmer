@@ -61,9 +61,8 @@ export default function AllUpdatesPage() {
         {canCreate && (
           <Button
             asChild
-            size="lg"
             className={cn(
-              "mt-8 rounded-none font-bold px-8 h-12 transition-all active:scale-95",
+              "rounded-none font-bold ",
               !isVerified && "opacity-50 grayscale cursor-not-allowed",
             )}
           >

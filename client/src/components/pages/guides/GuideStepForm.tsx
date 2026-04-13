@@ -1,3 +1,4 @@
+//src/components/pages/guides/GuideStepForm.tsx
 "use client";
 
 import React from "react";
@@ -145,7 +146,7 @@ export default function GuideStepForm({
                 </span>
               </div>
               <FormControl>
-                <div className="border-2 p-1 bg-muted/5 h-[450px] overflow-y-auto focus-within:border-primary transition-colors custom-scrollbar">
+                <div className="border-2 p-1 bg-muted/5 h-113 overflow-y-auto focus-within:border-primary transition-colors custom-scrollbar">
                   <RichTextEditor
                     initialContent={field.value}
                     onChange={field.onChange}

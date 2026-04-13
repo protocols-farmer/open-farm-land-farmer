@@ -32,15 +32,11 @@ export default function AllOpportunitiesPage() {
   return (
     <div className="relative">
       {canCreate && (
-        <div className="">
-          <Button
-            asChild
-            variant="default"
-            className="rounded-none font-black   h-14 px-8 shadow-2xl shadow-primary/40 hover:scale-105 active:scale-95 transition-all"
-          >
+        <div className="absolute top-12 md:top-20 right-6 md:right-12 z-20">
+          <Button asChild variant="default" className="rounded-none font-bold">
             <Link href="/opportunities/create" onClick={handleCreateClick}>
               <PlusCircle className="mr-2 h-5 w-5" />
-              Post opportunity
+              Create Opportunity{" "}
             </Link>
           </Button>
         </div>

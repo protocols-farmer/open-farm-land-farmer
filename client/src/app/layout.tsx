@@ -142,7 +142,9 @@ export default function RootLayout({
                 <SanctionGuard>
                   <SvgSpriteDefs />
 
-                  <main className="relative     mx-auto">{children}</main>
+                  <main className="relative max-w-[1850px] mx-auto">
+                    {children}
+                  </main>
                 </SanctionGuard>
               </MaintenanceGuard>
             </AuthInitializer>
