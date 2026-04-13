@@ -2,7 +2,7 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { userApiSlice } from "./userApiSlice";
 import { clearCredentials } from "../auth/authSlice";
-import { authApiSlice } from "../auth/authApiSlice"; // 🚜 Make sure this is imported!
+import { authApiSlice } from "../auth/authApiSlice";
 import type { RootState } from "../../store";
 import type {
   SanitizedUserDto,
@@ -28,7 +28,6 @@ const userSlice = createSlice({
         state.currentUser = null;
       })
 
-      // 🚜 ADD THIS BLOCK: Catch the user data the exact second they log in
       .addMatcher(
         authApiSlice.endpoints.login.matchFulfilled,
         (state, action: PayloadAction<any>) => {

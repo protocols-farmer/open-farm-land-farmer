@@ -1,10 +1,10 @@
-//src/lib/schemas/opportunity.schemas.ts
 import { z } from "zod";
-import { OpportunityType } from "../features/admin/adminTypes";
 
 /**
  * 🚜 Opportunity Validation Schema
- * 1:1 Mirror of the Backend Digital Perimeter
+ * This schema represents the FORM STATE.
+ * Note: responsibilities and qualifications are strings here because
+ * they are handled by a Textarea. We convert them to arrays in onSubmit.
  */
 export const opportunitySchema = z.object({
   title: z
@@ -22,7 +22,8 @@ export const opportunitySchema = z.object({
     .min(1, "Location is required.")
     .max(100, "Location cannot exceed 100 characters."),
 
-  type: z.nativeEnum(OpportunityType, {
+  // 🚜 SYNCED: Using string enum to match the backend's OpportunityType values
+  type: z.enum(["FULL_TIME", "PART_TIME", "CONTRACT", "INTERNSHIP"], {
     errorMap: () => ({ message: "Please select a valid opportunity type." }),
   }),
 
@@ -39,7 +40,8 @@ export const opportunitySchema = z.object({
 
   companyLogo: z.any().optional(),
 
-  isRemote: z.boolean().default(false),
+  // 🚜 FIX: Strict boolean (no .default) to resolve the Type 'undefined' error
+  isRemote: z.boolean(),
 
   salaryRange: z
     .string()
@@ -47,16 +49,17 @@ export const opportunitySchema = z.object({
     .optional()
     .or(z.literal("")),
 
-  // 🚜 SYNCED: Character limits and error messages
+  // 🚜 UI FIX: These are strings in the form because they use a Textarea.
+  // We keep the min(1) to match the backend's min(1) array requirement.
   responsibilities: z
-    .array(z.string().max(200, "Each item must be under 200 characters."))
+    .string()
     .min(1, "At least one responsibility is required.")
-    .max(20, "Maximum 20 items allowed."),
+    .max(2000, "Responsibilities text is too long."),
 
   qualifications: z
-    .array(z.string().max(200, "Each item must be under 200 characters."))
+    .string()
     .min(1, "At least one qualification is required.")
-    .max(20, "Maximum 20 items allowed."),
+    .max(2000, "Qualifications text is too long."),
 
   tags: z
     .array(

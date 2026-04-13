@@ -1,4 +1,3 @@
-// src/lib/features/social-auth/socialAuthApiSlice.ts
 import { createApi } from "@reduxjs/toolkit/query/react";
 import { baseQueryWithReauth } from "../../api/baseQueryWithReauth";
 import { setCredentials } from "../auth/authSlice";
@@ -9,9 +8,8 @@ export const socialAuthApiSlice = createApi({
   baseQuery: baseQueryWithReauth,
   endpoints: (builder) => ({
     /**
-     * NEW: Finalizes the social login flow.
-     * After the backend redirects to /auth/callback, the frontend calls this
-     * to exchange the HttpOnly cookie for a JWT Access Token.
+     * Finalizes the social login flow.
+     * Exchanges the session cookie for the initial user data and token rotation.
      */
     checkSocialStatus: builder.mutation<SocialAuthResponse, void>({
       query: () => ({
@@ -20,11 +18,12 @@ export const socialAuthApiSlice = createApi({
       }),
       async onQueryStarted(_, { dispatch, queryFulfilled }) {
         try {
-          const { data } = await queryFulfilled;
-          // Synchronize the new Access Token into the global Auth state
-          dispatch(setCredentials({ token: data.data.tokens.accessToken }));
+          await queryFulfilled;
+          // 🚜 SUCCESS: Signal the app that we are authenticated.
+          // We don't pass a token here because it's handled via HttpOnly Cookies.
+          dispatch(setCredentials());
         } catch (error) {
-          // Failure handled by the callback page logic
+          // Failure is handled by the component or global error handler
         }
       },
     }),
