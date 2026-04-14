@@ -97,8 +97,8 @@ export default function HomeHero() {
             </p>
             <p className="text-xs text-muted-foreground">
               pss, hey bro, saw a bug or vulnerability? let us know!{" "}
-              <Link href="/discussions" className="text-primary underline">
-                discussions
+              <Link href="/report-issue" className="text-primary underline">
+                Report Issue
               </Link>
             </p>
           </div>

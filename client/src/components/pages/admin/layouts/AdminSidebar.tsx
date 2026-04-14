@@ -1,5 +1,4 @@
 //src/components/pages/admin/layouts/AdminSidebar.tsx
-
 "use client";
 
 import React from "react";
@@ -17,6 +16,7 @@ import {
   ShieldCheck,
   Settings,
   Scale,
+  ShieldAlert, // 🚜 Added for Issue Reports
 } from "lucide-react";
 
 const navLinks = [
@@ -30,6 +30,12 @@ const navLinks = [
     href: "/admin/users",
     label: "Users",
     icon: Users,
+    requiredRole: [SystemRole.SUPER_ADMIN],
+  },
+  {
+    href: "/admin/reports", // 🚜 New "Boy" Route
+    label: "Issue Reports",
+    icon: ShieldAlert,
     requiredRole: [SystemRole.SUPER_ADMIN],
   },
   {

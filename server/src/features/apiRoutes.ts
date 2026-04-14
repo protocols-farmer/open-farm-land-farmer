@@ -17,6 +17,7 @@ import githubRoutes from "./github/github.routes.js";
 import socialAuthRoutes from "./social-auth/social-auth.routes.js";
 import settingsRoutes from "./settings/settings.routes.js";
 import appealRoutes from "../features/appeals/appeal.routes.js";
+import reportRoutes from "../features/reports/report.routes.js";
 
 const router: Router = Router();
 
@@ -43,4 +44,5 @@ router.use("/notifications", notificationRoutes);
 router.use("/github", githubRoutes);
 router.use("/settings", settingsRoutes);
 router.use("/appeals", appealRoutes);
+router.use("/reports", reportRoutes);
 export default router;

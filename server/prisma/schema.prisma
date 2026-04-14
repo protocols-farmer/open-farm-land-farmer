@@ -71,11 +71,14 @@ model User {
   sanctionsIssued       UserSanction[]        @relation("AdminSanctions")
   appealsSubmitted      Appeal[]              @relation("UserAppeals")
   appealsReviewed       Appeal[]              @relation("AdminAppeals")
+  issueReports    IssueReport[] @relation("UserReports")
+  resolvedReports IssueReport[] @relation("AdminResolvedReports")
 
   followersCount Int       @default(0) @map("followers_count")
   followingCount Int       @default(0) @map("following_count")
   failedLoginAttempts Int       @default(0) @map("failed_login_attempts")
   lockoutUntil        DateTime? @map("lockout_until")
+
 
   @@map("users")
 }
@@ -539,6 +542,61 @@ model Appeal {
   @@index([status])
   @@map("appeals")
 }
+// ===============================================
+// ===      BUG & VULNERABILITY MODELS         ===
+// ===============================================
+
+model IssueReport {
+  id               String       @id @default(uuid())
+  title            String
+  description      String       @db.Text
+  reproductionSteps String?     @db.Text @map("reproduction_steps")
+  
+  type             ReportType
+  severity         Severity
+  status           ReportStatus @default(OPEN)
+  attachments      Json?        @default("[]")
+  
+  adminNotes       String?      @db.Text @map("admin_notes")
+  
+  createdAt        DateTime     @default(now()) @map("created_at")
+  updatedAt        DateTime     @updatedAt
+
+  // Relationships
+  reporterId       String       @map("reporter_id")
+  reporter         User         @relation("UserReports", fields: [reporterId], references: [id], onDelete: Cascade)
+  
+  resolvedById     String?      @map("resolved_by_id")
+  resolver         User?        @relation("AdminResolvedReports", fields: [resolvedById], references: [id], onDelete: SetNull)
+
+  @@index([reporterId])
+  @@index([status])
+  @@index([type])
+  @@map("issue_reports")
+}
+
+// ===============================================
+// ===             ENUMERATIONS                ===
+// ===============================================
+
+enum ReportType {
+  BUG
+  VULNERABILITY
+}
+
+enum ReportStatus {
+  OPEN
+  TRIAGED
+  FIXED
+  DISMISSED
+}
+
+enum Severity {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
 
 enum AppealStatus {
   PENDING
@@ -551,12 +609,12 @@ enum AppealStatus {
 
 enum UserStatus {
   ACTIVE
-  SUSPENDED // 🚜 NEW STATUS ADDED
+  SUSPENDED 
   DEACTIVATED
   BANNED
 }
 
-// 🚜 NEW ENUMS FOR MODERATION
+
 enum SanctionType {
   SUSPENSION
   BAN
