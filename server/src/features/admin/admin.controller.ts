@@ -1,3 +1,4 @@
+//src/features/admin/admin.controller.ts
 import { Request, Response } from "express";
 import { asyncHandler } from "@/middleware/asyncHandler.js";
 import { adminService } from "./admin.service.js";
