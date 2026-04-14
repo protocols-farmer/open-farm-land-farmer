@@ -33,7 +33,7 @@ const navLinks = [
     requiredRole: [SystemRole.SUPER_ADMIN],
   },
   {
-    href: "/admin/reports", // 🚜 New "Boy" Route
+    href: "/admin/reports",
     label: "Issue Reports",
     icon: ShieldAlert,
     requiredRole: [SystemRole.SUPER_ADMIN],

@@ -34,6 +34,7 @@ import {
   TreePine,
   Sparkles,
   Crown,
+  ShieldAlert,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -91,6 +92,7 @@ const communitySection: CollapsibleNavSection = {
     { href: "/discussions", label: "Discussions", icon: MessageSquare },
     { href: "/opportunities", label: "Opportunities", icon: Tractor },
     { href: "/updates", label: "Updates", icon: CloudSun },
+    { href: "/report-issue ", label: "Report Issue", icon: ShieldAlert },
   ],
 };
 
