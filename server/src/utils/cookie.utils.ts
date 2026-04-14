@@ -1,10 +1,10 @@
-//src/utils/cookie.utils.ts
-import { Response } from "express";
+import { Response, CookieOptions } from "express";
 import { config } from "@/config/index.js";
 
 /**
  * Standardized helper to attach both Access and Refresh tokens to HTTP-only cookies.
- * This protects both tokens from XSS by making them inaccessible to client-side JS.
+ * * FIX: Changed sameSite to "none" for production to allow cross-domain
+ * communication between Vercel and Render.
  */
 export const setAuthCookies = (
   res: Response,
@@ -12,33 +12,41 @@ export const setAuthCookies = (
   refreshToken: string,
   refreshExpiresAt: Date,
 ) => {
-  // 1. Set Access Token Cookie
-  // We use maxAge here, converting your config (seconds) to milliseconds.
-  res.cookie("accessToken", accessToken, {
+  const isProd = config.nodeEnv === "production";
+
+  const commonOptions: CookieOptions = {
     httpOnly: true,
-    secure: config.nodeEnv === "production",
-    sameSite: "strict",
+    // "none" is required for cross-site cookies, but only works over HTTPS (secure: true)
+    sameSite: isProd ? "none" : "lax",
+    secure: isProd,
+    path: "/",
+  };
+
+  // 1. Set Access Token Cookie
+  res.cookie("accessToken", accessToken, {
+    ...commonOptions,
     maxAge: config.jwt.accessExpiresInSeconds * 1000,
   });
 
   // 2. Set Refresh Token Cookie
-  // We use the specific Date object provided by the Refresh Token generator.
   res.cookie(config.cookies.refreshTokenName, refreshToken, {
-    httpOnly: true,
-    secure: config.nodeEnv === "production",
-    sameSite: "strict",
+    ...commonOptions,
     expires: refreshExpiresAt,
   });
 };
 
 /**
- * Standardized helper to clear all authentication cookies during logout or session failure.
+ * Standardized helper to clear all authentication cookies.
+ * Options must match the setAuthCookies options to be cleared correctly by the browser.
  */
 export const clearAuthCookies = (res: Response) => {
-  const options = {
+  const isProd = config.nodeEnv === "production";
+
+  const options: CookieOptions = {
     httpOnly: true,
-    secure: config.nodeEnv === "production",
-    sameSite: "strict" as const,
+    secure: isProd,
+    sameSite: isProd ? "none" : "lax",
+    path: "/",
   };
 
   res.clearCookie("accessToken", options);
