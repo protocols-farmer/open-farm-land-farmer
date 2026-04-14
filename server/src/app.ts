@@ -12,7 +12,8 @@ const app: Express = express();
 
 // 🚜 SECURITY FIX: Disabled generic trust proxy to prevent X-Forwarded-For spoofing.
 // Only enable this if you are behind a trusted balancer (like Cloudflare/Nginx) and set it to specific IPs.
-app.set("trust proxy", false);
+// app.set("trust proxy", false);
+app.set("trust proxy", 1);
 
 // // Enable CORS with your detailed options
 app.use(cors(corsOptions));

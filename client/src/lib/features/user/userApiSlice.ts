@@ -14,6 +14,11 @@ import type {
   UpdateProfileApiResponse,
   UserProfile,
 } from "./userTypes";
+import type {
+  BaseQueryFn,
+  FetchArgs,
+  FetchBaseQueryError,
+} from "@reduxjs/toolkit/query";
 
 export interface FollowerDto {
   id: string;
@@ -23,7 +28,13 @@ export interface FollowerDto {
   title: string | null;
 }
 
-const baseQueryWithRetry = retry(baseQueryWithReauth, { maxRetries: 3 });
+const baseQueryWithRetry = (retry as any)(baseQueryWithReauth, {
+  maxRetries: 3,
+  retryCondition: (error: any) => {
+    const status = error?.status;
+    return status !== 401 && status !== 403 && status !== 429;
+  },
+}) as BaseQueryFn<string | FetchArgs, unknown, FetchBaseQueryError>;
 
 export const userApiSlice = createApi({
   reducerPath: "userApi",

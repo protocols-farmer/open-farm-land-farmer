@@ -10,7 +10,11 @@ import {
   resetPasswordSchema,
 } from "@/features/auth/auth.validation.js";
 import { verifyToken } from "@/middleware/auth.middleware.js";
-import { authLimiter, emailResendLimiter } from "@/middleware/rateLimiter.js";
+import {
+  apiLimiter,
+  authLimiter,
+  emailResendLimiter,
+} from "@/middleware/rateLimiter.js";
 
 const router: Router = Router();
 
@@ -25,7 +29,7 @@ router.post("/login", authLimiter, validate(loginSchema), authController.login);
 
 router.post("/oauth", authLimiter, authController.handleOAuth);
 
-router.post("/refresh", authLimiter, authController.refreshAccessToken);
+router.post("/refresh", apiLimiter, authController.refreshAccessToken);
 
 router.post(
   "/forgot-password",
