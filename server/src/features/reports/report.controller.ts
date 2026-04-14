@@ -14,18 +14,25 @@ class ReportController {
     const attachments: ReportAttachment[] = [];
 
     if (files && files.length > 0) {
-      for (const file of files) {
-        const result = await uploadToCloudinary(
-          file.path,
-          "reports",
-          `report_${userId}_${Date.now()}`,
+      const uploadPromises = files.map((file, index) => {
+        const customPublicId = `report_${userId}_${Date.now()}_${index}`;
+
+        return uploadToCloudinary(file.path, "reports", customPublicId).then(
+          (result) => {
+            return {
+              url: result.secure_url,
+              publicId: result.public_id,
+              resourceType: (file.mimetype.startsWith("image/")
+                ? "image"
+                : "raw") as "image" | "raw",
+            };
+          },
         );
-        attachments.push({
-          url: result.secure_url,
-          publicId: result.public_id,
-          resourceType: file.mimetype.startsWith("image/") ? "image" : "raw",
-        });
-      }
+      });
+
+      const uploadedResults = await Promise.all(uploadPromises);
+
+      attachments.push(...uploadedResults);
     }
 
     const report = await reportService.createReport(
