@@ -20,34 +20,20 @@ export default function AuthInitializer({
   const dispatch = useAppDispatch();
   const isHydrated = useAppSelector(selectIsHydrated);
 
-  /**
-   * 🛡️ INITIAL SESSION CHECK
-   * We trigger getMe immediately.
-   * 1. If the browser has valid cookies, this succeeds.
-   * 2. If no cookies exist, this returns a 401.
-   * * Note: We don't 'skip' anymore because we need to check the cookie status.
-   */
   const { isLoading, isSuccess, isError } = useGetMeQuery(undefined, {
     refetchOnMountOrArgChange: false,
   });
 
   useEffect(() => {
-    // Once the API call finishes (success or error)
     if (!isLoading) {
       if (isSuccess) {
-        // We found a valid session cookie
         dispatch(setCredentials());
       }
-      // Signal that the app has finished its initial security check
+
       dispatch(completeHydration());
     }
   }, [isLoading, isSuccess, dispatch]);
 
-  /**
-   * SHOW LOADING SCREEN:
-   * We show this until the initial getMe call is finished.
-   * This prevents the "Layout Flicker" where guests see logged-in UI elements.
-   */
   if (!isHydrated) {
     return (
       <div className="flex flex-col items-center justify-center h-screen w-full bg-background animate-in fade-in duration-500">

@@ -104,7 +104,6 @@ export default function MaintenanceGuard({
                 Retry Connection
               </Button>
             ) : (
-              // Only show Admin Login if the server is ALIVE but in Maintenance
               <>
                 <p className="text-[10px] text-muted-foreground font-bold mb-1  tracking-widest">
                   Restricted Access

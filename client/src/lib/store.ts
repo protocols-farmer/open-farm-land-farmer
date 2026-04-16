@@ -24,11 +24,7 @@ import { githubApiSlice } from "./features/github/githubApiSlice";
 import { settingsApiSlice } from "./features/settings/settingsApiSlice";
 import { appealApiSlice } from "./features/appeals/appealApiSlice";
 import { reportApiSlice } from "./features/reports/reportApiSlice";
-/**
- * CENTRAL REDUX STORE
- * This is now the "Source of Truth" for the entire application,
- * replacing NextAuth session management.
- */
+
 export const store = configureStore({
   reducer: {
     auth: authReducer,
@@ -74,7 +70,7 @@ export const store = configureStore({
       githubApiSlice.middleware,
       settingsApiSlice.middleware,
       appealApiSlice.middleware,
-      reportApiSlice.middleware, // 🚜 ADD THIS LINE!
+      reportApiSlice.middleware,
     ]),
 });
 

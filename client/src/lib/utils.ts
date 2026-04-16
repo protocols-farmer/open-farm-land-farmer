@@ -2,17 +2,10 @@
 import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
 
-/**
- * Merges Tailwind classes safely using clsx and tailwind-merge.
- */
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-/**
- * Extracts a human-readable error message from backend API responses.
- * Specifically tuned to handle the refined Global Error Handler on our backend.
- */
 export const getApiErrorMessage = (error: any, fallback?: string): string => {
   if (error?.status === "FETCH_ERROR")
     return "Network error. Please check your connection.";
@@ -20,7 +13,6 @@ export const getApiErrorMessage = (error: any, fallback?: string): string => {
     return "This email is linked to a social provider. Please log in with Google or GitHub.";
   }
 
-  // 2. Extract the raw message/code from various possible locations in the error object
   let rawMessage = error?.data?.message;
 
   if (
@@ -35,7 +27,6 @@ export const getApiErrorMessage = (error: any, fallback?: string): string => {
     rawMessage = error?.message || (typeof error === "string" ? error : null);
   }
 
-  // 3. Translation Map: Swap machine codes for human sentences
   const ERROR_MAP: Record<string, string> = {
     SOCIAL_ACCOUNT_DETECTED:
       "This email is linked to a social provider. Please log in with Google or GitHub.",
@@ -50,7 +41,6 @@ export const getApiErrorMessage = (error: any, fallback?: string): string => {
     return ERROR_MAP[rawMessage];
   }
 
-  // 4. Final fallback
   return (
     rawMessage || fallback || "An unexpected error occurred. Please try again."
   );

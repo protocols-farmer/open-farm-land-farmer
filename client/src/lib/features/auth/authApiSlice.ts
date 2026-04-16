@@ -16,10 +16,6 @@ export const authApiSlice = createApi({
   reducerPath: "authApi",
   baseQuery: baseQueryWithReauth,
   endpoints: (builder) => ({
-    /**
-     * Standard Email/Password Login
-     * The backend now sets the Access and Refresh tokens via HttpOnly cookies.
-     */
     login: builder.mutation<LoginApiResponse, LoginInputDto>({
       query: (credentials) => ({
         url: "/auth/login",
@@ -30,20 +26,13 @@ export const authApiSlice = createApi({
         try {
           const { data } = await queryFulfilled;
 
-          // If the request succeeded, the cookies are already in the browser.
-          // We just signal to the authSlice that we are now authenticated.
           if (data.status === "success") {
             dispatch(setCredentials());
           }
-        } catch (error) {
-          // Errors are handled by the global error handler or component
-        }
+        } catch (error) {}
       },
     }),
 
-    /**
-     * Standard Email/Password Signup
-     */
     signup: builder.mutation<LoginApiResponse, SignUpInputDto>({
       query: (credentials) => ({
         url: "/auth/signup",
@@ -57,16 +46,10 @@ export const authApiSlice = createApi({
           if (data.status === "success" || data.status === "warning") {
             dispatch(setCredentials());
           }
-        } catch (error) {
-          // Errors handled elsewhere
-        }
+        } catch (error) {}
       },
     }),
 
-    /**
-     * Logout of current session
-     * The backend clearAuthCookies() will handle the cookie removal.
-     */
     logout: builder.mutation<{ message: string }, void>({
       query: () => ({
         url: "/auth/logout",
@@ -76,7 +59,6 @@ export const authApiSlice = createApi({
         try {
           await queryFulfilled;
         } catch (error) {
-          // Even if the server-side logout fails, we clear local state
         } finally {
           dispatch(clearCredentials());
           dispatch(authApiSlice.util.resetApiState());
@@ -88,9 +70,6 @@ export const authApiSlice = createApi({
       },
     }),
 
-    /**
-     * Security: Logout of ALL active sessions
-     */
     logoutAll: builder.mutation<{ message: string }, void>({
       query: () => ({
         url: "/auth/logout-all",
@@ -101,7 +80,7 @@ export const authApiSlice = createApi({
           await queryFulfilled;
         } finally {
           dispatch(clearCredentials());
-          // CRITICAL: Wipe the entire API cache
+
           dispatch(authApiSlice.util.resetApiState());
 
           if (typeof window !== "undefined") {
@@ -111,9 +90,6 @@ export const authApiSlice = createApi({
       },
     }),
 
-    /**
-     * Change password (Protected)
-     */
     changePassword: builder.mutation<
       { message: string },
       ChangePasswordInputDto
@@ -125,9 +101,6 @@ export const authApiSlice = createApi({
       }),
     }),
 
-    /**
-     * Request a password reset link
-     */
     forgotPassword: builder.mutation<
       GeneralAuthResponse,
       ForgotPasswordInputDto
@@ -139,9 +112,6 @@ export const authApiSlice = createApi({
       }),
     }),
 
-    /**
-     * Reset password using a token from email
-     */
     resetPassword: builder.mutation<GeneralAuthResponse, ResetPasswordInputDto>(
       {
         query: (body) => ({
@@ -152,9 +122,6 @@ export const authApiSlice = createApi({
       },
     ),
 
-    /**
-     * Verify email via token (GET)
-     */
     verifyEmail: builder.query<GeneralAuthResponse, string>({
       query: (token) => ({
         url: `/auth/verify-email`,
