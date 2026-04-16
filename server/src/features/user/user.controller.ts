@@ -104,10 +104,6 @@ class UserController {
     }
   });
 
-  /**
-   * Fetches a public user profile by username.
-   * Flattens counts and enforces privacy/moderation rules.
-   */
   getUserByUsername = asyncHandler(async (req: Request, res: Response) => {
     const { username } = req.params;
     const currentUserId = req.user?.id;

@@ -45,10 +45,6 @@ router.post(
   authController.resetPassword,
 );
 
-/**
- * Note: This is a GET request because users click a link in their email.
- * The link usually looks like: /verify-email?token=xyz
- */
 router.get("/verify-email", authController.verifyEmail);
 
 router.post("/logout", verifyToken, authController.logout);

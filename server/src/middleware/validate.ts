@@ -3,11 +3,6 @@ import { Request, Response, NextFunction } from "express";
 import { ZodError, ZodType } from "zod";
 import { createHttpError } from "@/utils/error.factory.js";
 
-/**
- * REFINED: Global Validation Middleware.
- * Parses request body, query, and params against a Zod schema.
- * Returns structured, field-specific error messages.
- */
 export const validate =
   (schema: ZodType) =>
   async (req: Request, _res: Response, next: NextFunction): Promise<void> => {
@@ -21,11 +16,6 @@ export const validate =
       return next();
     } catch (error) {
       if (error instanceof ZodError) {
-        /**
-         * REFINED: Error Mapping
-         * We extract the specific field name (e.g., 'email') and the
-         * custom message defined in your Zod schema.
-         */
         const firstIssue = error.issues[0];
 
         const fieldName = firstIssue.path[firstIssue.path.length - 1];

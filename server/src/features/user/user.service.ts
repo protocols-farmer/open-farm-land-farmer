@@ -7,7 +7,6 @@ import { createHttpError } from "@/utils/error.factory.js";
 import { logger } from "@/config/logger.js";
 import { deleteFromCloudinary } from "@/config/cloudinary.js";
 
-// 🚜 SECURITY FIX: Explicitly omit brute-force protection fields from SafeUser
 export type SafeUser = Omit<
   User,
   "hashedPassword" | "failedLoginAttempts" | "lockoutUntil"
@@ -36,7 +35,7 @@ export class UserService {
       emailVerifyToken,
       passwordResetToken,
       passwordResetExpires,
-      // 🚜 SECURITY FIX: Strip security fields from public profiles
+
       failedLoginAttempts,
       lockoutUntil,
       status,
@@ -61,7 +60,6 @@ export class UserService {
 
     if (!user) return null;
 
-    // 🚜 SECURITY FIX: Ensure security fields are stripped before returning
     const { hashedPassword, failedLoginAttempts, lockoutUntil, ...safeUser } =
       user;
     return safeUser as unknown as SafeUser;
@@ -74,14 +72,12 @@ export class UserService {
 
     if (!user) return null;
 
-    // 🚜 SECURITY FIX: Ensure security fields are stripped before returning
     const { hashedPassword, failedLoginAttempts, lockoutUntil, ...safeUser } =
       user;
     return safeUser as unknown as SafeUser;
   }
 
   public async findUserById(id: string): Promise<SafeUser | null> {
-    // 1. Fast, lightweight initial query
     const user = await this.userDelegate.findUnique({
       where: { id },
     });
@@ -90,7 +86,6 @@ export class UserService {
 
     let activeSanction = undefined;
 
-    // 2. Only query the moderation table if we know they are disciplined
     if (user.status === "SUSPENDED" || user.status === "BANNED") {
       const sanction = await (
         prisma as ExtendedPrismaClient
@@ -104,7 +99,6 @@ export class UserService {
       });
 
       if (sanction) {
-        // 3. If suspended and time is up, restore access immediately
         if (
           user.status === "SUSPENDED" &&
           sanction.expiresAt &&
@@ -120,10 +114,9 @@ export class UserService {
               data: { status: "EXPIRED" },
             }),
           ]);
-          // Update local memory so the frontend sees them as ACTIVE immediately
+
           user.status = "ACTIVE";
         } else {
-          // Time is not up (or it's a permanent ban), attach the sanction details
           activeSanction = {
             reason: sanction.reason,
             expiresAt: sanction.expiresAt,
@@ -135,8 +128,6 @@ export class UserService {
       }
     }
 
-    // 4. Clean destructuring, no 'delete' keywords or 'any' hacks
-    // 🚜 SECURITY FIX: Added failedLoginAttempts and lockoutUntil to destructuring
     const {
       hashedPassword,
       failedLoginAttempts,
@@ -165,7 +156,7 @@ export class UserService {
             emailMarketing: true,
             emailUpdates: true,
             emailSocial: true,
-            theme: "DARK", // 🌙 Dark Mode Default
+            theme: "DARK",
             notificationsEnabled: true,
           },
         },
@@ -182,10 +173,7 @@ export class UserService {
 
     return safeUser as unknown as SafeUser;
   }
-  /**
-   * Scenario Fix: Decouple DB deletion from Cloudinary cleanup.
-   * If Cloudinary fails, we log the "Orphaned Asset" IDs but proceed with DB deletion.
-   */
+
   public async deleteUserAccount(userId: string): Promise<void> {
     const user = await this.userDelegate.findUnique({
       where: { id: userId },
@@ -202,7 +190,6 @@ export class UserService {
         bannerId ? deleteFromCloudinary(bannerId) : Promise.resolve(),
       ]);
 
-      // Log orphaned assets if cleanup failed
       cleanupResults.forEach((res, index) => {
         if (res.status === "rejected") {
           const type = index === 0 ? "Profile" : "Banner";
@@ -240,7 +227,6 @@ export class UserService {
         data,
       });
 
-      // 🚜 SECURITY FIX: Ensure security fields are not leaked after update
       const { hashedPassword, failedLoginAttempts, lockoutUntil, ...safeUser } =
         updatedUser;
       return safeUser as unknown as SafeUser;

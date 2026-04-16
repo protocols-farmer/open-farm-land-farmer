@@ -1,10 +1,6 @@
 //src/features/user/user.shared.schema.ts
 import { z } from "zod";
 
-/**
- * Shared validation rules to ensure total consistency.
- * If you change a character limit here, it updates everywhere.
- */
 export const userValidationRules = {
   email: z
     .string()

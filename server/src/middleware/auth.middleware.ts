@@ -12,11 +12,6 @@ export const verifyToken = asyncHandler(
   async (req: Request, _res: Response, next: NextFunction) => {
     logger.debug({ path: req.path }, "[Auth Middleware] verifyToken triggered");
 
-    /**
-     * 🔐 TOKEN RETRIEVAL
-     * Priority 1: HttpOnly Cookie (accessToken) - New Secure Way
-     * Priority 2: Authorization Header (Bearer) - Fallback/Legacy/Postman
-     */
     let token = req.cookies?.accessToken;
 
     if (!token) {
@@ -33,13 +28,11 @@ export const verifyToken = asyncHandler(
     }
 
     try {
-      // 1. Verify the JWT first
       const decoded = jwt.verify(
         token,
         config.jwt.accessSecret,
       ) as DecodedAccessTokenPayload;
 
-      // 2. Validate basic payload structure
       if (
         !decoded.id ||
         !decoded.email ||
@@ -56,8 +49,6 @@ export const verifyToken = asyncHandler(
         );
       }
 
-      // 3. Fetch user from DB to get the LATEST status (Bypass cached status in token)
-      // 🚜 CHANGE 1: Stripped out the heavy 'include: { sanctionsReceived }'
       const userFromDb = await (prisma as ExtendedPrismaClient).user.findUnique(
         {
           where: { id: decoded.id },
@@ -72,11 +63,6 @@ export const verifyToken = asyncHandler(
         return next(createHttpError(401, "Unauthorized: User not found."));
       }
 
-      /**
-       * 🛡️ THE SECURITY GATE (User Status Check)
-       * This happens IMMEDIATELY after verification and DB retrieval.
-       * Blocks BANNED, SUSPENDED, and DEACTIVATED users before any business logic runs.
-       */
       if (userFromDb.status !== "ACTIVE") {
         const allowedPaths = ["/user/me", "/appeals", "/auth/logout"];
         const isAllowed = allowedPaths.some(
@@ -96,8 +82,6 @@ export const verifyToken = asyncHandler(
         }
       }
 
-      // 4. Populate req.user only after all security gates are passed
-      // 🚜 CHANGE 3: Simplified the req.user object
       req.user = {
         id: userFromDb.id,
         name: userFromDb.name,
@@ -127,13 +111,8 @@ export const verifyToken = asyncHandler(
   },
 );
 
-/**
- * 🚜 OPTIONAL AUTH: The "Soft Guard"
- * Now also checks cookies for the token to populate guest state.
- */
 export const optionalVerifyToken = asyncHandler(
   async (req: Request, _res: Response, next: NextFunction) => {
-    // Check cookie first, then header
     let token = req.cookies?.accessToken;
 
     if (!token) {
@@ -157,11 +136,6 @@ export const optionalVerifyToken = asyncHandler(
         },
       );
 
-      /**
-       * 🛡️ THE SECURITY GATE (Optional)
-       * For optional auth, we only attach the user if they are ACTIVE.
-       * If BANNED/DEACTIVATED, they remain a "guest" to the rest of the app.
-       */
       if (userFromDb && userFromDb.status === "ACTIVE") {
         req.user = {
           id: userFromDb.id,

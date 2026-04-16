@@ -1,9 +1,5 @@
 //src/config/index.ts
 
-/**
- * Helper to get and validate environment variables.
- * Throws an error if a required variable is missing.
- */
 const getEnvVariable = (key: string, required: boolean = true): string => {
   const value = process.env[key];
   if (!value && required) {
@@ -14,10 +10,6 @@ const getEnvVariable = (key: string, required: boolean = true): string => {
   return value || "";
 };
 
-/**
- * Helper to get and validate environment variables as integers.
- * Throws an error for missing or invalid values.
- */
 const getEnvVariableAsInt = (
   key: string,
   required: boolean = true,
@@ -83,14 +75,14 @@ interface Config {
     auth: {
       windowMs: number;
       max: number;
-      maxAttempts: number; // 🚜 Added
+      maxAttempts: number;
       lockoutMinutes: number;
     };
     api: {
       windowMs: number;
       max: number;
     };
-    emailResend: { windowMs: number; max: number }; // <--- ADD THIS
+    emailResend: { windowMs: number; max: number };
   };
   cookies: {
     refreshTokenName: string;

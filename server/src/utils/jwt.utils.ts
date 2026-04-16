@@ -19,7 +19,7 @@ export const generateAccessToken = (user: User): string => {
     systemRole: user.systemRole,
     type: "access",
     username: user.username,
-    email: user.email, // <--- ADD THIS LINE
+    email: user.email,
     name: user.name,
     ...(user.profileImage && { profileImage: user.profileImage }),
   };

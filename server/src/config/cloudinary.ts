@@ -1,4 +1,4 @@
-// src/config/cloudinary.ts
+//src/config/cloudinary.ts
 
 import {
   v2 as cloudinaryV2,
@@ -19,9 +19,6 @@ cloudinaryV2.config({
 
 logger.info("✅ Cloudinary configured successfully.");
 
-/**
- * Uploads a file to Cloudinary and deletes the local temporary file.
- */
 export const uploadToCloudinary = async (
   filePath: string,
   folder: string,
@@ -57,9 +54,6 @@ export const uploadToCloudinary = async (
   }
 };
 
-/**
- * Deletes an asset from Cloudinary using its public_id.
- */
 export const deleteFromCloudinary = async (
   publicId: string,
 ): Promise<DeleteApiResponse> => {
@@ -78,9 +72,6 @@ export const deleteFromCloudinary = async (
   }
 };
 
-/**
- * Helper to extract public_id from a Cloudinary URL.
- */
 export const extractPublicIdFromUrl = (url: string): string | null => {
   try {
     const parts = url.split("/");

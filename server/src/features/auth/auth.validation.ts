@@ -2,9 +2,6 @@
 import { z } from "zod";
 import { userValidationRules } from "../user/user.shared.schema.js";
 
-/**
- * Hardened Password Policy
- */
 const passwordPolicy = userValidationRules.password
   .regex(/[A-Z]/, "Include at least one uppercase letter.")
   .regex(/[0-9]/, "Include at least one number.")

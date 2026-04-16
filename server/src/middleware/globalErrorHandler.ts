@@ -40,11 +40,9 @@ export const globalErrorHandler: ErrorRequestHandler = (
   ) {
     switch (err.code) {
       case "P2002": {
-        statusCode = 400; // 🚜 Changed from 409 to 400 for generic failure
+        statusCode = 400;
         status = "fail";
 
-        // 🚜 SECURITY FIX: Generic error message to prevent Account Enumeration.
-        // We no longer confirm if an email or username specifically exists.
         message = "Invalid input or account already exists with these details.";
 
         //      const target = (err.meta as any)?.target?.join(", ");

@@ -12,9 +12,6 @@ const server = http.createServer(app);
 
 let isShuttingDown = false;
 
-/**
- * Starts the application server after establishing a database connection.
- */
 async function startServer() {
   try {
     await connectPrisma();
@@ -34,10 +31,6 @@ async function startServer() {
   }
 }
 
-/**
- * Handles the graceful shutdown of the server and its resources.
- * @param signalSource The signal or event that triggered the shutdown.
- */
 const performGracefulShutdown = async (signalSource: string) => {
   if (isShuttingDown) {
     logger.warn(
@@ -82,11 +75,6 @@ const performGracefulShutdown = async (signalSource: string) => {
   }
 };
 
-/**
- * Handles critical, unrecoverable errors by initiating a graceful shutdown.
- * @param errorType A string describing the type of error (e.g., 'UNHANDLED REJECTION').
- * @param error The actual error object.
- */
 const criticalErrorHandler = (errorType: string, error: Error | any) => {
   logger.fatal(
     { err: error },

@@ -2,10 +2,6 @@
 import { z } from "zod";
 import { userValidationRules } from "./user.shared.schema.js";
 
-/**
- * Pre-processor to convert empty strings or the string "null"
- * into actual JS nulls for the database.
- */
 const normalizeNullFields = (val: unknown) => {
   if (val === "" || val === "null" || val === null || val === undefined)
     return null;

@@ -3,9 +3,6 @@ import cron from "node-cron";
 import prisma from "@/db/prisma.js";
 import { logger } from "@/config/logger.js";
 
-/**
- * Scheduled tasks to maintain database health.
- */
 export const initCronJobs = () => {
   cron.schedule("0 0 * * *", async () => {
     logger.info("[Cron] Starting Refresh Token cleanup...");

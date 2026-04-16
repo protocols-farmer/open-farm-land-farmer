@@ -1,8 +1,8 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
 
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+
+
+
 
 generator client {
   provider = "prisma-client"
@@ -14,9 +14,9 @@ datasource db {
 }
 
 
-// ===============================================
-// ===      USER & AUTHENTICATION MODELS       ===
-// ===============================================
+
+
+
 
 model User {
   id             String    @id @default(uuid())
@@ -40,17 +40,17 @@ model User {
   joinedAt       DateTime  @default(now()) @map("joined_at")
   updatedAt      DateTime  @updatedAt
 
-  // --- Deactivation / Soft Delete ---
+  
   status        UserStatus @default(ACTIVE)
   systemRole    SystemRole @default(USER)
 
-  // --- Social links ---
+  
   twitterUrl  String?
   githubUrl   String?
   linkedinUrl String?
   websiteUrl  String?
 
-  // --- Relationships ---
+  
   posts                 Post[]
   comments              Comment[]
   commentReactions      CommentUserReaction[]
@@ -85,14 +85,14 @@ model User {
 
 model RefreshToken {
   id        String   @id @default(uuid())
-  jti       String   @unique // The JWT ID
+  jti       String   @unique 
   userId    String
   expiresAt DateTime
   revoked   Boolean  @default(false)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  // --- MODIFIED: Relation enabled for data integrity and easier querying.
+  
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
   
   @@index([userId])
@@ -104,10 +104,10 @@ model UserSettings {
   theme                ThemePreference @default(SYSTEM)
   notificationsEnabled Boolean         @default(true)
   
-  // Refined flags to match our logic
-  emailMarketing       Boolean         @default(true) // For Opportunities
-  emailUpdates         Boolean         @default(true) // For System Updates
-  emailSocial          Boolean         @default(true) // For Community/Post notifications
+  
+  emailMarketing       Boolean         @default(true) 
+  emailUpdates         Boolean         @default(true) 
+  emailSocial          Boolean         @default(true) 
   
   updatedAt            DateTime        @updatedAt
   userId               String          @unique
@@ -129,9 +129,9 @@ model Follow {
   @@map("follows")
 }
 
-// ===============================================
-// ===        ADMIN & MODERATION MODELS        ===
-// ===============================================
+
+
+
 
 model UserSanction {
   id          String   @id @default(uuid())
@@ -158,9 +158,9 @@ model UserSanction {
 }
 
 
-// ===============================================
-// ===       CONTENT & POST MODELS             ===
-// ===============================================
+
+
+
 
 model Post {
   id           String       @id @default(uuid())
@@ -176,7 +176,7 @@ model Post {
   externalLink String?
   githubLink  String?
 
-  // --- Stats (Denormalized for performance) ---
+  
   upvotesCount  Int @default(0) @map("upvotes_count")
   likesCount    Int @default(0) @map("likes_count")
   viewsCount    Int @default(0) @map("views_count")
@@ -184,7 +184,7 @@ model Post {
   sharesCount   Int @default(0) @map("shares_count")
   commentsCount Int @default(0) @map("comments_count")
 
-  // --- Relationships ---
+  
   authorId       String
   author         User            @relation(fields: [authorId], references: [id], onDelete: Restrict)
   comments       Comment[]
@@ -206,15 +206,15 @@ model Post {
 
 model GuideStep {
   id          String   @id @default(uuid())
-  title       String   // e.g., "Part 1: Setting Up Your Environment"
+  title       String   
   description String?  @db.Text
-  order       Int      // The order of this step within the guide
+  order       Int      
 
-  // Relation to the parent Post
+  
   postId      String
   post        Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
 
-  // A Step has many Sections
+  
   sections    GuideSection[]
 
   @@index([postId, order])
@@ -224,14 +224,14 @@ model GuideStep {
 
 model GuideSection {
   id            String   @id @default(uuid())
-  title         String?  // Optional title for a specific piece of content
+  title         String?  
   content       String   @db.Text
   videoUrl      String?
   imageUrl      String?
   imagePublicId String?
-  order         Int      // The order of this section within the step
+  order         Int      
 
-  // Relation to the parent GuideStep
+  
   stepId        String
   step          GuideStep @relation(fields: [stepId], references: [id], onDelete: Cascade)
 
@@ -243,7 +243,7 @@ model GuideSection {
 model PostImage {
   id      String  @id @default(uuid())
   url     String
-  // --- ADDED: Store the Cloudinary public_id for reliable deletion ---
+  
   publicId String
   altText String?
   order   Int
@@ -262,7 +262,7 @@ model Tag {
   description String?
   createdAt   DateTime  @default(now())
 
-  // --- Relationships ---
+  
   posts         PostTag[]
   opportunities OpportunityTag[]
 
@@ -287,11 +287,11 @@ model ProjectUpdate {
   title         String
   description   String
   
-  // --- NEW FIELDS ---
-  category      ProjectUpdateCategory @default(OTHER) // Add a category for each update
-  imageUrl      String?   // Optional URL for the update's image
-  imagePublicId String?   // Optional Cloudinary ID for deletion
-  // ------------------
+  
+  category      ProjectUpdateCategory @default(OTHER) 
+  imageUrl      String?   
+  imagePublicId String?   
+  
 
   createdAt     DateTime @default(now())
   postId        String
@@ -353,9 +353,9 @@ model OpportunityTag {
 }
 
 
-// ===============================================
-// ===    INTERACTION & ENGAGEMENT MODELS      ===
-// ===============================================
+
+
+
 
 model Comment {
   id        String    @id @default(uuid())
@@ -367,7 +367,7 @@ model Comment {
   likesCount    Int @default(0)
   dislikesCount Int @default(0)
 
-  // --- Relations ---
+  
   postId        String
   authorId      String
   parentId      String?
@@ -449,7 +449,7 @@ model Notification {
   senderId String
   sender   User @relation("Sender", fields: [senderId], references: [id], onDelete: Cascade)
 
-  // Link to the source of the notification
+  
   postId    String?
   post      Post?   @relation(fields: [postId], references: [id], onDelete: Cascade)
   commentId String?
@@ -462,9 +462,9 @@ model Notification {
 
 
 
-// ===============================================
-// ===         ANALYTICS MODELS                ===
-// ===============================================
+
+
+
 
 model PostView {
   id                 String   @id @default(uuid())
@@ -517,9 +517,9 @@ model SystemConfig {
 
 
 
-// ===============================================
-// ===             APPEALS MODEL               ===
-// ===============================================
+
+
+
 
 model Appeal {
   id          String       @id @default(uuid())
@@ -542,9 +542,9 @@ model Appeal {
   @@index([status])
   @@map("appeals")
 }
-// ===============================================
-// ===      BUG & VULNERABILITY MODELS         ===
-// ===============================================
+
+
+
 
 model IssueReport {
   id               String       @id @default(uuid())
@@ -562,7 +562,7 @@ model IssueReport {
   createdAt        DateTime     @default(now()) @map("created_at")
   updatedAt        DateTime     @updatedAt
 
-  // Relationships
+  
   reporterId       String       @map("reporter_id")
   reporter         User         @relation("UserReports", fields: [reporterId], references: [id], onDelete: Cascade)
   
@@ -575,9 +575,9 @@ model IssueReport {
   @@map("issue_reports")
 }
 
-// ===============================================
-// ===             ENUMERATIONS                ===
-// ===============================================
+
+
+
 
 enum ReportType {
   BUG
@@ -603,9 +603,9 @@ enum AppealStatus {
   APPROVED
   REJECTED
 }
-// ===============================================
-// ===             ENUMERATIONS                ===
-// ===============================================
+
+
+
 
 enum UserStatus {
   ACTIVE

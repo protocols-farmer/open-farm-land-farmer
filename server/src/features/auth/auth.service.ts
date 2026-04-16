@@ -1,3 +1,4 @@
+//src/features/auth/auth.service.ts
 import bcrypt from "bcryptjs";
 import prisma from "@/db/prisma.js";
 import { User } from "@prisma-client";
@@ -98,17 +99,14 @@ export class AuthService {
   public async loginUser(input: LoginInputDto): Promise<AuthResponseDto> {
     const { email, password } = input;
 
-    // Use extended prisma for retry logic
     const userWithPassword = await prisma.user.findUnique({
       where: { email },
     });
 
-    // 🚜 SECURITY FIX: Generic error to prevent email enumeration (Mitchell's request)
     if (!userWithPassword) {
       throw createHttpError(401, "Invalid email or password.");
     }
 
-    // 🚜 BRUTE FORCE PROTECTION: Check lockoutUntil before proceeding
     if (
       userWithPassword.lockoutUntil &&
       userWithPassword.lockoutUntil > new Date()
@@ -132,7 +130,6 @@ export class AuthService {
     );
 
     if (!isPasswordCorrect) {
-      // 🚜 BRUTE FORCE PROTECTION: Increment attempts and handle lockout
       const newAttempts = userWithPassword.failedLoginAttempts + 1;
       const isLockedNow = newAttempts >= config.rateLimits.auth.maxAttempts;
       const lockoutDate = isLockedNow
@@ -147,11 +144,9 @@ export class AuthService {
         },
       });
 
-      // 🚜 SECURITY FIX: Generic error
       throw createHttpError(401, "Invalid email or password.");
     }
 
-    // 🚜 BRUTE FORCE PROTECTION: Reset counter on successful login
     if (
       userWithPassword.failedLoginAttempts > 0 ||
       userWithPassword.lockoutUntil
@@ -307,7 +302,6 @@ export class AuthService {
       throw createHttpError(401, "Session invalid: User not found.");
     }
 
-    // so they stay in the "Ghost State". Only kick out DEACTIVATED users.
     if (user.status === "DEACTIVATED") {
       await this.revokeTokenByJti(decodedOldToken.jti);
       throw createHttpError(403, "Access denied: Account is deactivated.");
@@ -370,7 +364,6 @@ export class AuthService {
         if (!existing) isUnique = true;
       }
 
-      // Inside findOrCreateOAuthUser, replace the user creation block:
       user = await prisma.user.create({
         data: {
           email: profile.email,
@@ -382,7 +375,7 @@ export class AuthService {
               emailMarketing: true,
               emailUpdates: true,
               emailSocial: true,
-              theme: "DARK", // 🌙 Dark Mode Default
+              theme: "DARK",
               notificationsEnabled: true,
             },
           },
@@ -422,7 +415,6 @@ export class AuthService {
       return;
     }
 
-    // Block reset for banned users
     if (user.status === "BANNED") {
       logger.warn(
         { email, userId: user.id },
@@ -440,7 +432,7 @@ export class AuthService {
     }
 
     const resetToken = crypto.randomBytes(32).toString("hex");
-    const expires = new Date(Date.now() + 3600000); // 1 hour
+    const expires = new Date(Date.now() + 3600000);
 
     await prisma.user.update({
       where: { id: user.id },
@@ -492,9 +484,7 @@ export class AuthService {
 
     logger.info({ userId: user.id }, "Password reset successfully via token.");
   }
-  /**
-   * Scenario Fix: Log specific token attempted for developer debugging.
-   */
+
   public async verifyUserEmail(token: string): Promise<void> {
     const user = await prisma.user.findFirst({
       where: { emailVerifyToken: token },
@@ -519,9 +509,6 @@ export class AuthService {
     logger.info({ userId: user.id }, "✅ Email verified successfully.");
   }
 
-  /**
-   * Scenario Fix: Specific error if user tries to resend to a verified account.
-   */
   public async resendVerificationEmail(userId: string): Promise<void> {
     const user = await prisma.user.findUnique({ where: { id: userId } });
 

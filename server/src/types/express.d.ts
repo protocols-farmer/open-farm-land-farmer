@@ -4,9 +4,6 @@ import { UserJWTPayload } from "../features/auth/auth.types.js";
 
 export {};
 
-/**
- * The "Full User" representation from the database.
- */
 export interface SanitizedUser {
   id: string;
   name: string;
