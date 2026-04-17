@@ -5,18 +5,25 @@ import type {
   FetchArgs,
   FetchBaseQueryError,
 } from "@reduxjs/toolkit/query";
+import { Mutex } from "async-mutex";
 import { setCredentials, clearCredentials } from "../features/auth/authSlice";
 
-let isRefreshing = false;
+const mutex = new Mutex();
 
 export const baseQueryWithReauth: BaseQueryFn<
   string | FetchArgs,
   unknown,
   FetchBaseQueryError
 > = async (args, api, extraOptions) => {
+  await mutex.waitForUnlock();
+
   const rawBaseQuery = fetchBaseQuery({
     baseUrl: process.env.NEXT_PUBLIC_BACKEND_API_URL,
     credentials: "include",
+    prepareHeaders: (headers) => {
+      headers.set("X-Requested-With", "XMLHttpRequest");
+      return headers;
+    },
   });
 
   let result = await rawBaseQuery(args, api, extraOptions);
@@ -35,30 +42,37 @@ export const baseQueryWithReauth: BaseQueryFn<
       return result;
     }
 
-    if (!isRefreshing) {
-      isRefreshing = true;
-      console.warn(
-        "Access token expired/missing. Attempting silent refresh...",
-      );
-
-      const refreshResult = await rawBaseQuery(
-        { url: "/auth/refresh", method: "POST" },
-        api,
-        extraOptions,
-      );
-
-      if (refreshResult.data) {
-        console.log(
-          "Token cookies rotated successfully. Retrying original request...",
+    if (!mutex.isLocked()) {
+      const release = await mutex.acquire();
+      try {
+        console.warn(
+          "Access token expired/missing. Attempting silent refresh...",
         );
 
-        api.dispatch(setCredentials());
+        const refreshResult = await rawBaseQuery(
+          { url: "/auth/refresh", method: "POST" },
+          api,
+          extraOptions,
+        );
 
-        result = await rawBaseQuery(args, api, extraOptions);
-      } else {
-        api.dispatch(clearCredentials());
+        if (refreshResult.data) {
+          console.log(
+            "Token cookies rotated successfully. Retrying original request...",
+          );
+
+          api.dispatch(setCredentials());
+
+          result = await rawBaseQuery(args, api, extraOptions);
+        } else {
+          api.dispatch(clearCredentials());
+        }
+      } finally {
+        release();
       }
-      isRefreshing = false;
+    } else {
+      await mutex.waitForUnlock();
+
+      result = await rawBaseQuery(args, api, extraOptions);
     }
   }
 

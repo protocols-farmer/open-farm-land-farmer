@@ -3,19 +3,14 @@ import { Request, Response } from "express";
 import { asyncHandler } from "@/middleware/asyncHandler.js";
 import { adminService } from "./admin.service.js";
 import { createHttpError } from "@/utils/error.factory.js";
+import prisma from "@/db/prisma.js";
 
 class AdminController {
-  /**
-   * Fetches high-level metrics for the administration dashboard.
-   */
   getDashboardStats = asyncHandler(async (_req: Request, res: Response) => {
     const stats = await adminService.getDashboardStats();
     res.status(200).json({ success: true, data: stats });
   });
 
-  /**
-   * Retrieves a paginated list of users with search and sorting.
-   */
   getAllUsers = asyncHandler(async (req: Request, res: Response) => {
     const page = parseInt(req.query.page as string) || 1;
     const limit = parseInt(req.query.limit as string) || 10;
@@ -131,21 +126,31 @@ class AdminController {
     });
   });
 
-  /**
-   * Modifies a user's system role.
-   * Manual logic removed; handled by updateUserRoleSchema.
-   */
   updateUserRole = asyncHandler(async (req: Request, res: Response) => {
     const { id } = req.params;
     const { role } = req.body;
+
+    if (req.user?.id === id) {
+      throw createHttpError(400, "Cannot change your own role here.");
+    }
+
+    // 🛡️ SECURITY: Prevent demoting another Super Admin
+    const targetUser = await prisma.user.findUnique({
+      select: { systemRole: true },
+      where: { id },
+    });
+    if (!targetUser) throw createHttpError(404, "User not found.");
+    if (targetUser.systemRole === "SUPER_ADMIN") {
+      throw createHttpError(
+        403,
+        "Forbidden: Cannot modify the role of another Super Admin.",
+      );
+    }
 
     const updatedUser = await adminService.updateUserRole(id, role);
     res.status(200).json({ success: true, data: updatedUser });
   });
 
-  /**
-   * Deletes a user account. Admins are blocked from self-deletion.
-   */
   deleteUser = asyncHandler(async (req: Request, res: Response) => {
     const { id } = req.params;
 
@@ -153,6 +158,17 @@ class AdminController {
       throw createHttpError(
         400,
         "Admins cannot delete their own account via this route. Use the 'Me' route instead.",
+      );
+    }
+    const targetUser = await prisma.user.findUnique({
+      select: { systemRole: true },
+      where: { id },
+    });
+    if (!targetUser) throw createHttpError(404, "User not found.");
+    if (targetUser.systemRole === "SUPER_ADMIN") {
+      throw createHttpError(
+        403,
+        "Forbidden: Cannot delete another Super Admin.",
       );
     }
 
@@ -189,9 +205,6 @@ class AdminController {
     res.status(200).json({ success: true, data: config });
   });
 
-  /**
-   * Updates global system settings (e.g., Maintenance Mode).
-   */
   updateSystemConfig = asyncHandler(async (req: Request, res: Response) => {
     const { maintenanceMode, maintenanceMessage } = req.body;
     const updated = await adminService.updateSystemConfig({
@@ -201,14 +214,26 @@ class AdminController {
     res.status(200).json({ success: true, data: updated });
   });
 
-  /**
-   * Updates user status (Ban/Suspend/Active).
-   * Manual logic removed; validation and refinement handled by updateUserStatusSchema.
-   */
   updateUserStatus = asyncHandler(async (req: Request, res: Response) => {
     const { id } = req.params;
     const { status, reason, expiresAt } = req.body;
     const adminId = req.user!.id;
+
+    if (adminId === id) {
+      throw createHttpError(400, "Cannot change your own status here.");
+    }
+
+    const targetUser = await prisma.user.findUnique({
+      select: { systemRole: true },
+      where: { id },
+    });
+    if (!targetUser) throw createHttpError(404, "User not found.");
+    if (targetUser.systemRole === "SUPER_ADMIN") {
+      throw createHttpError(
+        403,
+        "Forbidden: Cannot suspend or ban another Super Admin.",
+      );
+    }
 
     const updatedUser = await adminService.updateUserStatus(
       id,

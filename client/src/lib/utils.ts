@@ -7,10 +7,8 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 export const getApiErrorMessage = (error: any, fallback?: string): string => {
-  if (error?.status === "FETCH_ERROR")
+  if (error?.status === "FETCH_ERROR") {
     return "Network error. Please check your connection.";
-  if (error?.data?.status === "social_account") {
-    return "This email is linked to a social provider. Please log in with Google or GitHub.";
   }
 
   let rawMessage = error?.data?.message;
@@ -46,10 +44,6 @@ export const getApiErrorMessage = (error: any, fallback?: string): string => {
   );
 };
 
-/**
- * Formats numbers into a compact "K", "M", or "B" format.
- * Example: 1500 -> 1.5K
- */
 export function formatCompactNumber(number: number) {
   if (number < 1000) {
     return number.toString();
@@ -63,9 +57,6 @@ export function formatCompactNumber(number: number) {
   return (number / 1000000000).toFixed(1).replace(/\.0$/, "") + "B";
 }
 
-/**
- * Formats a Date into a "Joined Month Year" format for profile pages.
- */
 export function formatJoinedDate(dateString: string | Date) {
   const date = new Date(dateString);
   return date.toLocaleDateString("en-US", {

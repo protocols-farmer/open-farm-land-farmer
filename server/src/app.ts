@@ -6,6 +6,7 @@ import { globalErrorHandler } from "./middleware/globalErrorHandler.js";
 import { createHttpError } from "./utils/error.factory.js";
 import { corsOptions } from "./config/corsOptions.js";
 import apiRoutes from "@/features/apiRoutes.js";
+import { csrfGuard } from "./middleware/csrfGuard.js";
 
 //Express
 const app: Express = express();
@@ -17,6 +18,9 @@ app.set("trust proxy", 1);
 
 // // Enable CORS with your detailed options
 app.use(cors(corsOptions));
+
+// 🛡️ Apply the CSRF Guard immediately AFTER CORS and BEFORE your routes
+app.use(csrfGuard);
 
 // // Parse JSON request bodies
 app.use(express.json({ limit: "100kb" }));

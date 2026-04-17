@@ -21,13 +21,18 @@ export default function VerificationBanner() {
   useEffect(() => {
     if (!user || user.isEmailVerified) return;
 
-    const cooldownKey = `verify_cooldown_${user.id}`;
-    const lastSent = localStorage.getItem(cooldownKey);
+    const cooldownKey = `verify_cooldown_unlock_${user.id}`;
+    const unlockTime = localStorage.getItem(cooldownKey);
 
-    if (lastSent) {
-      const elapsed = Math.floor((Date.now() - parseInt(lastSent)) / 1000);
-      const remaining = COOLDOWN_SECONDS - elapsed;
-      if (remaining > 0) setTimeLeft(remaining);
+    if (unlockTime) {
+      const remaining = Math.floor(
+        (parseInt(unlockTime, 10) - Date.now()) / 1000,
+      );
+      if (remaining > 0) {
+        setTimeLeft(remaining);
+      } else {
+        localStorage.removeItem(cooldownKey);
+      }
     }
   }, [user]);
 
@@ -44,17 +49,42 @@ export default function VerificationBanner() {
   const handleResend = async () => {
     try {
       await resendVerification().unwrap();
-      const now = Date.now();
-      localStorage.setItem(`verify_cooldown_${user.id}`, now.toString());
+      const unlockTime = Date.now() + COOLDOWN_SECONDS * 1000;
+      localStorage.setItem(
+        `verify_cooldown_unlock_${user.id}`,
+        unlockTime.toString(),
+      );
       setTimeLeft(COOLDOWN_SECONDS);
       toast.success("Verification link sent!");
     } catch (err: any) {
-      if (err?.data?.message === "ALREADY_VERIFIED") {
+      if (err?.status === 429) {
+        const errorMessage = err?.data?.message || "";
+        const match = errorMessage.match(/in (\d+) minutes/);
+
+        const minutesToWait = match ? parseInt(match[1], 10) : 15;
+        const secondsToWait = minutesToWait * 60;
+
+        const unlockTime = Date.now() + secondsToWait * 1000;
+        localStorage.setItem(
+          `verify_cooldown_unlock_${user.id}`,
+          unlockTime.toString(),
+        );
+        setTimeLeft(secondsToWait);
+
+        toast.error(`Rate limited. Please wait ${minutesToWait} minutes.`);
+      } else if (err?.data?.message === "ALREADY_VERIFIED") {
         toast.success("You are already verified!");
       } else {
         toast.error(err?.data?.message || "Failed to resend.");
       }
     }
+  };
+
+  const formatTime = (totalSeconds: number) => {
+    if (totalSeconds < 60) return `${totalSeconds}s`;
+    const m = Math.floor(totalSeconds / 60);
+    const s = totalSeconds % 60;
+    return `${m}m ${s}s`;
   };
 
   return (
@@ -91,7 +121,7 @@ export default function VerificationBanner() {
           {isLoading
             ? "Sending..."
             : timeLeft > 0
-              ? `Retry in ${timeLeft}s`
+              ? `Retry in ${formatTime(timeLeft)}`
               : "Resend Link"}
         </Button>
       </div>

@@ -5,10 +5,6 @@ import { SystemRole, UserStatus } from "@prisma-client";
 const systemRoleValues = Object.values(SystemRole) as [string, ...string[]];
 const userStatusValues = Object.values(UserStatus) as [string, ...string[]];
 
-/**
- * 🚜 Admin Validation: Hardened for high-integrity moderation.
- */
-
 export const updateUserRoleSchema = z.object({
   body: z.object({
     role: z.enum(systemRoleValues, {

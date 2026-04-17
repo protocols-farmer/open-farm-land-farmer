@@ -123,11 +123,8 @@ export const userApiSlice = createApi({
               `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/user/me`,
             );
 
-            // ✅ CRITICAL: Tell XHR to include cookies in the request
             xhr.withCredentials = true;
-
-            // 🛡️ REMOVED: No more Authorization header manually set here
-
+            xhr.setRequestHeader("X-Requested-With", "XMLHttpRequest");
             xhr.upload.onprogress = (event) => {
               if (event.lengthComputable) {
                 const progress = Math.round((event.loaded * 100) / event.total);
@@ -141,6 +138,8 @@ export const userApiSlice = createApi({
                 if (xhr.status >= 200 && xhr.status < 300) {
                   dispatch(uploadSucceeded());
                   resolve(response);
+                } else if (xhr.status === 401) {
+                  reject({ status: 401, data: response });
                 } else {
                   dispatch(uploadFailed(response.message || "Update failed"));
                   reject({ status: xhr.status, data: response });
@@ -164,17 +163,46 @@ export const userApiSlice = createApi({
         };
 
         try {
-          // 🛡️ REMOVED: The 'if (!token)' check. We just try the request;
-          // if no cookie is present, the server will return 401.
           dispatch(uploadStarted(file?.name || "Profile Update"));
-          const result = await performUpload();
+          let result;
+
+          try {
+            result = await performUpload();
+          } catch (initialError: any) {
+            if (initialError.status === 401) {
+              console.warn(
+                "XHR upload hit 401. Attempting manual token refresh...",
+              );
+
+              const refreshResponse = await fetch(
+                `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/auth/refresh`,
+                {
+                  method: "POST",
+                  credentials: "include",
+                },
+              );
+
+              if (refreshResponse.ok) {
+                console.log(
+                  "XHR refresh successful. Retrying profile upload...",
+                );
+
+                dispatch(uploadProgressUpdated(0));
+                result = await performUpload();
+              } else {
+                throw initialError;
+              }
+            } else {
+              throw initialError;
+            }
+          }
+
           return { data: result };
         } catch (error: any) {
           const status = error.status || 500;
           if (status === 401) {
+            dispatch(uploadFailed("Session expired."));
             dispatch(clearCredentials());
-            // No need for a hard window.location.assign here,
-            // the SanctionGuard/AuthInitializer will handle the redirect if needed.
           }
           return { error: { status, data: error.data } };
         }

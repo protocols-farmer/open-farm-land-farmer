@@ -18,7 +18,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { SanitizedUserDto } from "@/lib/features/user/userTypes";
-import FollowListModal from "./FollowListModal"; // 🚜 ADD THIS
+import FollowListModal from "./FollowListModal";
 
 const getInitials = (name: string | null | undefined): string => {
   if (!name) return "?";

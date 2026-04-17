@@ -18,7 +18,7 @@ export type SanitizedUser = Omit<User, "hashedPassword"> & {
     type: string;
   };
 };
-// Data shape for the main dashboard statistics card
+
 export interface AdminDashboardStats {
   totalUsers: number;
   totalPosts: number;
@@ -30,14 +30,12 @@ export interface AdminDashboardStats {
   totalUpdates: number;
 }
 
-// Data shape for a user row
 export type AdminUserRow = SanitizedUser & {
-  postsCount: number; // Flattened
-  commentsCount: number; // Flattened
+  postsCount: number;
+  commentsCount: number;
   sanctionsReceived?: UserSanction[];
 };
 
-// Data shape for a post row
 export type AdminPostRow = Post & {
   author: {
     id: string;
@@ -48,7 +46,6 @@ export type AdminPostRow = Post & {
   images: { url: string }[];
 };
 
-// Data shape for a comment row
 export type AdminCommentRow = Comment & {
   author: {
     id: string;
@@ -62,7 +59,6 @@ export type AdminCommentRow = Comment & {
   };
 };
 
-// Data shape for an opportunity row
 export type AdminOpportunityRow = Opportunity & {
   poster: {
     id: string;
@@ -73,7 +69,6 @@ export type AdminOpportunityRow = Opportunity & {
   tags: { tag: { name: string } }[];
 };
 
-// Data shape for a platform update row
 export type AdminUpdateRow = Update & {
   author: {
     id: string;
@@ -83,7 +78,6 @@ export type AdminUpdateRow = Update & {
   };
 };
 
-// Type for the API query parameters
 export interface AdminApiQuery {
   page?: number;
   limit?: number;

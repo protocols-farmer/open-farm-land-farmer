@@ -1,3 +1,4 @@
+//src/components/pages/profile/ProfileForm.tsx
 "use client";
 
 import { cn, getApiErrorMessage } from "@/lib/utils";
@@ -95,7 +96,7 @@ export default function ProfileForm({
     formState: { errors, isDirty },
   } = useForm<UpdateProfileFormValues>({
     resolver: zodResolver(updateProfileSchema),
-    mode: "onChange", // 🚜 Real-time enforcement
+    mode: "onChange",
     defaultValues: {
       name: user.name || "",
       username: user.username || "",
@@ -108,7 +109,6 @@ export default function ProfileForm({
     },
   });
 
-  // Watch fields for real-time counters
   const nameChars = watch("name")?.length || 0;
   const userChars = watch("username")?.length || 0;
   const bioChars = watch("bio")?.length || 0;
@@ -172,7 +172,6 @@ export default function ProfileForm({
         const oldValue = (user as any)[key] || "";
 
         if (newValue !== oldValue) {
-          // Explicitly send "null" string if field is emptied to trigger backend normalization
           formData.append(key, newValue === "" ? "null" : newValue);
           hasChanges = true;
         }
@@ -199,7 +198,6 @@ export default function ProfileForm({
     }
   };
 
-  // Helper for consistent label + counter UI
   const CounterField = ({
     label,
     current,

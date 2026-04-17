@@ -1,30 +1,23 @@
+//src/features/admin/admin.routes.ts
 import { Router } from "express";
 import { adminController } from "./admin.controller.js";
 import { requireRole } from "@/middleware/admin.middleware.js";
 import { verifyToken } from "@/middleware/auth.middleware.js";
-import { isVerified } from "@/middleware/isVerified.js"; // 🚜 Standardized security
+import { isVerified } from "@/middleware/isVerified.js";
 import { validate } from "@/middleware/validate.js";
 import {
   updateUserRoleSchema,
   updateUserStatusSchema,
   updateSystemConfigSchema,
-} from "./admin.validation.js"; // 🚜 Validation imports
+} from "./admin.validation.js";
 import { apiLimiter } from "@/middleware/rateLimiter.js";
 
 const router: Router = Router();
 
-// 🚜 SECURITY FIX: Apply API rate limiting to all admin routes.
-// Prevents automated scraping of user data or rapid-fire destructive actions.
 router.use(apiLimiter);
 
-// ==========================================
-// 1. PUBLIC ROUTES
-// ==========================================
 router.get("/system-config", adminController.getSystemConfig);
 
-// ==========================================
-// 2. SHARED ADMIN ROUTES (Super Admin & Content Creator)
-// ==========================================
 router.get(
   "/stats",
   verifyToken,
@@ -32,21 +25,15 @@ router.get(
   adminController.getDashboardStats,
 );
 
-// ==========================================
-// 3. SUPER ADMIN ONLY ROUTES
-// ==========================================
-
-// --- System Maintenance Toggle ---
 router.patch(
   "/system-config",
   verifyToken,
-  isVerified, // 🚜 Verified check for system-wide changes
+  isVerified,
   requireRole(["SUPER_ADMIN"]),
-  validate(updateSystemConfigSchema), // 🚜 Prevents payload bloat
+  validate(updateSystemConfigSchema),
   adminController.updateSystemConfig,
 );
 
-// --- User Management ---
 router.get(
   "/users",
   verifyToken,
@@ -59,7 +46,7 @@ router.patch(
   verifyToken,
   isVerified,
   requireRole(["SUPER_ADMIN"]),
-  validate(updateUserRoleSchema), // 🚜 Strictly enforces SystemRole enum
+  validate(updateUserRoleSchema),
   adminController.updateUserRole,
 );
 
@@ -68,7 +55,7 @@ router.patch(
   verifyToken,
   isVerified,
   requireRole(["SUPER_ADMIN"]),
-  validate(updateUserStatusSchema), // 🚜 Enforces reason requirement for sanctions
+  validate(updateUserStatusSchema),
   adminController.updateUserStatus,
 );
 
@@ -80,7 +67,6 @@ router.delete(
   adminController.deleteUser,
 );
 
-// --- Post Management ---
 router.get(
   "/posts",
   verifyToken,
@@ -96,7 +82,6 @@ router.delete(
   adminController.deletePost,
 );
 
-// --- Opportunity Management ---
 router.get(
   "/opportunities",
   verifyToken,
@@ -112,7 +97,6 @@ router.delete(
   adminController.deleteOpportunity,
 );
 
-// --- Update Management ---
 router.get(
   "/updates",
   verifyToken,
@@ -128,7 +112,6 @@ router.delete(
   adminController.deleteUpdate,
 );
 
-// --- Comment Management ---
 router.get(
   "/comments",
   verifyToken,

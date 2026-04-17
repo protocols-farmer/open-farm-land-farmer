@@ -2,21 +2,29 @@
 import { Response, CookieOptions } from "express";
 import { config } from "@/config/index.js";
 
+const getCommonCookieOptions = (): CookieOptions => {
+  const isProd = config.nodeEnv === "production";
+
+  return {
+    httpOnly: true,
+    // MUST be true in production for SameSite: 'none' to work
+    secure: isProd,
+    // 'none' is required for cross-domain (Render backend -> Vercel frontend)
+    sameSite: isProd ? "none" : "lax",
+    path: "/",
+    // Note: Do NOT explicitly set the 'domain' property here since your frontend
+    // and backend are on completely different root domains.
+    // The browser will safely default it to the backend's host.
+  };
+};
+
 export const setAuthCookies = (
   res: Response,
   accessToken: string,
   refreshToken: string,
   refreshExpiresAt: Date,
 ) => {
-  const isProd = config.nodeEnv === "production";
-
-  const commonOptions: CookieOptions = {
-    httpOnly: true,
-
-    sameSite: isProd ? "none" : "lax",
-    secure: isProd,
-    path: "/",
-  };
+  const commonOptions = getCommonCookieOptions();
 
   res.cookie("accessToken", accessToken, {
     ...commonOptions,
@@ -30,15 +38,8 @@ export const setAuthCookies = (
 };
 
 export const clearAuthCookies = (res: Response) => {
-  const isProd = config.nodeEnv === "production";
+  const commonOptions = getCommonCookieOptions();
 
-  const options: CookieOptions = {
-    httpOnly: true,
-    secure: isProd,
-    sameSite: isProd ? "none" : "lax",
-    path: "/",
-  };
-
-  res.clearCookie("accessToken", options);
-  res.clearCookie(config.cookies.refreshTokenName, options);
+  res.clearCookie("accessToken", commonOptions);
+  res.clearCookie(config.cookies.refreshTokenName, commonOptions);
 };

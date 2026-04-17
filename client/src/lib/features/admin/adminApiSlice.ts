@@ -94,7 +94,6 @@ export const adminApiSlice = createApi({
           : [{ type: "AdminComments", id: "LIST" }],
     }),
 
-    // 🚜 UPDATED: Returns the updated user object with the new success flag
     updateUserRole: builder.mutation<
       { success: boolean; data: AdminUserRow },
       { userId: string; role: SystemRole }
@@ -108,7 +107,6 @@ export const adminApiSlice = createApi({
         result?.success ? [{ type: "AdminUsers", id: "LIST" }] : [],
     }),
 
-    // 🚜 FIXED: Backend returns 204 No Content, so response type is void
     deleteUser: builder.mutation<void, string>({
       query: (userId) => ({ url: `/admin/users/${userId}`, method: "DELETE" }),
       invalidatesTags: ["AdminUsers", "AdminStats"],
@@ -128,7 +126,6 @@ export const adminApiSlice = createApi({
     getSystemConfig: builder.query<GetSystemConfigResponse, void>({
       query: () => "/admin/system-config",
       providesTags: ["AdminStats"],
-      keepUnusedDataFor: 300,
     }),
 
     updateSystemConfig: builder.mutation<
@@ -196,7 +193,6 @@ export const adminApiSlice = createApi({
       invalidatesTags: ["AdminUpdates", "AdminStats"],
     }),
 
-    // 🚜 UPDATED: Returns the updated user object
     updateUserStatus: builder.mutation<
       { success: boolean; data: AdminUserRow },
       {

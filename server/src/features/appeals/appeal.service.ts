@@ -8,10 +8,6 @@ import {
 } from "./appeal.types.js";
 
 class AppealService {
-  /**
-   * User Submits an Appeal
-   * Logic: Trims reason and links it to the latest active sanction.
-   */
   public async submitAppeal(userId: string, data: CreateAppealDto) {
     const activeSanction = await prisma.userSanction.findFirst({
       where: { userId, status: "ACTIVE" },
@@ -54,9 +50,6 @@ class AppealService {
     });
   }
 
-  /**
-   * Admin fetches all appeals (with search and pagination)
-   */
   public async getAppeals(
     query: AdminAppealQuery,
   ): Promise<{ appeals: AdminAppealRow[]; total: number }> {
@@ -106,10 +99,6 @@ class AppealService {
     return { appeals: appeals as unknown as AdminAppealRow[], total };
   }
 
-  /**
-   * Admin reviews (Approves or Rejects) an appeal
-   * Logic: Trims admin notes and updates user status accordingly.
-   */
   public async reviewAppeal(
     appealId: string,
     adminId: string,

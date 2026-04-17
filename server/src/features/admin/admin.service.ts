@@ -13,11 +13,9 @@ import {
 } from "./admin.types.js";
 import { userService } from "../user/user.service.js";
 import { deleteFromCloudinary } from "@/config/cloudinary.js";
+import { logger } from "@/config/logger.js";
 
 class AdminService {
-  /**
-   * Fetches key statistics for the admin dashboard.
-   */
   public async getDashboardStats(): Promise<AdminDashboardStats> {
     const [
       totalUsers,
@@ -89,18 +87,26 @@ class AdminService {
       prisma.user.count({ where }),
     ]);
 
-    const flattenedUsers = users.map((user) => ({
-      ...user,
-      postsCount: user._count.posts,
-      commentsCount: user._count.comments,
-      _count: undefined, // Clean up the payload
-    }));
+    const flattenedUsers = users.map((user) => {
+      const {
+        hashedPassword,
+        passwordResetToken,
+        passwordResetExpires,
+        emailVerifyToken,
+        ...safeUser
+      } = user;
+
+      return {
+        ...safeUser,
+        postsCount: user._count.posts,
+        commentsCount: user._count.comments,
+        _count: undefined,
+      };
+    });
 
     return { users: flattenedUsers as any, total };
   }
-  /**
-   * Fetches a paginated, searchable list of all posts.
-   */
+
   public async getAllPosts(
     query: AdminApiQuery,
   ): Promise<{ posts: AdminPostRow[]; total: number }> {
@@ -147,9 +153,6 @@ class AdminService {
     return { posts: posts as AdminPostRow[], total };
   }
 
-  /**
-   * Fetches all Opportunities (Searchable by title, company, or poster)
-   */
   public async getAllOpportunities(
     query: AdminApiQuery,
   ): Promise<{ opportunities: AdminOpportunityRow[]; total: number }> {
@@ -194,9 +197,6 @@ class AdminService {
     return { opportunities: opportunities as AdminOpportunityRow[], total };
   }
 
-  /**
-   * Fetches all Updates (Platform or Project updates)
-   */
   public async getAllUpdates(
     query: AdminApiQuery,
   ): Promise<{ updates: AdminUpdateRow[]; total: number }> {
@@ -242,9 +242,6 @@ class AdminService {
     return { updates: updates as AdminUpdateRow[], total };
   }
 
-  /**
-   * Fetches all comments.
-   */
   public async getAllComments(
     query: AdminApiQuery,
   ): Promise<{ comments: AdminCommentRow[]; total: number }> {
@@ -292,12 +289,21 @@ class AdminService {
     userId: string,
     newRole: SystemRole,
   ): Promise<SanitizedUser> {
-    return prisma.user.update({
+    const updatedUser = await prisma.user.update({
       where: { id: userId },
       data: { systemRole: newRole },
-    }) as Promise<SanitizedUser>;
-  }
+    });
 
+    const {
+      hashedPassword,
+      passwordResetToken,
+      passwordResetExpires,
+      emailVerifyToken,
+      ...safeUser
+    } = updatedUser;
+
+    return safeUser as SanitizedUser;
+  }
   public async deleteUser(userId: string): Promise<void> {
     await userService.deleteUserAccount(userId);
   }
@@ -309,10 +315,19 @@ class AdminService {
     });
 
     if (post && post.images.length > 0) {
-      // Clean up Cloudinary assets
-      await Promise.allSettled(
+      const cleanupResults = await Promise.allSettled(
         post.images.map((img) => deleteFromCloudinary(img.publicId)),
       );
+
+      cleanupResults.forEach((res, index) => {
+        if (res.status === "rejected") {
+          const failedPublicId = post.images[index].publicId;
+          logger.warn(
+            { postId, assetId: failedPublicId, err: res.reason },
+            "⚠️ Orphaned Asset Alert: Failed to delete post image from Cloudinary during post deletion.",
+          );
+        }
+      });
     }
 
     await prisma.post.delete({ where: { id: postId } });
@@ -364,7 +379,7 @@ class AdminService {
     reason?: string,
     expiresAt?: Date | null,
   ): Promise<SanitizedUser> {
-    return prisma.$transaction(async (tx) => {
+    const rawUpdatedUser = await prisma.$transaction(async (tx) => {
       const updatedUser = await tx.user.update({
         where: { id: userId },
         data: { status: newStatus },
@@ -375,7 +390,6 @@ class AdminService {
         adminId &&
         reason
       ) {
-        // 🚜 Sanitization: Ensure the sanction reason is trimmed
         const sanitizedReason = reason.trim();
 
         await tx.userSanction.updateMany({
@@ -401,7 +415,17 @@ class AdminService {
       }
 
       return updatedUser;
-    }) as Promise<SanitizedUser>;
+    });
+
+    const {
+      hashedPassword,
+      passwordResetToken,
+      passwordResetExpires,
+      emailVerifyToken,
+      ...safeUser
+    } = rawUpdatedUser;
+
+    return safeUser as SanitizedUser;
   }
 }
 
