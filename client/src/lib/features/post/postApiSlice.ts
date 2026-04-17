@@ -1,6 +1,4 @@
-// =================================================================
-// FILE: src/lib/features/post/postApiSlice.ts
-// =================================================================
+//src/lib/features/post/postApiSlice.ts
 import { createApi } from "@reduxjs/toolkit/query/react";
 import { baseQueryWithReauth } from "../../api/baseQueryWithReauth";
 import {
@@ -44,14 +42,12 @@ export const postApiSlice = createApi({
 
       merge: (currentCache, newItems) => {
         if (newItems.pagination.currentPage === 1) {
-          // If it's page 1 (like after a filter change), replace everything
           return newItems;
         }
         currentCache.data.push(...newItems.data);
         currentCache.pagination = newItems.pagination;
       },
 
-      // 🚜 ADD THIS BLOCK: Force a network request if the underlying args change (e.g., page 1 -> 2)
       forceRefetch({ currentArg, previousArg }) {
         return currentArg !== previousArg;
       },
@@ -65,7 +61,6 @@ export const postApiSlice = createApi({
           : [{ type: "Posts", id: "LIST" }],
     }),
 
-    // ... inside postApiSlice.ts
     getPostById: builder.query<PostDto, string>({
       query: (postId) => `/posts/${postId}`,
       transformResponse: (response: GetPostApiResponse) => {
@@ -74,18 +69,14 @@ export const postApiSlice = createApi({
       providesTags: (result, error, arg) =>
         result
           ? [
-              { type: "Post", id: result.id }, // The UUID from the DB (crucial for mutations)
-              { type: "Post", id: arg }, // The ID or Slug used in the URL
+              { type: "Post", id: result.id },
+              { type: "Post", id: arg },
             ]
           : [{ type: "Post", id: arg }],
     }),
 
-    // =================================================================
-    // GET TAGS: Fetches scoped tags based on context (POST vs OPPORTUNITY)
-    // =================================================================
     getTags: builder.query<GetTagsApiResponse, GetTagsArgs | void>({
       query: (args) => {
-        // If no arguments are provided, default to fetching all tags.
         if (!args) {
           return "/tags";
         }
@@ -111,7 +102,7 @@ export const postApiSlice = createApi({
 
         return `/tags?${params.toString()}`;
       },
-      // Cache management: invalidated when posts are liked/saved to keep counts/visibility fresh.
+
       providesTags: (result) =>
         result
           ? [
@@ -149,7 +140,7 @@ export const postApiSlice = createApi({
 
     likePost: builder.mutation<LikePostApiResponse, string>({
       query: (postId) => ({ url: `/posts/${postId}/like`, method: "POST" }),
-      // Add invalidation here too for consistency when liking
+
       invalidatesTags: (result, error, postId) => [
         { type: "Post", id: postId },
         { type: "Posts", id: "LIST" },
@@ -159,17 +150,17 @@ export const postApiSlice = createApi({
 
     unlikePost: builder.mutation<LikePostApiResponse, string>({
       query: (postId) => ({ url: `/posts/${postId}/like`, method: "DELETE" }),
-      // The onQueryStarted block is gone, replaced by this:
+
       invalidatesTags: (result, error, postId) => [
         { type: "Post", id: postId },
-        { type: "Posts", id: "LIST" }, // <-- This will refetch the posts and the total count
-        { type: "Tags", id: "LIST" }, // <-- This will refetch the tags
+        { type: "Posts", id: "LIST" },
+        { type: "Tags", id: "LIST" },
       ],
     }),
 
     savePost: builder.mutation<SavePostApiResponse, string>({
       query: (postId) => ({ url: `/posts/${postId}/save`, method: "POST" }),
-      // Add invalidation here too
+
       invalidatesTags: (result, error, postId) => [
         { type: "Post", id: postId },
         { type: "Posts", id: "LIST" },
@@ -178,11 +169,11 @@ export const postApiSlice = createApi({
     }),
     unsavePost: builder.mutation<SavePostApiResponse, string>({
       query: (postId) => ({ url: `/posts/${postId}/save`, method: "DELETE" }),
-      // The onQueryStarted block is gone, replaced by this:
+
       invalidatesTags: (result, error, postId) => [
         { type: "Post", id: postId },
-        { type: "Posts", id: "LIST" }, // <-- This will refetch the posts and the total count
-        { type: "Tags", id: "LIST" }, // <-- This will refetch the tags
+        { type: "Posts", id: "LIST" },
+        { type: "Tags", id: "LIST" },
       ],
     }),
 
@@ -193,7 +184,6 @@ export const postApiSlice = createApi({
         body: { platform },
       }),
       async onQueryStarted({ postId }, { dispatch, queryFulfilled, getState }) {
-        // This logic is complex, a simple invalidation might be better if issues arise.
         const patchResults: any[] = [];
         patchResults.push(
           dispatch(

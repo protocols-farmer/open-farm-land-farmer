@@ -1,6 +1,6 @@
+//src/lib/schemas/post.schemas.ts
 import { z } from "zod";
 
-// --- CATEGORIES ---
 export const postCategories = [
   "PROJECT",
   "BLOG",
@@ -11,7 +11,6 @@ export const postCategories = [
   "GUIDE",
 ] as const;
 
-// --- URL HELPERS ---
 const externalUrlSchema = z
   .string()
   .optional()
@@ -57,9 +56,6 @@ const githubUrlSchema = z
     }
   });
 
-// ==========================================
-// 🚜 CREATE POST SCHEMA (Standalone)
-// ==========================================
 export const createPostSchema = z.object({
   title: z
     .string()
@@ -100,9 +96,6 @@ export const createPostSchema = z.object({
   githubLink: githubUrlSchema,
 });
 
-// ==========================================
-// 🚜 UPDATE POST SCHEMA (Standalone)
-// ==========================================
 export const updatePostSchema = z
   .object({
     title: z
@@ -137,7 +130,6 @@ export const updatePostSchema = z
       .max(10, "You can add up to 10 tags.")
       .optional(),
 
-    // For updates, we handle new files AND IDs of images we want to keep
     postImages: z.array(z.instanceof(File)).default([]),
     retainedImages: z.array(z.string()).default([]),
 

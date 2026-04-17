@@ -24,10 +24,6 @@ type UpdatePostData = Partial<Omit<CreatePostData, "images">> & {
 };
 
 export class PostService {
-  /**
-   * 🚜 TAG GUARD: Sanitizes tags to prevent paragraph-pasting.
-   * Enforces lowercase, trims, removes spaces, and caps length at 25 chars.
-   */
   private sanitizeTags(tags: any): string[] {
     if (!tags || !Array.isArray(tags)) return [];
 

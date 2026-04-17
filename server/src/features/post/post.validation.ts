@@ -111,18 +111,17 @@ export const createPostSchema = z.object({
   }),
 });
 
-// Replace your existing updatePostSchema with this:
 export const updatePostSchema = z.object({
   body: z.object({
     title: z
       .string()
       .min(5, "Title must be at least 5 characters long.")
-      .max(150, "Title cannot exceed 150 characters."), // 🚜 FIXED: Was 255
+      .max(150, "Title cannot exceed 150 characters."),
 
     description: z
       .string()
       .min(10, "Description must be at least 10 characters long.")
-      .max(300, "Description cannot exceed 300 characters."), // 🚜 FIXED: Was 500
+      .max(300, "Description cannot exceed 300 characters."),
 
     content: z
       .string()
@@ -149,6 +148,18 @@ export const updatePostSchema = z.object({
         .min(1, "At least one tag is required.")
         .max(10, "You can add up to 10 tags."),
     ),
+
+    retainedImageUrls: z.preprocess((val) => {
+      if (typeof val === "string") {
+        try {
+          return JSON.parse(val);
+        } catch (e) {
+          return [];
+        }
+      }
+      return val || [];
+    }, z.array(z.string()).default([])),
+
     externalLink: externalLinkSchema,
     githubLink: strictGitHubLinkSchema,
   }),

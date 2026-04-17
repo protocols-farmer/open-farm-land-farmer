@@ -15,11 +15,9 @@ import { uploadImage } from "@/middleware/multer.config.js";
 
 const router: Router = Router();
 
-// public routes
 router.get("/", optionalVerifyToken, postController.getAllPosts);
 router.get("/:id", optionalVerifyToken, postController.getPost);
 
-// protected routes
 router.post(
   "/",
   verifyToken,

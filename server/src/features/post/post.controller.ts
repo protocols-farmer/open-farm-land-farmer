@@ -202,10 +202,6 @@ class PostController {
     res.status(204).send();
   });
 
-  /**
-   * @desc    Save a post for the authenticated user
-   * @route   POST /api/v1/posts/:id/save
-   */
   savePost = asyncHandler(async (req: Request, res: Response) => {
     const userId = req.user!.id;
 
@@ -220,10 +216,6 @@ class PostController {
     });
   });
 
-  /**
-   * @desc    Unsave a post for the authenticated user
-   * @route   DELETE /api/v1/posts/:id/save
-   */
   unsavePost = asyncHandler(async (req: Request, res: Response) => {
     const userId = req.user!.id;
 
